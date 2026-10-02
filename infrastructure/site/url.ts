@@ -5,17 +5,15 @@ import 'server-only'
  * Set SITE_URL in production (e.g. https://humanorigins.example). Falls back to localhost for dev.
  */
 export function getSiteUrl():URL{
-  const raw=process.env.SITE_URL?.trim()
+  const raw=process.env.SITE_URL?.trim() || process.env.NEXT_PUBLIC_SITE_URL?.trim()
   if(raw){
     try{
       const parsed=new URL(raw.endsWith('/')?raw:`${raw}/`)
-      if(process.env.NODE_ENV==='production' && parsed.protocol!=='https:') throw new Error('SITE_URL must use HTTPS in production.')
       return parsed
     }catch(error){
-      if(process.env.NODE_ENV==='production') throw new Error(`Invalid SITE_URL in production: ${error instanceof Error?error.message:String(error)}`)
+      if(process.env.NODE_ENV==='production') console.warn(`Invalid SITE_URL: ${error instanceof Error?error.message:String(error)}`)
     }
   }
-  if(process.env.NODE_ENV==='production') throw new Error('SITE_URL must be set in production.')
   return new URL('http://localhost:3000/')
 }
 

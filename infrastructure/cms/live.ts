@@ -40,6 +40,7 @@ export const getLiveContent=cache(function getLiveContent():LiveContent{
         console.error(`[cms] Published media ${row.id} failed the catalog audit; this row is omitted from live content.`)
       }
     }
+    if(rejected.length>0) return {...builtIn,rejectedMedia:rejected}
     const merged=mergeCmsIntoCatalog(contentCatalog,accepted,copy)
     return {catalog:merged.catalog,copy:merged.copy,source:accepted.length||copy.length?'cms':'built-in',rejectedMedia:rejected}
   }catch(error){

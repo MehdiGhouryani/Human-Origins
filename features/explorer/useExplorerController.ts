@@ -10,7 +10,7 @@ import {formatAgeMa,sliderToAgeMa} from '../../domain/time'
 
 export function useExplorerController(bootstrap:ExplorerBootstrap,initialState:Partial<ExplorerState>={}){
   const immutableBootstrap=useMemo(()=>deepFreeze(bootstrap),[bootstrap])
-  const defaultId=immutableBootstrap.species[0]?.id??''
+  const defaultId=immutableBootstrap.species.find(t=>t.id==='neanderthal')?.id ?? immutableBootstrap.species[0]?.id??''
   const validTaxon=initialState.selectedId && immutableBootstrap.species.some(t=>t.id===initialState.selectedId)?initialState.selectedId:defaultId
   const validSite=initialState.focusSite && getExplorerEvidenceSites(immutableBootstrap).some(site=>String(site.id)===initialState.focusSite)?initialState.focusSite:null
   const [state,setState]=useState<ExplorerState>({...DEFAULT_EXPLORER_STATE,...initialState,selectedId:validTaxon,focusSite:validSite,playing:false})

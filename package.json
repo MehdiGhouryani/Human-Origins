@@ -3,19 +3,18 @@
   "private": true,
   "version": "0.30.0",
   "engines": {
-    "node": ">=22.5.0",
+    "node": ">=22.0.0",
     "npm": ">=10.0.0"
   },
-  "packageManager": "npm@10.9.2",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "next build",
     "build:standalone": "NEXT_OUTPUT=standalone next build",
     "start": "next start",
     "lint": "node scripts/run-lint.mjs",
     "typecheck": "tsc --noEmit",
     "validate:data": "node scripts/validate-data.mjs",
-    "validate:assets": "python3 scripts/validate-assets.py",
+    "validate:assets": "node scripts/validate-assets.mjs",
     "check": "npm run validate:syntax && npm run lint && npm run validate:data && npm run validate:assets && npm run typecheck",
     "test": "vitest run",
     "test:e2e": "playwright test",

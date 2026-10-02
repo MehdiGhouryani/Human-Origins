@@ -13,10 +13,10 @@ export const TREE_NODE_RADIUS=22
  * Vertical grid step. A taxon occupies two consecutive rows: the node + bar on its own row and its two label lines
  * on the row below. Staggering on a half-height grid keeps the drawing compact without labels touching nodes.
  */
-export const TREE_LANE_HEIGHT=40
-const TOP_MARGIN=58
-const BOTTOM_MARGIN=58
-const LABEL_GAP=10
+export const TREE_LANE_HEIGHT=52
+const TOP_MARGIN=60
+const BOTTOM_MARGIN=60
+const LABEL_GAP=16
 
 /** Clade bands from top to bottom. Unknown groups are appended after these, in first-seen order. */
 export const TREE_BAND_ORDER=['Paranthropus','Australopithecines','Early hominins','Homo','Denisovans','Neanderthals','Modern humans'] as const
@@ -107,9 +107,9 @@ export function computeTreeLayout(taxa:readonly TreeTaxon[]):TreeLayout{
 }
 
 /**
- * Elbow branch from the parent's lifespan bar to the child node. The branch leaves the parent at the child's first
- * appearance when that falls inside the parent's range, otherwise at the parent's nearest range edge, so the drawing
- * never suggests a population existed outside its documented time window.
+ * Organic branch curve from the parent's lifespan bar to the child node. The branch leaves the parent at the child's
+ * first appearance when that falls inside the parent's range (otherwise at the nearest range edge) using a smooth
+ * horizontal-tangent cubic Bézier S-curve, providing an authentic phylogenetic cladogram appearance.
  */
 export function branchPath(parent:TreeTaxon & TreeNodeGeometry,child:TreeTaxon & TreeNodeGeometry):string{
   const branchAge=Math.max(parent.end,Math.min(parent.start,child.start))
@@ -117,11 +117,10 @@ export function branchPath(parent:TreeTaxon & TreeNodeGeometry,child:TreeTaxon &
   const {y:py}=parent
   const {x:cx,y:cy}=child
   if(Math.abs(cy-py)<1) return `M${bx.toFixed(1)} ${py} H${cx.toFixed(1)}`
-  const dx=cx-bx
-  if(Math.abs(dx)<14) return `M${bx.toFixed(1)} ${py} V${cy}`
-  const r=Math.min(12,Math.abs(dx)/2,Math.abs(cy-py)/2)
-  const sy=cy>py?1:-1, sx=dx>0?1:-1
-  return `M${bx.toFixed(1)} ${py} V${(cy-sy*r).toFixed(1)} Q${bx.toFixed(1)} ${cy} ${(bx+sx*r).toFixed(1)} ${cy} H${cx.toFixed(1)}`
+  const dx=Math.max(12,cx-bx)
+  const c1x=bx+dx*0.5
+  const c2x=cx-dx*0.5
+  return `M${bx.toFixed(1)} ${py} C${c1x.toFixed(1)} ${py} ${c2x.toFixed(1)} ${cy} ${cx.toFixed(1)} ${cy}`
 }
 
 /** Fallback age for a gene-flow connector when the relationship record carries no dated admixture signal. */

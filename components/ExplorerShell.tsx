@@ -1,6 +1,6 @@
 'use client'
 
-import dynamic from 'next/dynamic'
+import {useCallback,useEffect,useRef} from 'react'
 import {AnimatePresence,MotionConfig} from 'motion/react'
 import {ChevronRight,Clock3,Database,Globe2,GitBranch,Pause,Play,Route} from 'lucide-react'
 import {getExplorerSourceById,getExplorerClaimsForTaxon,getExplorerSpeciesById} from '../features/explorer/selectors'
@@ -13,13 +13,34 @@ import {getCopy} from '../content/copy-registry'
 import {useExplorerController} from '../features/explorer/useExplorerController'
 import type {ExplorerState} from '../features/explorer/state'
 
-const EvolutionTree=dynamic(()=>import('./EvolutionTree'),{ssr:false,loading:()=> <div className="engine-placeholder">Loading evolutionary graph…</div>})
-const Inspector=dynamic(()=>import('./Inspector'),{ssr:false,loading:()=> <aside className="inspector engine-placeholder">Preparing species dossier…</aside>})
-const MigrationGlobe=dynamic(()=>import('./MigrationGlobe'),{ssr:false,loading:()=> <div className="engine-placeholder">Loading geographic engine…</div>})
-const SpeciesJourney=dynamic(()=>import('./SpeciesJourney'),{ssr:false})
+import EvolutionTree from './EvolutionTree'
+import Inspector from './Inspector'
+import MigrationGlobe from './MigrationGlobe'
+import SpeciesJourney from './SpeciesJourney'
 
 export default function ExplorerShell({bootstrap,initialState}:{bootstrap:ExplorerBootstrap;initialState?:Partial<ExplorerState>}){
   const {bootstrap:immutableBootstrap,state,setState,current,age,results,visibleSearchResults,explorerSpecies,setMode,setSelected}=useExplorerController(bootstrap,initialState)
+  const deckRef=useRef<HTMLDivElement>(null)
+
+  useEffect(()=>{
+    if(!deckRef.current) return
+    const card=deckRef.current.querySelector<HTMLElement>('.species-card.selected')
+    if(card){
+      card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})
+    }
+  },[state.selectedId])
+
+  const handleDeckKeyDown=useCallback((e:React.KeyboardEvent)=>{
+    const currentIndex=explorerSpecies.findIndex(s=>s.id===state.selectedId)
+    if(e.key==='ArrowRight'&&currentIndex<explorerSpecies.length-1){
+      e.preventDefault()
+      setSelected(explorerSpecies[currentIndex+1].id)
+    }else if(e.key==='ArrowLeft'&&currentIndex>0){
+      e.preventDefault()
+      setSelected(explorerSpecies[currentIndex-1].id)
+    }
+  },[explorerSpecies,state.selectedId,setSelected])
+
   const coexisting=taxaAtAge(explorerSpecies,age)
   const hrefForResult=(result:typeof results[number])=>{
     if(result.kind==='specimen'){
@@ -41,7 +62,7 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
     }
     if(result.kind==='publication'){
       const item=immutableBootstrap.publications.find(record=>String(record.id)===result.id)
-      return item?.doi?`https://doi.org/${item.doi}`:`/?species=${encodeURIComponent(state.selectedId)}&mode=evidence`
+      return item?.url??`/?species=${encodeURIComponent(state.selectedId)}&mode=evidence`
     }
     if(result.kind==='institution'){
       const item=immutableBootstrap.institutions.find(record=>String(record.id)===result.id)
@@ -64,7 +85,7 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
           <button type="button" className={!state.journey&&state.mode==='evidence'?'selected':''} aria-pressed={!state.journey&&state.mode==='evidence'} onClick={()=>setMode('evidence')}><Database size={14}/> Evidence</button>
         </div>
 
-        <div id="species-atlas" className="species-deck" aria-label="Species atlas">
+        <div id="species-atlas" ref={deckRef} onKeyDown={handleDeckKeyDown} tabIndex={0} className="species-deck" aria-label="Species atlas (Use left/right arrows to navigate)">
           {explorerSpecies.map(s=>{const thumbMedia=findMedia(s.media,s.treeIconId); if(!thumbMedia) return null; return <button type="button" key={s.id} className={`species-card ${state.selectedId===s.id?'selected':''}`} onClick={()=>setSelected(s.id)} title={`Open ${s.name}`} aria-pressed={state.selectedId===s.id}>
             <span className="species-thumb"><MediaImage src={resolveMediaSrc(thumbMedia,'icon',256)} alt={thumbMedia.alt} loading="lazy" sizes="132px" className="species-thumb-image"/></span>
             <span><strong>{s.short}</strong><small>{s.date}</small></span>
@@ -93,6 +114,6 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
 
     <footer id="about" className="evidence-strip"><div><b>◉</b><strong>Fossil Record</strong><small>Physical evidence of our past.</small></div><div><b>〽</b><strong>Genetic Evidence</strong><small>Ancient DNA and population history.</small></div><div><b>◈</b><strong>Archaeology</strong><small>Tools, sites and behavior.</small></div><div><b>▤</b><strong>Geology & Dating</strong><small>Stratigraphy and age estimates.</small></div><em>Evidence · interpretation · provenance<small>Human Origins research interface</small></em></footer>
 
-    {state.query && <div className="search-results" aria-label="Search results">{visibleSearchResults.slice(0,7).map(result=>{const s=getExplorerSpeciesById(immutableBootstrap,result.id);return <button type="button" key={result.id} onClick={()=>setState(prev=>({...prev,selectedId:result.id,query:''}))}><span>{s.short}</span><small>{s.name} · {s.date}</small><ChevronRight size={14}/></button>})}{results.filter(r=>r.kind!=='taxon').slice(0,3).map(result=>{const href=hrefForResult(result);const external=/^https?:\/\//.test(href);return <a className="search-result-info" href={href} key={`${result.kind}:${result.id}`} {...(external?{target:'_blank',rel:'noreferrer'}:{})}><span>{result.title}</span><small>{result.kind} · {result.subtitle}</small><ChevronRight size={14}/></a>})}</div>}
+    {state.query && <div className="search-results" aria-label="Search results">{visibleSearchResults.slice(0,7).map(result=>{const s=getExplorerSpeciesById(immutableBootstrap,result.id);return <button type="button" key={result.id} onClick={()=>setState(prev=>({...prev,selectedId:result.id,query:''}))}><span>{s.short}</span><small>{s.name} · {s.date}</small><ChevronRight size={14}/></button>})}{results.filter(r=>r.kind!=='taxon').slice(0,3).map(result=>{const href=hrefForResult(result);const external=href.startsWith('http:')||href.startsWith('https:');return <a className="search-result-info" href={href} key={`${result.kind}:${result.id}`} {...(external?{target:'_blank',rel:'noreferrer'}:{})}><span>{result.title}</span><small>{result.kind} · {result.subtitle}</small><ChevronRight size={14}/></a>})}</div>}
   </></MotionConfig>
 }

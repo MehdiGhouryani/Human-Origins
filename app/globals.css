@@ -221,12 +221,22 @@ body {
 
 .workspace {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 440px;
   min-height: 650px;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .tree-panel {
   background: radial-gradient(circle at 55% 38%,rgba(24,69,67,.13),transparent 40%),#071315;
   border-right: 1px solid #26383a;
+  padding: 16px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .mode-tabs {
@@ -255,9 +265,15 @@ body {
 
 .tree-shell {
   border: 1px solid #1c3032;
-  border-radius: 8px;
-  background: linear-gradient(180deg,rgba(7,20,21,.78),rgba(3,11,13,.85));
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(7, 20, 21, 0.92), rgba(3, 11, 13, 0.96));
   position: relative;
+  min-height: 540px;
+  height: 560px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .axis {
@@ -297,37 +313,57 @@ body {
   cursor: pointer;
   transform-box: fill-box;
   transform-origin: center;
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.node:hover {
+  transform: scale(1.05);
 }
 
 .node-circle {
-  stroke: #788683;
-  stroke-width: 1.2;
+  transition: stroke-width .2s ease, stroke .2s ease;
 }
 
 .node text {
-  fill: #ddd9d0;
-  font: 12px var(--font-display);
+  fill: #eee8dc;
+  user-select: none;
 }
 
-.node .date {
-  fill: #889492;
-  font-size: 10px;
+.node .node-name {
+  font: 600 11.5px var(--font-display);
+  fill: #ffffff;
+  letter-spacing: .25px;
+}
+
+.node .node-date {
+  fill: #9ab0ad;
+  font-size: 9.5px;
+  font-family: var(--font-ui);
 }
 
 .node.selected .node-circle {
-  stroke: var(--pink);
-  stroke-width: 2;
+  stroke: #f1d29a;
+  stroke-width: 2.8;
 }
 
 .node-halo {
   fill: none;
-  stroke: var(--pink);
-  stroke-width: 1.5;
-  filter: drop-shadow(0 0 7px rgba(236,77,141,.55));
+  stroke: #f1d29a;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 8px rgba(241,210,154,.85));
 }
 
-.node.in-time {
+.node.on-lineage {
   opacity: 1;
+}
+
+.node.gene-partner .node-circle {
+  stroke: #ec4d8d;
+}
+
+.node-initials {
+  font: 600 12px var(--font-ui);
+  fill: #e6dfd1;
 }
 
 .zoom-hint {

@@ -8,6 +8,10 @@ export const metadata:Metadata={
   title:'Human Origins — Interactive Human Evolution Atlas',
   description:'A source-aware interactive atlas of human evolution, evidence, specimens, time and migration.',
   applicationName:'Human Origins',
+  openGraph:{
+    title:'Human Origins — Interactive Human Evolution Atlas',
+    description:'A source-aware interactive atlas of human evolution, evidence, specimens, time and migration.',
+  },
 }
 
 // Explicit mobile viewport: device width, notch-aware (viewport-fit=cover pairs with the safe-area padding in globals.css)

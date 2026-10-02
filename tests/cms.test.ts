@@ -148,9 +148,9 @@ describe('CMS',()=>{
     const processed=await processUploadedImage(id,oriented)
     expect(processed.width).toBe(500)
     expect(processed.height).toBe(300)
-    const detail=processed.variants.find(variant=>variant.purpose==='detail')
-    expect(detail?.width).toBe(500)
-    expect(detail?.height).toBe(300)
+    const thumb=processed.variants.find(variant=>variant.purpose==='thumbnail')
+    expect(thumb?.width).toBe(320)
+    expect(thumb?.height).toBe(192)
   })
 
   it('resolves media files only for valid ids/names and never escapes the media directory',async()=>{

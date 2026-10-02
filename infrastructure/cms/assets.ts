@@ -47,7 +47,7 @@ export async function processUploadedImage(id:string,buffer:Buffer):Promise<{var
   // Sharp's metadata dimensions describe encoded pixels; served variants are EXIF-rotated.
   if(metadata.orientation && metadata.orientation>=5 && metadata.orientation<=8) [width,height]=[height,width]
 
-  const dir=join(CMS_MEDIA_DIR,id)
+  const dir=join(/*turbopackIgnore: true*/ CMS_MEDIA_DIR,id)
   mkdirSync(dir,{recursive:true})
 
   const variants:MediaVariant[]=[]
@@ -69,5 +69,5 @@ export async function processUploadedImage(id:string,buffer:Buffer):Promise<{var
 }
 
 export function deleteProcessedImage(id:string):void{
-  rmSync(join(CMS_MEDIA_DIR,id),{recursive:true,force:true})
+  rmSync(join(/*turbopackIgnore: true*/ CMS_MEDIA_DIR,id),{recursive:true,force:true})
 }

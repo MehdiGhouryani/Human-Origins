@@ -59,7 +59,7 @@ export function normalizeInterval(olderMa:number,youngerMa:number,label?:string)
  */
 export function parseAgeLabel(label:string,fallbackKa?:number,sourceIds?:readonly SourceId[],certainty?:TimeCertainty):ParsedAgeLabel|undefined{
   const raw=label.trim()
-  if(!raw || /multiple\s+periods|late\s+pleistocene|and\s+younger|\+\s*$/.test(raw.toLowerCase())) return undefined
+  if(!raw || /multiple\s+periods|late\s+pleistocene|middle\s+pleistocene|and\s+younger|\+\s*$/.test(raw.toLowerCase())) return undefined
 
   const range=raw.match(/(\d+(?:\.\d+)?)\s*[–-]\s*(\d+(?:\.\d+)?)\s*(Ma|ka)/i)
   if(range){

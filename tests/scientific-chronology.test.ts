@@ -14,7 +14,7 @@ describe('site and taxon chronology audit',()=>{
     const invalid={
       ...contentCatalog,
       siteContexts:contentCatalog.siteContexts.map(context=>String(context.siteId)==='eurasia'
-        ? {...context,ageLabel:'Late Pleistocene context (~400 ka)',timeInterval:{...context.timeInterval!,olderMa:.4,youngerMa:.4,uncertaintyMa:0}}
+        ? {...context,relatedTaxonIds:['sapiens' as never],ageLabel:'Late Pleistocene context (~400 ka)',timeInterval:{...context.timeInterval!,olderMa:.4,youngerMa:.4,uncertaintyMa:0}}
         : context),
     } as unknown as ContentCatalog
     const issues=validateCatalog(invalid).issues

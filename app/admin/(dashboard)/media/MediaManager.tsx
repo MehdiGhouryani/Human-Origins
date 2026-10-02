@@ -27,13 +27,14 @@ export default function MediaManager({initialMedia,taxa,sources,builtIn,initialT
   const mine=useMemo(()=>media.filter(m=>m.subjectId===taxon),[media,taxon])
   const builtInForTaxon=useMemo(()=>builtIn.filter(m=>m.taxonId===taxon),[builtIn,taxon])
   const [previewUrl,setPreviewUrl]=useState<string|null>(null)
-  // Object URLs pin the file in memory until revoked: release the previous preview whenever the file changes.
+  function handleFileChange(selected:File|null){
+    if(previewUrl) URL.revokeObjectURL(previewUrl)
+    setFile(selected)
+    setPreviewUrl(selected?URL.createObjectURL(selected):null)
+  }
   useEffect(()=>{
-    if(!file){setPreviewUrl(null);return}
-    const url=URL.createObjectURL(file)
-    setPreviewUrl(url)
-    return ()=>URL.revokeObjectURL(url)
-  },[file])
+    return ()=>{if(previewUrl) URL.revokeObjectURL(previewUrl)}
+  },[previewUrl])
   const liveTreeIcon=mine.find(m=>m.status==='published'&&m.roles.includes('tree-thumbnail'))
   const livePortrait=mine.find(m=>m.status==='published'&&m.isDefault)
 
@@ -70,7 +71,7 @@ export default function MediaManager({initialMedia,taxa,sources,builtIn,initialT
       const body=await readBody(res)
       if(!res.ok){ setMessage({kind:'error',text:body.error??'Upload failed.'}); return }
       setMessage({kind:'ok',text:'Uploaded as a draft. Review it below, then publish (the live image stays until you do).'})
-      setFile(null); setForm(emptyForm)
+      handleFileChange(null); setForm(emptyForm)
       await refresh()
     }catch{ networkError() }finally{ setBusy(false) }
   }
@@ -114,7 +115,7 @@ export default function MediaManager({initialMedia,taxa,sources,builtIn,initialT
       <h2 id="upload-h">Upload new image</h2>
       <form className="admin-form" onSubmit={upload}>
         <div className="admin-field"><label htmlFor="file">Image file (JPEG, PNG, WebP, AVIF, GIF or TIFF — up to 20 MB)</label>
-          <input id="file" type="file" accept="image/*" onChange={e=>setFile(e.target.files?.[0]??null)}/></div>
+          <input id="file" type="file" accept="image/*" onChange={e=>handleFileChange(e.target.files?.[0]??null)}/></div>
         {previewUrl && <div className="admin-preview">
           {/* eslint-disable-next-line @next/next/no-img-element -- local blob: preview of a not-yet-uploaded file; next/image cannot optimize blob URLs */}
           <img src={previewUrl} alt="Selected file preview"/>

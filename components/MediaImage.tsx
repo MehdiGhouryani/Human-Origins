@@ -19,7 +19,8 @@ export default function MediaImage({src,alt,className,sizes='100vw',priority=fal
     sizes={sizes}
     priority={priority}
     loading={priority?undefined:loading}
-    unoptimized={src.startsWith('/cms-media/')}
+    unoptimized={!src.startsWith('/assets/')}
+    referrerPolicy="no-referrer"
     className={className}
     onError={()=>setFailed(true)}
   />
