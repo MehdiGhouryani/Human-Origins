@@ -88,8 +88,8 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
         </g>
 
         {common&&<g className="pan-stub" aria-hidden="true">
-          <path d={`M${common.endX} ${common.y} V${TREE_PLOT.top-10} H${TREE_PLOT.right}`}/>
-          <text x={common.endX+10} y={TREE_PLOT.top-16}>Pan lineage → chimpanzees &amp; bonobos (not shown)</text>
+          <path d={`M${common.x+15} ${common.y} Q${common.x+36} ${common.y} ${common.x+36} ${common.y-26} H${common.x+130}`} stroke="#3fa796" strokeWidth={1.4} strokeDasharray="3 3" fill="none"/>
+          <text x={common.x+138} y={common.y-23} fill="#79a8a0" fontSize={9.5} fontStyle="italic">Pan lineage → chimpanzees &amp; bonobos</text>
         </g>}
 
         <g className="tree-bars" aria-hidden="true">
@@ -121,20 +121,20 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
               <path d={d} fill="none" stroke={colorFor(child)} strokeWidth={onLineage?3.2:1.8} strokeLinecap="round" strokeDasharray={isPossible?'5 5':undefined} opacity={onLineage?1:0.78}/>
             </g>
           })}
-          {links.filter(link=>link.type==='gene-flow').map(link=>{
+          {links.filter(link=>link.type==='gene-flow').map((link,idx)=>{
             const a=layout[String(link.from)],b=layout[String(link.to)]
             if(!a||!b) return null
             const flowAge=link.eventAgeMa??GENE_FLOW_AGE_MA
             const x=xForAge(flowAge),top=Math.min(a.y,b.y),bottom=Math.max(a.y,b.y)
             const active=partners.size>0&&(String(link.from)===selected||String(link.to)===selected)
             const midY=(top+bottom)/2
-            const arcOffset=28
-            const pathD=`M${x} ${top+6} C${x+arcOffset} ${top+(bottom-top)*0.28} ${x+arcOffset} ${top+(bottom-top)*0.72} ${x} ${bottom-6}`
+            const arcOffset=20 + (idx * 16)
+            const pathD=`M${x} ${top+6} C${x+arcOffset} ${top+(bottom-top)*0.25} ${x+arcOffset} ${top+(bottom-top)*0.75} ${x} ${bottom-6}`
             return <g key={String(link.id)} className={`gene-flow ${active?'active':''}`} opacity={active?1:0.85}>
               <path d={pathD} fill="none" stroke="#061214" strokeWidth={active?5.5:3.8} strokeLinecap="round"/>
               <path d={pathD} fill="none" stroke={relationshipColors['gene-flow']} strokeWidth={active?2.8:1.8} strokeDasharray="3 4" strokeLinecap="round"/>
-              <circle cx={x} cy={top} r={4.5} fill={relationshipColors['gene-flow']}/>
-              <circle cx={x} cy={bottom} r={4.5} fill={relationshipColors['gene-flow']}/>
+              <circle cx={x} cy={top} r={4} fill={relationshipColors['gene-flow']}/>
+              <circle cx={x} cy={bottom} r={4} fill={relationshipColors['gene-flow']}/>
               <g transform={`translate(${x+arcOffset+4}, ${midY})`}>
                 <rect x={0} y={-9} width={74} height={18} rx={9} fill="rgba(6, 17, 19, 0.94)" stroke={relationshipColors['gene-flow']} strokeWidth={1}/>
                 <text x={37} y={3.5} textAnchor="middle" fill="#f472b6" fontSize={9} fontWeight={600} fontFamily="var(--font-ui)">⇄ ~{Math.round(flowAge*1000)} ka</text>
@@ -165,10 +165,10 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
               ? <image href={resolveMediaSrc(media,'icon',256)} x={-(r-2)} y={-(r-2)} width={(r-2)*2} height={(r-2)*2} preserveAspectRatio="xMidYMid slice" clipPath={`url(#${clipId})`} onError={()=>setFailedIcons(prev=>new Set(prev).add(s.id))}/>
               : <text className="node-initials" textAnchor="middle" dominantBaseline="central">{initials(s.short)}</text>}
             <circle className="node-ring" r={r} stroke={active?'#f1d29a':nodeColor} strokeWidth={active?2.5:1.2} fill="none"/>
-            <g className="node-label" transform={`translate(0, ${r+4})`}>
-              <rect x={-52} y={0} width={104} height={26} rx={5} fill="rgba(6, 17, 19, 0.85)" stroke="rgba(255,255,255,0.08)" strokeWidth={0.8}/>
-              <text className="node-name" y={11} textAnchor="middle">{s.short}</text>
-              <text className="node-date" y={21} textAnchor="middle">{s.date}</text>
+            <g className="node-label" transform={`translate(0, ${r+5})`}>
+              <rect x={-54} y={0} width={108} height={28} rx={6} fill="rgba(6, 17, 19, 0.90)" stroke="rgba(255,255,255,0.10)" strokeWidth={0.8}/>
+              <text className="node-name" y={12} textAnchor="middle">{s.short}</text>
+              <text className="node-date" y={22} textAnchor="middle">{s.date}</text>
             </g>
           </g>
         })}
