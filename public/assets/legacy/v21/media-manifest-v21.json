@@ -1,0 +1,20 @@
+{
+  "release": "V21",
+  "policy": "Use the image shown in the inspector as media evidence context only. Never infer a species-wide body appearance from a fossil photograph. Every media item is labeled by type.",
+  "items": [
+    {"species":"common","kind":"context-schematic","local":"/assets/species/common-context.svg","license":"original"},
+    {"species":"sahelanthropus","kind":"cast-photo","source":"Wikimedia Commons","license":"CC BY-SA 4.0"},
+    {"species":"orrin","kind":"cast-photo","source":"Wikimedia Commons","license":"CC BY-SA 4.0"},
+    {"species":"ardipithecus","kind":"cast-photo","source":"Wikimedia Commons","license":"CC BY-SA 3.0 FR"},
+    {"species":"afarensis","kind":"cast-photo","source":"Wikimedia Commons","license":"CC BY-SA 3.0"},
+    {"species":"africanus","kind":"specimen-photo","source":"Wikimedia Commons","license":"CC0 1.0"},
+    {"species":"boisei","kind":"cast-photo","source":"Wikimedia Commons","license":"CC BY-SA 3.0"},
+    {"species":"robustus","kind":"specimen-photo","source":"Wikimedia Commons","license":"CC BY-SA 3.0"},
+    {"species":"habilis","kind":"cast-photo","source":"Wikimedia Commons","license":"Public domain"},
+    {"species":"ergaster","kind":"specimen-photo","source":"Wikimedia Commons","license":"CC BY-SA 3.0"},
+    {"species":"erectus","kind":"specimen-photo","source":"Wikimedia Commons","license":"CC BY-SA 4.0"},
+    {"species":"heidelbergensis","kind":"cast-photo","source":"Wikimedia Commons","license":"CC BY-SA 2.0"},
+    {"species":"neanderthal","kind":"reconstruction","source":"Smithsonian Institution / John Gurche","license":"project attribution"},
+    {"species":"sapiens","kind":"reconstruction","source":"Philipp Gunz / MPI EVA Leipzig via Wikimedia Commons","license":"CC BY-SA 3.0"}
+  ]
+}

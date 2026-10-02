@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1250" role="img" aria-label="Schematic record plate for Denisovans">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%"><stop offset="0" stop-color="#173234"/><stop offset="1" stop-color="#050d0f"/></radialGradient>
+  </defs>
+  <rect width="1000" height="1250" fill="url(#bg)"/>
+  <g fill="none" stroke="#c58cf2" stroke-linecap="round">
+    <circle cx="500" cy="500" r="250" stroke-width="6" opacity=".85"/>
+    <circle cx="500" cy="500" r="290" stroke-width="2" stroke-dasharray="4 14" opacity=".55"/>
+    <path d="M380 560c20-150 220-190 260-40c18 70-12 120-60 140h-120c-55-12-86-48-80-100z" stroke-width="5" opacity=".7"/>
+    <path d="M430 690v60M570 690v60" stroke-width="5" opacity=".5"/>
+  </g>
+  <g fill="#e7e1d7" font-family="Inter,Arial,sans-serif" text-anchor="middle">
+    <text x="500" y="905" font-size="54" font-style="italic">Denisovans</text>
+    <text x="500" y="965" font-size="34" fill="#c58cf2">~200–50 ka (fossil &amp; DNA record)</text>
+    <text x="500" y="1110" font-size="24" letter-spacing="4">SCHEMATIC · IMAGE PENDING</text>
+    <text x="500" y="1150" font-size="22" opacity=".75">Not a fossil photograph or a reconstruction</text>
+  </g>
+</svg>

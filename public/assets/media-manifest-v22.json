@@ -1,0 +1,204 @@
+{
+  "release": "V22.7",
+  "policy": "Every canonical media record has an explicit kind, source/rights metadata, scientific limitation note, accessible alt text and production status. Legacy V21 plates remain quarantined and excluded from production media. Remote client media is restricted to approved Wikimedia host; official 3D viewer links use 3d.si.edu. Review-required and schematic media must be explicitly disclosed in the UI. Publication status is now separate from rights status; canonical media assets also carry semantic roles and future delivery variants.",
+  "legacyQuarantine": "/assets/legacy/v21-plates/",
+  "items": [
+    {
+      "species": "common",
+      "mediaId": "media:common",
+      "kind": "context-schematic",
+      "src": "/assets/species/common-context.svg",
+      "rights": "original",
+      "roles": [
+        "context"
+      ],
+      "publicationStatus": "schematic",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "sahelanthropus",
+      "mediaId": "media:sahelanthropus",
+      "kind": "cast-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Sahelanthropus_tchadensis_-_TM_266-01-060-1.jpg",
+      "rights": "CC BY-SA 4.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "orrin",
+      "mediaId": "media:orrin",
+      "kind": "cast-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/0/04/Orrorin_NMNH.jpg",
+      "rights": "CC BY-SA 4.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "ardipithecus",
+      "mediaId": "media:ardipithecus",
+      "kind": "cast-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/7/72/Ardipithecus_Ramidus-MGL_96730-P5030040-black.jpg",
+      "rights": "CC BY-SA 3.0 FR",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "afarensis",
+      "mediaId": "media:afarensis",
+      "kind": "cast-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/1/10/Australopithecus_afarensis_skull.jpg",
+      "rights": "CC BY-SA 3.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "africanus",
+      "mediaId": "media:africanus",
+      "kind": "specimen-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/3/32/Australopithecus_africanus_skull_-_Naturmuseum_Senckenberg_-_DSC02100.JPG",
+      "rights": "CC0 1.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "boisei",
+      "mediaId": "media:boisei",
+      "kind": "cast-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Paranthropus_boisei_skull.jpg",
+      "rights": "CC BY-SA 3.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "robustus",
+      "mediaId": "media:robustus",
+      "kind": "specimen-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/1/16/Paranthropus_robustus_skull.jpg",
+      "rights": "CC BY-SA 3.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "habilis",
+      "mediaId": "media:habilis",
+      "kind": "cast-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/4/45/Homo_habilis-KNM_ER_1813.jpg",
+      "rights": "Public domain",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "ergaster",
+      "mediaId": "media:ergaster",
+      "kind": "specimen-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/7/70/Homo_ergaster.jpg",
+      "rights": "CC BY-SA 3.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "erectus",
+      "mediaId": "media:erectus",
+      "kind": "specimen-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/2/27/Homo_erectus_KNM_ER_3733.jpg",
+      "rights": "CC BY-SA 4.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "heidelbergensis",
+      "mediaId": "media:heidelbergensis",
+      "kind": "cast-photo",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Maba._Homo_heidelbergensis.jpg",
+      "rights": "CC BY-SA 2.0",
+      "roles": [
+        "tree-thumbnail",
+        "specimen-reference"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    },
+    {
+      "species": "neanderthal",
+      "mediaId": "media:neanderthal",
+      "kind": "reconstruction",
+      "src": "/assets/neanderthal.webp",
+      "rights": "project attribution / review",
+      "roles": [
+        "tree-thumbnail",
+        "profile-portrait"
+      ],
+      "publicationStatus": "review-required",
+      "rightsStatus": "review-required",
+      "variants": []
+    },
+    {
+      "species": "sapiens",
+      "mediaId": "media:sapiens",
+      "kind": "reconstruction",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Oldest_Homo_sapiens_skull.webp",
+      "rights": "CC BY-SA 3.0",
+      "roles": [
+        "tree-thumbnail",
+        "profile-portrait"
+      ],
+      "publicationStatus": "approved",
+      "rightsStatus": "clear",
+      "variants": []
+    }
+  ],
+  "canonicalSource": "content/media.ts",
+  "canonicalContract": "content/media.ts + domain/contracts.ts"
+}

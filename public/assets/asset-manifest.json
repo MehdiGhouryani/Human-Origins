@@ -1,0 +1,72 @@
+{
+  "version": "30",
+  "rules": {
+    "hero": "1920x440 WebP",
+    "neanderthalReconstruction": "1024x1024 WebP",
+    "speciesMedia": "Species-specific specimen/cast/reconstruction media; each item carries source + license metadata",
+    "commonAncestor": "Original schematic; not a recovered species portrait",
+    "externalMediaPolicy": "Wikimedia Commons originals are referenced directly when reuse rights are explicit; the page exposes source and license. Institutional 3D meshes remain external viewer links.",
+    "architecture": "Production UI references active canonical media records. Legacy V21 plates remain quarantined. Canonical media carries provenance/rights metadata, explicit roles/variants and research subject typing. The Explorer client consumes only a frozen server-built read model. Phase 2 normalizes taxonomy, taxon names, publication, institution, specimen/material, occurrence and site-context entities, publishes deterministic inverse indexes, enforces semantic integrity, exposes a deterministic graph projection, and documents append-only migration strategy. Phase 2 adds qualitative claim uncertainty profiles and source-backed interpretation sets without numeric confidence ranking. Phase 3 adds cycle-safe graph traversal (adjacency lookup, breadth-first search, shortest path) and a claim provenance-chain query on top of the existing graph projection. Phase 4 (V25) records each site's dating method and, where a published figure exists, its numeric uncertainty, instead of leaving those fields unset."
+  },
+  "assets": [
+    {
+      "id": "hero-evolution",
+      "path": "/assets/hero-evolution.webp",
+      "kind": "hero",
+      "width": 1920,
+      "height": 440,
+      "format": "webp",
+      "role": "hero background",
+      "bytes": 68230,
+      "sha256": "6830afdca25f921614c94126ad98ffedc92479755f1bf26dca3e77dae9b8aa55"
+    },
+    {
+      "id": "neanderthal",
+      "path": "/assets/neanderthal.webp",
+      "kind": "reconstruction",
+      "width": 1024,
+      "height": 1024,
+      "format": "webp",
+      "role": "Smithsonian / John Gurche reconstruction",
+      "bytes": 62084,
+      "sha256": "bbc70dda31ef183807399de2d87b064d4ef83a566d3b3f987660776a59f609b6"
+    },
+    {
+      "id": "neanderthal-768",
+      "path": "/assets/neanderthal-768.webp",
+      "kind": "fallback",
+      "width": 768,
+      "height": 768,
+      "format": "webp",
+      "role": "responsive fallback",
+      "bytes": 46014,
+      "sha256": "7a1d1dee65a0ec01bc577d60dff46f570eb7d1f9a58fb63a4cb340c3c6887b39"
+    },
+    {
+      "id": "common-context",
+      "path": "/assets/species/common-context.svg",
+      "kind": "context-schematic",
+      "width": 1200,
+      "height": 900,
+      "format": "svg",
+      "role": "Unknown common ancestor schematic; explicitly not a fossil portrait",
+      "bytes": 1454,
+      "sha256": "2aa28f4fe15eeb4e34ec80ea750b958a42bc42993ea8b6acc1d3204bf93aac3f"
+    },
+    {
+      "id": "institutional-3d-specimens",
+      "path": "external",
+      "kind": "viewer-links",
+      "format": "URL",
+      "role": "source institution 3D viewers; no third-party meshes packaged"
+    },
+    {
+      "id": "legacy-v21-plates",
+      "path": "/assets/legacy/v21-plates",
+      "kind": "legacy",
+      "format": "webp",
+      "role": "Quarantined legacy placeholders; not valid production species media"
+    }
+  ],
+  "architecture": "Production UI may only reference active canonical media records. Legacy V21 plates remain quarantined. Canonical media carry alt text, provenance, rights metadata and source paths. The Explorer client consumes only a frozen server-built read model; canonical catalog/repository remains server-only. Media roles, rights status and explicit media variants are part of the canonical contract. Research graph and migration artifacts are domain-side projections, not client sources of truth."
+}

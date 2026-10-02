@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%"><stop offset="0" stop-color="#173234"/><stop offset="1" stop-color="#050d0f"/></radialGradient>
+    <linearGradient id="line" x1="0" x2="1"><stop offset="0" stop-color="#c9a35d"/><stop offset="1" stop-color="#77c4ba"/></linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <g fill="none" stroke="url(#line)" stroke-width="5" stroke-linecap="round">
+    <path d="M600 760V560"/>
+    <path d="M600 560C500 490 360 440 250 330"/>
+    <path d="M600 560C700 490 840 440 950 330"/>
+    <path d="M250 330c55-110 170-140 260-70"/>
+    <path d="M950 330c-55-110-170-140-260-70"/>
+  </g>
+  <g fill="#0b1517" stroke="#d9c28a" stroke-width="4">
+    <circle cx="600" cy="250" r="110"/>
+    <circle cx="250" cy="300" r="80"/>
+    <circle cx="950" cy="300" r="80"/>
+    <circle cx="510" cy="435" r="34"/>
+    <circle cx="690" cy="435" r="34"/>
+  </g>
+  <g fill="#e7e1d7" font-family="Inter,Arial,sans-serif" text-anchor="middle">
+    <text x="600" y="235" font-size="26" letter-spacing="5">INFERRED</text>
+    <text x="600" y="272" font-size="22">shared ancestry context</text>
+    <text x="250" y="296" font-size="18">African apes</text>
+    <text x="950" y="296" font-size="18">Hominin lineages</text>
+    <text x="600" y="825" font-size="18" letter-spacing="3">NOT A RECOVERED SPECIES OR A PORTRAIT</text>
+  </g>
+</svg>
