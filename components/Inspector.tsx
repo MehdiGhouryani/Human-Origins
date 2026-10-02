@@ -1,7 +1,7 @@
 'use client'
 import {useMemo,useState} from 'react'
 import Link from 'next/link'
-import {Bookmark, ChevronRight, Database, ExternalLink, FlaskConical, Image as ImageIcon, MapPin} from 'lucide-react'
+import {Bookmark, ChevronRight, Database, ExternalLink, FlaskConical, Image as ImageIcon, MapPin, X} from 'lucide-react'
 import {motion} from 'motion/react'
 import MediaImage from './MediaImage'
 import type {ExplorerSpecies as Species} from '../features/explorer/types'
@@ -21,7 +21,7 @@ const mediaLabels={
   'context-schematic':'Context schematic',
 } as const
 
-export default function Inspector({bootstrap,species,onRevealSite}:{bootstrap:ExplorerBootstrap;species:Species;onRevealSite:(id:string)=>void}){
+export default function Inspector({bootstrap,species,onRevealSite,onClose}:{bootstrap:ExplorerBootstrap;species:Species;onRevealSite:(id:string)=>void;onClose?:()=>void}){
  const tabs=['Overview','Evidence','Specimens','Lifestyle','Genetics'] as const
  const [tab,setTab]=useState<typeof tabs[number]>('Overview'); const [bookmarked,setBookmarked]=useState(false)
  const m=findMedia(species.media,species.defaultMediaId)
@@ -29,12 +29,15 @@ export default function Inspector({bootstrap,species,onRevealSite}:{bootstrap:Ex
  const coexisting=useMemo(()=>getExplorerSpeciesList(bootstrap).filter(other=>other.id!==species.id&&other.id!=='common'&&species.id!=='common'&&rangesOverlap({olderMa:species.start,youngerMa:species.end},{olderMa:other.start,youngerMa:other.end})),[bootstrap,species])
  const lineage=useMemo(()=>{const links=getExplorerRelationships(bootstrap);const name=(id:string)=>getExplorerSpeciesList(bootstrap).find(item=>item.id===id)?.short??id;return {parents:links.filter(l=>l.type!=='gene-flow'&&String(l.to)===species.id).map(l=>name(String(l.from))),children:links.filter(l=>l.type!=='gene-flow'&&String(l.from)===species.id).map(l=>name(String(l.to)))}},[bootstrap,species.id])
  const lifestyleFacts=species.facts.filter(([label])=>/tool|locomotion|anatomy|brain|diet|habitat|range|region/i.test(label))
- if(!m) return <aside className="inspector"><div className="inspector-body"><h2>{species.name}</h2><p>{species.description}</p></div></aside>
+ if(!m) return <aside className="inspector"><div className="inspector-body">{onClose&&<button type="button" className="inspector-close" onClick={onClose} aria-label="Close dossier"><X size={16}/></button>}<h2>{species.name}</h2><p>{species.description}</p></div></aside>
  const focusTab=(next:typeof tabs[number])=>{setTab(next);requestAnimationFrame(()=>{const el=document.getElementById(`species-tab-${next.toLowerCase()}`);el?.focus();el?.scrollIntoView({block:'nearest',inline:'nearest'})})}
  const moveTab=(direction:1|-1)=>{const index=tabs.indexOf(tab);focusTab(tabs[(index+direction+tabs.length)%tabs.length])}
  const panelId=`species-panel-${tab.toLowerCase()}`
- return <motion.aside className="inspector" initial={{opacity:0,x:24}} animate={{opacity:1,x:0}} transition={{duration:.28,ease:[.22,1,.36,1]}}>
-  <button type="button" className="bookmark" aria-label={bookmarked?`Remove bookmark for ${species.name}`:`Bookmark ${species.name}`} aria-pressed={bookmarked} onClick={()=>setBookmarked(v=>!v)}><Bookmark size={16} fill={bookmarked?'currentColor':'none'}/></button>
+ return <motion.aside className="inspector" initial={{opacity:0,x:30}} animate={{opacity:1,x:0}} exit={{opacity:0,x:30}} transition={{duration:.24,ease:[.22,1,.36,1]}}>
+  <div className="inspector-top-actions">
+    {onClose&&<button type="button" className="inspector-close-btn" onClick={onClose} aria-label="Close details panel" title="Close"><X size={16}/></button>}
+    <button type="button" className="bookmark" aria-label={bookmarked?`Remove bookmark for ${species.name}`:`Bookmark ${species.name}`} aria-pressed={bookmarked} onClick={()=>setBookmarked(v=>!v)}><Bookmark size={15} fill={bookmarked?'currentColor':'none'}/></button>
+  </div>
   <figure className="species-visual">
     <MediaImage src={resolveMediaSrc(m,'detail',1024)} alt={m.alt} loading="eager" priority sizes="(max-width: 820px) 100vw, 455px" className="species-media-image"/>
 

@@ -21,27 +21,44 @@ export type ParsedAgeLabel=TimeInterval & {unit:TimeUnit}
 export const TIME_DOMAIN={oldestMa:8,youngestMa:0} as const
 
 /**
- * The one deep-time axis used everywhere (tree, timeline, scrubber ticks). Equal screen spacing between these
- * anchors, linear inside each segment, so every tick label sits exactly where its age is.
+ * The deep-time axis used everywhere (tree, timeline, scrubber ticks).
+ * Piecewise-linear segmentation gives ample room to the late Pleistocene hominin explosion
+ * without disconnecting from the deep 8 Ma evolutionary scale.
  */
-export const TIME_AXIS_ANCHORS_MA=[8,6,4,2,1,0.3,0] as const
-export function formatAxisAnchor(ageMa:number):string{return ageMa===0?'Present':ageMa>=1?`${ageMa} Ma`:`${Math.round(ageMa*1000)} ka`}
+export const TIME_AXIS_ANCHORS_MA=[8,4,2,0.5,0] as const
+const SEGMENT_CUMULATIVE_FRACTIONS=[0, 0.20, 0.40, 0.66, 1.00] as const
+
+export function formatAxisAnchor(ageMa:number):string{
+  return ageMa===0?'Present':ageMa>=1?`${ageMa} Ma`:`${Math.round(ageMa*1000)} ka`
+}
+
 /** 0 = oldest edge (8 Ma), 1 = present. */
 export function ageMaToFraction(ageMa:number):number{
-  const anchors=TIME_AXIS_ANCHORS_MA, segments=anchors.length-1
   const a=Math.max(TIME_DOMAIN.youngestMa,Math.min(TIME_DOMAIN.oldestMa,ageMa))
-  for(let i=0;i<segments;i++){
-    const older=anchors[i],younger=anchors[i+1]
-    if(a<=older && a>=younger) return (i+(older-a)/(older-younger))/segments
+  const anchors=TIME_AXIS_ANCHORS_MA
+  const fractions=SEGMENT_CUMULATIVE_FRACTIONS
+  for(let i=0;i<anchors.length-1;i++){
+    const older=anchors[i], younger=anchors[i+1]
+    if(a<=older && a>=younger){
+      const t=(older-a)/(older-younger)
+      return fractions[i]+t*(fractions[i+1]-fractions[i])
+    }
   }
   return 1
 }
+
 export function fractionToAgeMa(fraction:number):number{
-  const anchors=TIME_AXIS_ANCHORS_MA, segments=anchors.length-1
-  const f=Math.max(0,Math.min(1,fraction))*segments
-  const i=Math.min(segments-1,Math.floor(f))
-  const t=f-i
-  return anchors[i]+(anchors[i+1]-anchors[i])*t
+  const f=Math.max(0,Math.min(1,fraction))
+  const anchors=TIME_AXIS_ANCHORS_MA
+  const fractions=SEGMENT_CUMULATIVE_FRACTIONS
+  for(let i=0;i<fractions.length-1;i++){
+    const startF=fractions[i], endF=fractions[i+1]
+    if(f<=endF || i===fractions.length-2){
+      const t=(f-startF)/(endF-startF)
+      return anchors[i]+t*(anchors[i+1]-anchors[i])
+    }
+  }
+  return 0
 }
 export function sliderToAgeMa(value:number):number{return fractionToAgeMa(Math.max(0,Math.min(100,value))/100)}
 export function ageMaToSlider(ageMa:number):number{return ageMaToFraction(ageMa)*100}

@@ -11,6 +11,7 @@ const navItems=[
   ['Migration','/?mode=migration'],
   ['Evidence','/?mode=evidence'],
   ['Journey','/?journey=1'],
+  ['Compare Matrix','/compare'],
   ['About','/#about'],
 ] as const
 

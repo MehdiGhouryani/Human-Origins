@@ -2,7 +2,7 @@ import type {Metadata} from 'next'
 import type {CSSProperties} from 'react'
 import Link from 'next/link'
 import {notFound} from 'next/navigation'
-import {ArrowLeft,ArrowRight,CalendarDays,CheckCircle2,CircleDashed,Dna,ExternalLink,GitBranch,Image as ImageIcon,MapPin,Network,Users} from 'lucide-react'
+import {ArrowLeft,ArrowRight,CalendarDays,CheckCircle2,CircleDashed,Dna,ExternalLink,GitBranch,GitCompare,Image as ImageIcon,MapPin,Network,Users} from 'lucide-react'
 import MediaImage from '../../../components/MediaImage'
 import EvidenceGraph from '../../../components/EvidenceGraph'
 import SpecimenGallery from '../../../components/SpecimenGallery'
@@ -100,7 +100,8 @@ export default async function SpeciesPage({params}:Params){
         {portrait?.publicationStatus==='schematic'&&<p className="dossier-note" role="note">This graphic is schematic and does not show a recovered fossil appearance.</p>}
         <div className="dossier-actions">
           <Link className="cta" href={`/?species=${species.id}&mode=tree`}><span><GitBranch size={14}/> Show in the tree</span><ArrowRight size={14}/></Link>
-          <Link className="cta ghost" href={`/?species=${species.id}&mode=migration`}><span><MapPin size={14}/> Show on the globe</span><ArrowRight size={14}/></Link>
+          <Link className="cta ghost" href={`/?species=${species.id}&mode=migration`}><span><MapPin size={14}/> Show on globe</span><ArrowRight size={14}/></Link>
+          <Link className="cta ghost" href="/compare"><span><GitCompare size={14}/> Compare matrix</span><ArrowRight size={14}/></Link>
         </div>
       </div>
     </header>

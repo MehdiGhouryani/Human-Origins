@@ -190,15 +190,13 @@ const rawRelationships=[
     ]
   }
 ] as const
+
 type RawRelationship=typeof rawRelationships[number]
 const certaintyOf=(item:RawRelationship)=>item.type==='gene-flow'?'high' as const:item.type==='possible'?'debated' as const:'medium' as const
-// Every edge now names its own sources; the institutional species index is only a fallback for legacy context edges.
 const sourceIdsOf=(item:RawRelationship):readonly string[]=>'sourceIds' in item && item.sourceIds.length ? item.sourceIds : ['si-human-species-index']
 const roleOf=(item:RawRelationship)=>item.type==='gene-flow'?'supports' as const:'contextualizes' as const
 
 export const relationships:RelationshipRecord[]=rawRelationships.map(item=>({
-  // IDs are explicit and stable: deleting or reordering an edge never renames the others. Retired IDs are
-  // listed in migrations/ and must never be reused (tests/relationship-ids.test.ts).
   id:asRelationshipId(item.id),
   from:asTaxonId(item.from),
   to:asTaxonId(item.to),

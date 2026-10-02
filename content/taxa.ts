@@ -710,6 +710,7 @@ const rawTaxa=[
     "certainty": "high"
   }
 ] as const
+
 type RawTaxon=typeof rawTaxa[number]
 const certaintyOf=(item:RawTaxon)=>item.certainty
 const taxonomicStatusOf=(item:RawTaxon):TaxonomicStatus=>'taxonomicStatus' in item ? item.taxonomicStatus : 'accepted'
@@ -746,7 +747,6 @@ export const taxa:TaxonRecord[]=rawTaxa.map(item=>{
         :taxonomicStatus==='informal'?'Informal population label; not a formally named species under the ICZN.'
         :taxonomicStatus==='debated'?'Species status or boundaries are actively debated; see the competing hypotheses and sources.':undefined,
     },
-    // Chronology certainty is curated per taxon (it used to be hard-coded to "high" for every species).
     chronology:{olderMa:item.start,youngerMa:item.end,label:item.date,sourceIds:item.sourceIds.map(asSourceId),estimateKind:item.start===item.end?'point' as const:'interval' as const,certainty:certaintyOf(item)},
     sourceLinks:item.sourceIds.map(sourceId=>({sourceId:asSourceId(String(sourceId)),role:'contextualizes' as const})),
   }

@@ -15,6 +15,8 @@ import {findMedia,resolveMediaSrc} from '../presentation/mediaDelivery'
 const colorFor=(species:ExplorerSpecies)=>groupColors[species.group as keyof typeof groupColors] ?? '#28a9ff'
 const initials=(short:string)=>short.replace(/[^A-Za-z ]/g,' ').split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase()
 
+const CANONICAL_MAIN_IDS = new Set(['common', 'sahelanthropus', 'ardipithecus', 'afarensis', 'africanus', 'boisei', 'habilis', 'erectus', 'heidelbergensis', 'neanderthal', 'denisovan', 'sapiens'])
+
 type Props={bootstrap:ExplorerBootstrap;selected:string;setSelected:(id:string)=>void;time:number}
 
 export default function EvolutionTree({bootstrap,selected,setSelected,time}:Props){
@@ -27,11 +29,8 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
     const svg=select(svgRef.current)
     const root=svg.select('.zoom-root')
     const behavior=zoom<SVGSVGElement,unknown>()
-      // Plain wheel scrolls the page; Ctrl/⌘+wheel (and trackpad pinch, which sends ctrlKey) zooms.
       .filter((event:{type:string;ctrlKey?:boolean;metaKey?:boolean;button?:number;touches?:{length:number}})=>{
         if(event.type==='wheel') return Boolean(event.ctrlKey||event.metaKey)
-        // Touch: one finger is left to the browser so the panel scrolls natively (and the page never gets trapped);
-        // two fingers pinch-zoom the tree.
         if(event.type.startsWith('touch')) return (event.touches?.length??0)>1
         return !event.ctrlKey&&!event.button
       })
@@ -40,8 +39,7 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
     svg.call(behavior)
     return ()=>{svg.on('.zoom',null)}
   },[])
-  // Small screens show the tree inside a horizontally scrollable panel. Keep the selected taxon in view
-  // (it is often far right, e.g. the default Neanderthal) without ever scrolling the page vertically.
+
   useEffect(()=>{
     const svgEl=svgRef.current
     const shell=svgEl?.closest<HTMLElement>('.tree-shell')
@@ -55,18 +53,20 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
     const inY=shell.scrollHeight<=shell.clientHeight+4||(nodeY>40&&nodeY<shell.clientHeight-40)
     if(inX&&inY) return
     const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    // Only the panel scrolls (scrollTo on the shell), never the page.
     shell.scrollTo({
       left:inX?shell.scrollLeft:Math.max(0,shell.scrollLeft+nodeX-shell.clientWidth/2),
       top:inY?shell.scrollTop:Math.max(0,shell.scrollTop+nodeY-shell.clientHeight/2),
       behavior:reduce?'auto':'smooth',
     })
   },[selected])
+
   const zoomBy=useCallback((factor:number)=>{if(svgRef.current&&zoomRef.current) select(svgRef.current).call(zoomRef.current.scaleBy,factor)},[])
   const resetZoom=useCallback(()=>{if(svgRef.current&&zoomRef.current) select(svgRef.current).call(zoomRef.current.transform,zoomIdentity)},[])
 
-  const species=getExplorerSpeciesList(bootstrap)
-  const links=getExplorerRelationships(bootstrap)
+  const allSpecies=getExplorerSpeciesList(bootstrap)
+  const rawLinks=getExplorerRelationships(bootstrap)
+  const species=useMemo(()=>allSpecies.filter(s=>CANONICAL_MAIN_IDS.has(s.id)),[allSpecies])
+  const links=useMemo(()=>rawLinks.filter(l=>CANONICAL_MAIN_IDS.has(String(l.from))&&CANONICAL_MAIN_IDS.has(String(l.to))),[rawLinks])
   const age=sliderToAgeMa(time)
   const treeLayout=useMemo(()=>computeTreeLayout(species),[species])
   const layout=treeLayout.nodes
@@ -98,8 +98,13 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
             const alive=age<=s.start&&age>=s.end;
             const isSelected=s.id===selected;
             const onLineage=lineage.has(s.id);
-            const op=isSelected?1:alive?0.92:onLineage?0.85:0.72;
-            return <rect key={s.id} className={`tree-bar ${alive?'alive':''} ${isSelected?'is-selected':''}`} x={g.x} y={g.y-3.5} width={Math.max(4,g.endX-g.x)} height={7} rx={3.5} fill={colorFor(s)} opacity={op}/>
+            const barWidth=Math.max(4,g.endX-g.x);
+            if(barWidth<=6) return null;
+            const op=isSelected?0.85:alive?0.75:onLineage?0.55:0.3;
+            return <g key={s.id} className="species-lifespan-track">
+              <rect className={`tree-bar ${alive?'alive':''} ${isSelected?'is-selected':''}`} x={g.x} y={g.y-2.5} width={barWidth} height={5} rx={2.5} fill={colorFor(s)} opacity={op}/>
+              <line x1={g.endX} x2={g.endX} y1={g.y-4.5} y2={g.y+4.5} stroke={colorFor(s)} strokeWidth={1.8} opacity={Math.min(1,op+0.25)} strokeLinecap="round"/>
+            </g>
           })}
         </g>
 
@@ -110,7 +115,11 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
             if(!parent||!child||!pg||!cg) return null
             const onLineage=lineage.has(parent.id)&&lineage.has(child.id)
             const isPossible=link.type==='possible'
-            return <path key={String(link.id)} d={branchPath({...parent,...pg},{...child,...cg})} fill="none" stroke={colorFor(child)} strokeWidth={onLineage?3.2:1.8} strokeLinecap="round" strokeDasharray={isPossible?'5 5':undefined} opacity={onLineage?1:0.78}/>
+            const d=branchPath({...parent,...pg},{...child,...cg})
+            return <g key={String(link.id)} className="branch-edge">
+              <path d={d} fill="none" stroke="#061214" strokeWidth={onLineage?6.5:4.5} strokeLinecap="round" strokeDasharray={isPossible?'5 5':undefined}/>
+              <path d={d} fill="none" stroke={colorFor(child)} strokeWidth={onLineage?3.2:1.8} strokeLinecap="round" strokeDasharray={isPossible?'5 5':undefined} opacity={onLineage?1:0.78}/>
+            </g>
           })}
           {links.filter(link=>link.type==='gene-flow').map(link=>{
             const a=layout[String(link.from)],b=layout[String(link.to)]
@@ -122,11 +131,12 @@ export default function EvolutionTree({bootstrap,selected,setSelected,time}:Prop
             const arcOffset=28
             const pathD=`M${x} ${top+6} C${x+arcOffset} ${top+(bottom-top)*0.28} ${x+arcOffset} ${top+(bottom-top)*0.72} ${x} ${bottom-6}`
             return <g key={String(link.id)} className={`gene-flow ${active?'active':''}`} opacity={active?1:0.85}>
+              <path d={pathD} fill="none" stroke="#061214" strokeWidth={active?5.5:3.8} strokeLinecap="round"/>
               <path d={pathD} fill="none" stroke={relationshipColors['gene-flow']} strokeWidth={active?2.8:1.8} strokeDasharray="3 4" strokeLinecap="round"/>
               <circle cx={x} cy={top} r={4.5} fill={relationshipColors['gene-flow']}/>
               <circle cx={x} cy={bottom} r={4.5} fill={relationshipColors['gene-flow']}/>
               <g transform={`translate(${x+arcOffset+4}, ${midY})`}>
-                <rect x={0} y={-9} width={74} height={18} rx={9} fill="rgba(6, 17, 19, 0.92)" stroke={relationshipColors['gene-flow']} strokeWidth={1}/>
+                <rect x={0} y={-9} width={74} height={18} rx={9} fill="rgba(6, 17, 19, 0.94)" stroke={relationshipColors['gene-flow']} strokeWidth={1}/>
                 <text x={37} y={3.5} textAnchor="middle" fill="#f472b6" fontSize={9} fontWeight={600} fontFamily="var(--font-ui)">⇄ ~{Math.round(flowAge*1000)} ka</text>
               </g>
             </g>
