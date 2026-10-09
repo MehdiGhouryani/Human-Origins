@@ -92,24 +92,6 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
       </AnimatePresence>
     </main>
 
-    {current&&!isInferredNode(current)&&<div className="mobile-species-dock" aria-label="Selected species quick bar">
-      <div className="mobile-species-dock-content">
-        <div className="mobile-species-dock-info">
-          <strong className="mobile-species-dock-name">{current.name}</strong>
-          <span className="mobile-species-dock-date">{current.date}</span>
-        </div>
-        <div className="mobile-species-dock-actions">
-          <Link href={`/species/${current.id}`} className="mobile-species-dock-profile-btn" title="Open full profile">
-            <span>View page</span>
-            <ChevronRight size={13}/>
-          </Link>
-          <button type="button" className="mobile-species-dock-scroll-btn" onClick={()=>{setInspectorOpen(true);setTimeout(()=>document.querySelector('.inspector')?.scrollIntoView({behavior:'smooth',block:'start'}),50)}} aria-label="Scroll to inspector">
-            Dossier ↓
-          </button>
-        </div>
-      </div>
-    </div>}
-
     <footer id="about" className="evidence-strip"><div><b>◉</b><strong>Fossil Record</strong><small>Physical evidence of our past.</small></div><div><b>〽</b><strong>Genetic Evidence</strong><small>Ancient DNA and population history.</small></div><div><b>◈</b><strong>Archaeology</strong><small>Tools, sites and behavior.</small></div><div><b>▤</b><strong>Geology & Dating</strong><small>Stratigraphy and age estimates.</small></div><em>Evidence · interpretation · provenance<small>Human Origins research interface</small></em></footer>
 
   </></MotionConfig>

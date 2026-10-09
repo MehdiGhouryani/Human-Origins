@@ -25,7 +25,6 @@ import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,useSy
 
 const useIsomorphicLayoutEffect=typeof window!=='undefined'?useLayoutEffect:useEffect
 import {Crosshair,GitBranch,List,Maximize2,Minus,Plus,Route} from 'lucide-react'
-import {useRouter} from 'next/navigation'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {ExplorerSpecies} from '../features/explorer/types'
 import {getExplorerSourceById} from '../features/explorer/selectors'
@@ -151,8 +150,8 @@ const GeneFlowArc=memo(function GeneFlowArc({flow,label,active,onHover,onPin}:Ge
   </g>
 })
 
-type NodeProps={species:ExplorerSpecies;node:GraphLayout['nodes'][string];r:number;isSelected:boolean;alive:boolean;onLineage:boolean;partner:boolean;iconFailed:boolean;onFailed:(id:string)=>void;onSelect:(id:string)=>void;onNavigate:(id:string)=>void;onKeyNav:(event:ReactKeyboardEvent,id:string)=>void;registerRef:(id:string,el:SVGGElement|null)=>void}
-const GraphNode=memo(function GraphNode({species,node,r,isSelected,alive,onLineage,partner,iconFailed,onFailed,onSelect,onNavigate,onKeyNav,registerRef}:NodeProps){
+type NodeProps={species:ExplorerSpecies;node:GraphLayout['nodes'][string];r:number;isSelected:boolean;alive:boolean;onLineage:boolean;partner:boolean;iconFailed:boolean;onFailed:(id:string)=>void;onSelect:(id:string)=>void;onKeyNav:(event:ReactKeyboardEvent,id:string)=>void;registerRef:(id:string,el:SVGGElement|null)=>void}
+const GraphNode=memo(function GraphNode({species,node,r,isSelected,alive,onLineage,partner,iconFailed,onFailed,onSelect,onKeyNav,registerRef}:NodeProps){
   const inferred=isInferredNode(species)
   const media=findMedia(species.media,species.treeIconId)
   const showIcon=Boolean(media&&!iconFailed)
@@ -161,17 +160,7 @@ const GraphNode=memo(function GraphNode({species,node,r,isSelected,alive,onLinea
   const dateY=node.labelSide==='above'?-r-7:r+28
   const clipId=`atlas-graph-clip-${species.id}`
   const ref=useCallback((el:SVGGElement|null)=>registerRef(species.id,el),[registerRef,species.id])
-  return <g ref={ref} className={`atlas-graph-node ${isSelected?'selected':''} ${alive?'in-time':'out-time'} ${onLineage?'on-lineage':''} ${partner?'gene-partner':''}`} transform={`translate(${node.x} ${node.y})`} tabIndex={isSelected?0:-1} role="button" aria-pressed={isSelected} aria-label={`${species.name}, ${species.date}${inferred?', inferred node':''}`} data-taxon={species.id} onClick={()=>{
-    if (isSelected && !inferred) {
-      onNavigate(species.id)
-    } else {
-      onSelect(species.id)
-    }
-  }} onDoubleClick={()=>{
-    if (!inferred) {
-      onNavigate(species.id)
-    }
-  }} onKeyDown={event=>onKeyNav(event,species.id)}>
+  return <g ref={ref} className={`atlas-graph-node ${isSelected?'selected':''} ${alive?'in-time':'out-time'} ${onLineage?'on-lineage':''} ${partner?'gene-partner':''}`} transform={`translate(${node.x} ${node.y})`} tabIndex={isSelected?0:-1} role="button" aria-pressed={isSelected} aria-label={`${species.name}, ${species.date}${inferred?', inferred node':''}`} data-taxon={species.id} onClick={()=>onSelect(species.id)} onKeyDown={event=>onKeyNav(event,species.id)}>
     <circle className="atlas-graph-halo" r={isSelected?r+9:0}/>
     {/* Finger-sized hit target (r+12 ≈ 44px at 100%), drawn transparent. */}
     <circle r={r+12} fill="transparent"/>
@@ -224,13 +213,6 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
   const byId=useMemo(()=>new Map(species.map(item=>[item.id,item])),[species])
   const linkById=useMemo(()=>new Map(links.map(link=>[String(link.id),link])),[links])
   const currentAge=useMemo(()=>sliderToAgeMa(time),[time])
-  let router: { push: (url: string) => void }
-  try {
-    router = useRouter()
-  } catch {
-    router = { push: (url: string) => { if (typeof window !== 'undefined') window.location.href = url } }
-  }
-  const navigate=useCallback((id:string)=>router.push(`/species/${id}`),[router])
 
   const [wrapRef,containerWidth]=useElementWidth<HTMLDivElement>()
   const canvasRef=useRef<HTMLDivElement>(null)
@@ -433,7 +415,7 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
           <g className="atlas-graph-edges">{layout.edges.map(edge=>{const link=linkById.get(edge.id),child=link?byId.get(String(link.to)):undefined;return link&&child?<Edge key={edge.id} edge={edge} link={link} stroke={colorFor(child)} active={edge.id===activeId} related={lineage.has(String(link.from))&&lineage.has(String(link.to))} onHover={setHover} onPin={pin}/>:null})}</g>
           <g className="atlas-graph-gene-flow">{layout.geneFlow.map(flow=><GeneFlowArc key={flow.id} flow={flow} label={formatEventAge(linkById.get(flow.id)?.eventAgeMa)} active={flow.id===activeId} onHover={setHover} onPin={pin}/>)}</g>
           <line className="atlas-graph-cursor" x1={cursorX} x2={cursorX} y1={layout.plot.top} y2={layout.plot.bottom}/>
-          <g className="atlas-graph-nodes">{species.map(item=>{const node=layout.nodes[item.id];return node?<GraphNode key={item.id} species={item} node={node} r={layout.nodeRadius} isSelected={item.id===selected} alive={!isInferredNode(item)&&currentAge<=item.start&&currentAge>=item.end} onLineage={lineage.has(item.id)} partner={partners.has(item.id)} iconFailed={failed.has(item.id)} onFailed={onFailed} onSelect={select} onNavigate={navigate} onKeyNav={onKeyNav} registerRef={registerRef}/>:null})}</g>
+          <g className="atlas-graph-nodes">{species.map(item=>{const node=layout.nodes[item.id];return node?<GraphNode key={item.id} species={item} node={node} r={layout.nodeRadius} isSelected={item.id===selected} alive={!isInferredNode(item)&&currentAge<=item.start&&currentAge>=item.end} onLineage={lineage.has(item.id)} partner={partners.has(item.id)} iconFailed={failed.has(item.id)} onFailed={onFailed} onSelect={select} onKeyNav={onKeyNav} registerRef={registerRef}/>:null})}</g>
         </svg>
       </div>
       :<div className="atlas-graph-list" style={{height:vertical.height}}>
@@ -449,13 +431,7 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
           const alive=!inferred&&currentAge<=item.start&&currentAge>=item.end
           const left=ageMaToFraction(item.start)*100,right=ageMaToFraction(item.end)*100
           return <li key={row.id} className="atlas-graph-list-item" style={{top:row.y-vertical.rowHeight/2,height:vertical.rowHeight,left:vertical.gutter}}>
-            <button type="button" onClick={()=>{
-              if (isSelected && !inferred) {
-                navigate(item.id)
-              } else {
-                setSelected(item.id)
-              }
-            }} className={`atlas-graph-row ${isSelected?'selected':''} ${alive?'in-time':''} ${lineage.has(item.id)?'on-lineage':''}`} aria-pressed={isSelected} aria-label={`${item.name}, ${inferred?'inferred node':item.date}${alive?', alive at the selected time':''}`} style={{'--clade':colorFor(item)} as CSSProperties}>
+            <button type="button" onClick={()=>setSelected(item.id)} className={`atlas-graph-row ${isSelected?'selected':''} ${alive?'in-time':''} ${lineage.has(item.id)?'on-lineage':''}`} aria-pressed={isSelected} aria-label={`${item.name}, ${inferred?'inferred node':item.date}${alive?', alive at the selected time':''}`} style={{'--clade':colorFor(item)} as CSSProperties}>
               <span className="atlas-graph-row-avatar" aria-hidden="true">{media&&!failed.has(item.id)
                 ?(
                 // eslint-disable-next-line @next/next/no-img-element

@@ -1,7 +1,5 @@
 'use client'
 import {memo,useEffect,useMemo,useRef} from 'react'
-import Link from 'next/link'
-import {useRouter} from 'next/navigation'
 import {Bookmark,ChevronLeft,ChevronRight} from 'lucide-react'
 import MediaImage from './MediaImage'
 import type {ExplorerSpecies} from '../features/explorer/types'
@@ -19,12 +17,6 @@ type Props={species:readonly ExplorerSpecies[];selectedId:string;onSelect:(id:st
  * tabindex); arrow keys move through taxa oldest → youngest, Home/End jump to the ends.
  */
 function TaxonNavigator({species,selectedId,onSelect,savedIds}:Props){
-  let router: { push: (url: string) => void }
-  try {
-    router = useRouter()
-  } catch {
-    router = { push: (url: string) => { if (typeof window !== 'undefined') window.location.href = url } }
-  }
   const scrollRef=useRef<HTMLDivElement>(null)
   const ordered=useMemo(()=>orderTaxa(species),[species])
   const groups=useMemo(()=>groupTaxaByClade(ordered),[ordered])
@@ -52,13 +44,9 @@ function TaxonNavigator({species,selectedId,onSelect,savedIds}:Props){
   return <nav className="taxon-nav" aria-label="Taxa, oldest to youngest">
     <div className="taxon-nav-bar">
       <div className="taxon-nav-info">
-        <p className="taxon-nav-count" aria-live="polite">{selected?`${index} of ${total} · ${selected.group}`:`${total} taxa`}</p>
-        {selected&&!isInferredNode(selected)&&(
-          <Link href={`/species/${selected.id}`} className="taxon-nav-profile-btn" title={`Open ${selected.short} species dossier`}>
-            <span>View {selected.short} page</span>
-            <ChevronRight size={13}/>
-          </Link>
-        )}
+        <p className="taxon-nav-count" aria-live="polite">
+          <span className="sr-only">{selected?`${index} of ${total} · ${selected.group}` : `${total} taxa`}</span>
+        </p>
       </div>
       <div className="taxon-nav-actions">
         <button type="button" onClick={()=>older&&onSelect(older.id)} disabled={!older} aria-label={older?`Previous, older taxon: ${older.short}`:'No older taxon'}><ChevronLeft size={16}/></button>
@@ -76,25 +64,13 @@ function TaxonNavigator({species,selectedId,onSelect,savedIds}:Props){
             className={`taxon-chip ${isSelected?'selected':''} ${isInferredNode(taxon)?'inferred':''}`}
             aria-current={isSelected?'true':undefined}
             tabIndex={tabStop}
-            onClick={()=>{
-              if (isSelected && !isInferredNode(taxon)) {
-                router.push(`/species/${taxon.id}`)
-              } else {
-                onSelect(taxon.id)
-              }
-            }}
-            onDoubleClick={()=>{
-              if (!isInferredNode(taxon)) {
-                router.push(`/species/${taxon.id}`)
-              }
-            }}
-            title={!isInferredNode(taxon) ? (isSelected ? `Click again to open full ${taxon.short} page` : `Select ${taxon.short}`) : undefined}
+            onClick={()=>onSelect(taxon.id)}
+            title={!isInferredNode(taxon) ? `Select ${taxon.short}` : undefined}
             onKeyDown={e=>move(e,flat)}
           >
             <span className="taxon-chip-thumb">{media&&<MediaImage src={resolveMediaSrc(media,'icon',256)} alt="" loading="lazy" sizes="48px" className="species-thumb-image" fallbackText={taxonInitials(taxon.short)}/>}</span>
             <span className="taxon-chip-text"><strong>{taxon.short}</strong><small>{compactDate(taxon.date)}</small></span>
             {isInferredNode(taxon)&&<span className="taxon-chip-tag">Inferred</span>}
-            {isSelected&&!isInferredNode(taxon)&&<span className="taxon-chip-action" aria-hidden="true">Page →</span>}
             {savedIds.has(taxon.id)&&<Bookmark size={12} fill="currentColor" className="taxon-chip-saved" aria-label="Saved"/>}
           </button></li>})}
         </ul>
