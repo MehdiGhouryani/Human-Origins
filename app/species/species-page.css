@@ -1,0 +1,124 @@
+/* Species page: scientific text, certainty badges, citations, reference list.
+   Tokens come from :root in globals.css; the four certainty colours are the only new values. */
+.species-page{
+  --sp-ink:var(--text);
+  --sp-quiet:var(--muted);
+  --sp-line:var(--line);
+  --sp-surface:var(--panel);
+  --sp-accent:var(--dossier-accent,var(--gold));
+  --sp-measure:68ch;
+  --cert-established:#7fd1b9;
+  --cert-estimated:#e8bd70;
+  --cert-debated:#e58aa8;
+  --cert-unknown:#9aa7a5;
+}
+
+.sp-layout{display:grid;gap:18px;grid-template-columns:minmax(0,1fr);align-items:start}
+.sp-main{display:grid;gap:18px;min-width:0}
+
+/* ---- in-page navigation ---- */
+.sp-nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--sp-line);margin:0 -14px;padding:0 14px}
+.sp-nav-title{display:none}
+.sp-nav ul{display:flex;gap:6px;list-style:none;margin:0;padding:8px 0;overflow-x:auto;scrollbar-width:none}
+.sp-nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border:1px solid var(--sp-line);border-radius:999px;color:var(--sp-quiet);font-size:13px;white-space:nowrap;text-decoration:none}
+.sp-nav a:hover,.sp-nav a:focus-visible{color:var(--sp-ink);border-color:var(--sp-accent)}
+
+/* ---- cards and prose ---- */
+.sp-card,.sp-section,.sp-references{background:var(--sp-surface);border:1px solid var(--sp-line);border-radius:12px;padding:16px;scroll-margin-top:72px}
+.sp-card h2,.sp-section h2,.sp-references h2{font-family:var(--font-display);font-size:24px;line-height:1.2;margin:0;color:var(--sp-ink);font-weight:600}
+.sp-section>details>summary,.sp-references>details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.sp-section>details>summary::-webkit-details-marker,.sp-references>details>summary::-webkit-details-marker{display:none}
+.sp-section>details>summary::after,.sp-references>details>summary::after{content:'+';color:var(--sp-quiet);font-size:20px}
+.sp-section>details[open]>summary::after,.sp-references>details[open]>summary::after{content:'−'}
+.sp-prose{max-width:var(--sp-measure);font-size:16px;line-height:1.65;color:var(--sp-ink)}
+.sp-prose p,.sp-prose ul{margin:12px 0 0}
+.sp-prose li{margin:6px 0}
+.sp-prose em,.sp-fact em,.sp-debate em{font-style:italic}
+.sp-note{margin:12px 0 0;padding:10px 12px;border-left:3px solid var(--sp-accent);background:var(--panel2);font-size:15px;border-radius:0 8px 8px 0}
+.sp-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:15px}
+.sp-table caption{text-align:left;color:var(--sp-quiet);font-size:13px;padding-bottom:6px}
+.sp-table th,.sp-table td{text-align:left;padding:8px 10px;border-top:1px solid var(--sp-line);vertical-align:top}
+.sp-table th{width:34%;color:var(--sp-quiet);font-weight:500}
+.sp-single{color:var(--sp-quiet);font-size:13px}
+
+/* ---- at a glance ---- */
+.sp-facts{margin:12px 0 0;display:grid;gap:0}
+.sp-fact{display:grid;gap:4px;padding:10px 0;border-top:1px solid var(--sp-line)}
+.sp-fact dt{color:var(--sp-quiet);font-size:13px;letter-spacing:.02em}
+.sp-fact dd{margin:0;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;justify-content:space-between;font-size:16px;line-height:1.5}
+.sp-fact-value{min-width:0;flex:1 1 220px}
+.sp-badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;border:1px solid currentColor;font-size:12px;line-height:20px;white-space:nowrap}
+.sp-badge-established{color:var(--cert-established)}
+.sp-badge-estimated{color:var(--cert-estimated)}
+.sp-badge-debated{color:var(--cert-debated)}
+.sp-badge-unknown{color:var(--cert-unknown)}
+
+/* ---- citations ---- */
+.sp-cite{font-size:11px;line-height:0;margin-left:2px;white-space:nowrap}
+.sp-cite a{color:var(--sp-accent);text-decoration:none;padding:6px 2px;font-size:12px}
+.sp-cite a:hover,.sp-cite a:focus-visible{text-decoration:underline}
+.sp-cite-sep{color:var(--sp-quiet);padding:0 1px}
+
+/* ---- debates ---- */
+.sp-debates>h2,.sp-unknowns>h2{margin-bottom:6px}
+.sp-debate{margin-top:14px;padding-top:14px;border-top:1px solid var(--sp-line)}
+.sp-debate h3{font-size:18px;line-height:1.35;margin:0;color:var(--sp-ink)}
+.sp-positions{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px;max-width:var(--sp-measure)}
+.sp-positions li{padding:10px 12px;border:1px solid var(--sp-line);border-radius:10px}
+.sp-positions strong{font-size:14px;color:var(--sp-accent)}
+.sp-positions p{margin:4px 0 0;font-size:15px;line-height:1.6}
+.sp-updated{margin:10px 0 0;color:var(--sp-quiet);font-size:13px}
+.sp-unknowns ul{margin:8px 0 0;padding-left:20px;max-width:var(--sp-measure);font-size:15px;line-height:1.6}
+
+/* ---- references ---- */
+.sp-reflist{margin:10px 0 0;padding-left:26px;display:grid;gap:10px;font-size:12.5px;line-height:1.45;color:var(--sp-quiet)}
+.sp-reflist li{padding-left:4px;scroll-margin-top:72px}
+.sp-reflist li:target{outline:1px solid var(--sp-accent);outline-offset:4px;border-radius:4px}
+.sp-ref-text em{color:var(--sp-ink)}
+.sp-reflist a{color:var(--sp-accent);overflow-wrap:anywhere}
+.sp-ref-meta{display:inline-flex;gap:8px;align-items:center;margin-left:8px}
+.sp-ref-kind{border:1px solid var(--sp-line);border-radius:999px;padding:0 8px;font-size:12px}
+.sp-ref-back{text-decoration:none;padding:6px}
+.sp-copy{background:none;border:1px solid var(--sp-line);color:var(--sp-quiet);border-radius:6px;font-size:12px;min-height:28px;padding:0 8px;cursor:pointer}
+.sp-copy:hover,.sp-copy:focus-visible{color:var(--sp-ink);border-color:var(--sp-accent)}
+
+/* ---- wide screens ---- */
+@media (min-width:1024px){
+  .sp-layout:not(.sp-layout-plain){grid-template-columns:200px minmax(0,1fr);gap:28px}
+  .sp-nav{top:72px;margin:0;padding:0;border:0;background:none}
+  .sp-nav-title{display:block;margin:0 0 8px;color:var(--sp-quiet);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  .sp-nav ul{flex-direction:column;overflow:visible;padding:0;gap:2px}
+  .sp-nav a{border:0;border-radius:6px;border-left:2px solid transparent;border-top-left-radius:0;border-bottom-left-radius:0;padding:0 10px;min-height:36px}
+  .sp-nav a:hover,.sp-nav a:focus-visible{border-left-color:var(--sp-accent)}
+  .sp-card,.sp-section,.sp-references{padding:22px}
+}
+@media print{
+  .sp-nav,.sp-copy,.sp-ref-back{display:none}
+  .sp-section details,.sp-references details{display:block}
+  .sp-card,.sp-section,.sp-references{border:0;padding:0;background:none}
+  .sp-reflist{color:#000}
+}
+@media (prefers-reduced-motion:reduce){.species-page *{scroll-behavior:auto}}
+
+/* ---- images: slots, frames, captions ---- */
+.sp-hero{margin:0}
+.sp-hero .sp-figure,.sp-hero .sp-frame{width:100%}
+.sp-gallery-group{margin-top:16px}
+.sp-gallery-group h3{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--sp-quiet);margin:0 0 10px;font-weight:600}
+.sp-gallery-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
+.sp-figure{margin:0;display:grid;gap:8px;align-content:start}
+.sp-figure-frame{position:relative;width:100%;overflow:hidden;border-radius:10px;border:1px solid var(--sp-line);background:var(--panel2)}
+.sp-figure figcaption{display:grid;gap:3px;font-size:13px;line-height:1.45;color:var(--sp-quiet)}
+.sp-class{color:var(--sp-accent);font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.sp-figure-title{color:var(--sp-ink);font-size:14px}
+.sp-assumptions{margin-top:4px;font-size:13px}
+.sp-assumptions summary{cursor:pointer;color:var(--sp-accent);min-height:28px;display:flex;align-items:center}
+.sp-assumptions p{margin:6px 0 0}
+.sp-frame{display:grid;place-content:center;gap:4px;width:100%;padding:16px;text-align:center;border:1px dashed var(--sp-line);border-radius:10px;background:var(--panel2);color:var(--sp-quiet);font-size:13px;box-sizing:border-box}
+.sp-frame-text{color:var(--sp-ink);font-size:14px}
+.sp-frame-meta,.sp-frame-code{font-size:12px}
+.sp-frame-code{font-family:var(--font-mono,monospace);color:var(--sp-accent)}
+.sp-frame-admin{border-color:var(--sp-accent)}
+.sp-frame-locked{opacity:.8}
+.sp-frame-upload{justify-self:center;margin-top:6px;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid var(--sp-accent);border-radius:999px;color:var(--sp-accent);text-decoration:none;font-size:13px}
+.sp-frame-upload:hover,.sp-frame-upload:focus-visible{background:var(--sp-accent);color:var(--bg)}

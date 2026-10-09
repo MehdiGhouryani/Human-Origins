@@ -1,0 +1,313 @@
+{
+  "version": "32.5",
+  "rules": {
+    "hero": "1920x440 WebP",
+    "neanderthalReconstruction": "1024x1024 WebP",
+    "speciesMedia": "Species-specific specimen/cast/reconstruction media; each item carries source + license metadata",
+    "commonAncestor": "Original schematic; not a recovered species portrait",
+    "externalMediaPolicy": "All built-in production media is self-hosted. Real media enters through the CMS with source and rights metadata.",
+    "architecture": "Production UI references active canonical media records. Legacy assets have an explicit migration disposition and are not shipped. Canonical media carries provenance/rights metadata, explicit roles/variants and research subject typing. The Explorer client consumes only a frozen server-built read model. Phase 2 normalizes taxonomy, taxon names, publication, institution, specimen/material, occurrence and site-context entities, publishes deterministic inverse indexes, enforces semantic integrity, exposes a deterministic graph projection, and documents append-only migration strategy. Phase 2 adds qualitative claim uncertainty profiles and source-backed interpretation sets without numeric confidence ranking. Phase 3 adds cycle-safe graph traversal (adjacency lookup, breadth-first search, shortest path) and a claim provenance-chain query on top of the existing graph projection. Phase 4 (V25) records each site's dating method and, where a published figure exists, its numeric uncertainty, instead of leaving those fields unset."
+  },
+  "assets": [
+    {
+      "id": "hero-evolution",
+      "path": "/assets/hero-evolution.webp",
+      "kind": "hero",
+      "width": 1920,
+      "height": 440,
+      "format": "webp",
+      "role": "hero background",
+      "bytes": 68230,
+      "sha256": "6830afdca25f921614c94126ad98ffedc92479755f1bf26dca3e77dae9b8aa55"
+    },
+    {
+      "id": "sample-afarensis-icon",
+      "path": "/assets/species/samples/afarensis-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12186,
+      "sha256": "a4ca25030b338e36e8310749aa3317b319f31f9b5211bbcec8aabb78faaa95f0"
+    },
+    {
+      "id": "sample-afarensis",
+      "path": "/assets/species/samples/afarensis.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 45442,
+      "sha256": "5c4f24476035394a9400d7b054db776ec5c9501cc01323af328275e824c729a8"
+    },
+    {
+      "id": "sample-africanus-icon",
+      "path": "/assets/species/samples/africanus-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12156,
+      "sha256": "07e57e619170224b6f9a763205fe099eee917fb11034eeb364fc5fdf934bc5d7"
+    },
+    {
+      "id": "sample-africanus",
+      "path": "/assets/species/samples/africanus.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 44900,
+      "sha256": "0067e5e75a152a3c92fae6e9018705c74fc42d2f4caa4344c4190c6d4817c4ca"
+    },
+    {
+      "id": "sample-anamensis-icon",
+      "path": "/assets/species/samples/anamensis-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12214,
+      "sha256": "c52dfd9a420b984c3b20775c62e5bd792d40f7c0ce87a3d2bc99fe38fd6ba1d3"
+    },
+    {
+      "id": "sample-anamensis",
+      "path": "/assets/species/samples/anamensis.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 45534,
+      "sha256": "6b9f934bb3fc27c7303c19f169b26bc57152d6f01c33c76b26347bd86989d9fe"
+    },
+    {
+      "id": "sample-ardipithecus-icon",
+      "path": "/assets/species/samples/ardipithecus-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12098,
+      "sha256": "5949e31fd9feb7452d5dd97b265e1a5b79646e9d61a502d779e5c9664141d03f"
+    },
+    {
+      "id": "sample-ardipithecus",
+      "path": "/assets/species/samples/ardipithecus.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 45226,
+      "sha256": "89e2f4cb2e9c9641f58280ff040aa893f72e9b824d8fead2bb4bbbf597e2c787"
+    },
+    {
+      "id": "sample-boisei-icon",
+      "path": "/assets/species/samples/boisei-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 10982,
+      "sha256": "de2bec1d4466e0a4e2644624f7c23dcc81bd47ccf44bd4ef1f4d59226d8a59a4"
+    },
+    {
+      "id": "sample-boisei",
+      "path": "/assets/species/samples/boisei.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 42430,
+      "sha256": "855ec4cc9d4eac5c0df9974079408c8e39d1d19b94df7cbf7959963c73cf0946"
+    },
+    {
+      "id": "sample-common-icon",
+      "path": "/assets/species/samples/common-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12534,
+      "sha256": "893cacc0ecf87a81efdc7785acbae85dc33d182f240546855aa6d3d1176fc4b7"
+    },
+    {
+      "id": "sample-common",
+      "path": "/assets/species/samples/common.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 46320,
+      "sha256": "0ddc4108cd42e07cf44d4303b6213d802c064484fdc2041793a8c54d60eabdc6"
+    },
+    {
+      "id": "sample-denisovan-icon",
+      "path": "/assets/species/samples/denisovan-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 10836,
+      "sha256": "a4715e5552976f1f711d8cc945fc1c04ee8e366faad2a26ce2acdb177313911d"
+    },
+    {
+      "id": "sample-denisovan",
+      "path": "/assets/species/samples/denisovan.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 38248,
+      "sha256": "ab96d6d9eabc89c010f379d06445a40fab320c73734831c5f6dc5648c588acab"
+    },
+    {
+      "id": "sample-erectus-icon",
+      "path": "/assets/species/samples/erectus-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12178,
+      "sha256": "ce8ead79eea3674c63f53e483d968669196792e47f102201a7ea31d997224b8c"
+    },
+    {
+      "id": "sample-erectus",
+      "path": "/assets/species/samples/erectus.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 43384,
+      "sha256": "22f245ff347031698a0994dec36bfbacde7693b63282f173ebc225c704d5231e"
+    },
+    {
+      "id": "sample-ergaster-icon",
+      "path": "/assets/species/samples/ergaster-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12222,
+      "sha256": "d14a7651200dffefe686d7d52b789033f7751d78a1cd427c1f1ccf7617b860b2"
+    },
+    {
+      "id": "sample-ergaster",
+      "path": "/assets/species/samples/ergaster.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 43044,
+      "sha256": "8210123650f4cf28d6aecf5bdc22da02efec59547bbf9d7aeff9b6e5cf09c294"
+    },
+    {
+      "id": "sample-floresiensis-icon",
+      "path": "/assets/species/samples/floresiensis-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 11522,
+      "sha256": "5553e999c0435c6d115e8d605c658885497492083ee6d28a61674987f1a4ad27"
+    },
+    {
+      "id": "sample-floresiensis",
+      "path": "/assets/species/samples/floresiensis.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 42786,
+      "sha256": "cf98da0fa83ee8513ef73e8a391884a6944381fff7a38368c4bdb57a0078ae3f"
+    },
+    {
+      "id": "sample-habilis-icon",
+      "path": "/assets/species/samples/habilis-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12170,
+      "sha256": "db0548b65374a03f44389f6dfeb08c14aaaa64712d4fc09f647cb5f559a7bcac"
+    },
+    {
+      "id": "sample-habilis",
+      "path": "/assets/species/samples/habilis.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 42530,
+      "sha256": "94931b5a34d511cfa03ee5df336061cf06296427b8b508b64d234e7c77455325"
+    },
+    {
+      "id": "sample-heidelbergensis-icon",
+      "path": "/assets/species/samples/heidelbergensis-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12152,
+      "sha256": "02f7f6e0eb006ed651b4f98dbd65829d3fe5b7117b76e40c0da6018fa0a2e3bd"
+    },
+    {
+      "id": "sample-heidelbergensis",
+      "path": "/assets/species/samples/heidelbergensis.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 46594,
+      "sha256": "5a5738b5acb0ed2413180f1ea233d3d1f2f2a1906e29d1fba01abe85b1fd7860"
+    },
+    {
+      "id": "sample-naledi-icon",
+      "path": "/assets/species/samples/naledi-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 11780,
+      "sha256": "3f3a9bd4b73626fca0a9b9eb972051e1b57e2b5859dbedaa037f75fdc6618235"
+    },
+    {
+      "id": "sample-naledi",
+      "path": "/assets/species/samples/naledi.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 41938,
+      "sha256": "c375d31c4b4ecf00fc273f7fd01a4865b5ad8d524b648a000baf953d65f5ca34"
+    },
+    {
+      "id": "sample-neanderthal-icon",
+      "path": "/assets/species/samples/neanderthal-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 11148,
+      "sha256": "5be58a491a9de9a7293fcca1962a017e772bc5b5d469e392267bbbe7a68babf0"
+    },
+    {
+      "id": "sample-neanderthal",
+      "path": "/assets/species/samples/neanderthal.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 44596,
+      "sha256": "062bfeab4a744155f234b094a2b5e6e1b8bc091d6cd66edde854e961573912e0"
+    },
+    {
+      "id": "sample-orrin-icon",
+      "path": "/assets/species/samples/orrin-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 12142,
+      "sha256": "d35d59d8853d9f72ffa4e87e80a307397d5b5341bc2f95c8dd05c4b7ac4e10c7"
+    },
+    {
+      "id": "sample-orrin",
+      "path": "/assets/species/samples/orrin.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 44096,
+      "sha256": "5d2c1ddb68f2c5dc37b7bd152add29b4c69844153fe9e507370a82939d1d91b4"
+    },
+    {
+      "id": "sample-robustus-icon",
+      "path": "/assets/species/samples/robustus-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 10594,
+      "sha256": "46d00cab918d1b9ee2970b75d89700bf60bcde50fdce23406bd7082a584fb86b"
+    },
+    {
+      "id": "sample-robustus",
+      "path": "/assets/species/samples/robustus.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 42740,
+      "sha256": "3e133c424881b6cba8b0617c4da7cc2a36c34a015dd5bf24dda3a248e7be0bee"
+    },
+    {
+      "id": "sample-sahelanthropus-icon",
+      "path": "/assets/species/samples/sahelanthropus-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 11996,
+      "sha256": "7964a90dd73f9859100ce83149ba7293c8a46c2c8533ea20fde84a5f78d14196"
+    },
+    {
+      "id": "sample-sahelanthropus",
+      "path": "/assets/species/samples/sahelanthropus.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 47020,
+      "sha256": "ad6982af35f02cac51c32ba23b4df8a42aa9dfcfb56d69c255627be374641ea0"
+    },
+    {
+      "id": "sample-sapiens-icon",
+      "path": "/assets/species/samples/sapiens-icon.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 10360,
+      "sha256": "1e20ac92270faf346b52ab8ed1cd8ea66b3f2b78205c9a75aa42a230469df70d"
+    },
+    {
+      "id": "sample-sapiens",
+      "path": "/assets/species/samples/sapiens.webp",
+      "kind": "sample-schematic",
+      "role": "species sample",
+      "bytes": 39370,
+      "sha256": "e9008a2d5eaa4cafb0085aea6c3f62fb0a7fde6a88613d2ed5e86bf8668bab1e"
+    }
+  ],
+  "architecture": "Production UI may only reference active canonical media records. Legacy V21 plates remain quarantined. Canonical media carry alt text, provenance, rights metadata and source paths. The Explorer client consumes only a frozen server-built read model; canonical catalog/repository remains server-only. Media roles, rights status and explicit media variants are part of the canonical contract. Research graph and migration artifacts are domain-side projections, not client sources of truth."
+}

@@ -1,0 +1,26 @@
+{
+  "release": "0.32.5",
+  "schemaVersion": "4.2.0",
+  "fingerprint": "5f76c903f329e24e6989d29362e2f5d3",
+  "counts": {
+    "taxa": 18,
+    "taxonNames": 18,
+    "media": 18,
+    "sources": 55,
+    "publications": 21,
+    "institutions": 10,
+    "collections": 0,
+    "materialEntities": 22,
+    "occurrences": 22,
+    "evidence": 14,
+    "specimens": 22,
+    "claims": 16,
+    "sites": 27,
+    "siteContexts": 27,
+    "siteViews": 27,
+    "relationships": 20,
+    "interpretationSets": 2,
+    "interpretationPositions": 4,
+    "uncertaintyAssessments": 16
+  }
+}

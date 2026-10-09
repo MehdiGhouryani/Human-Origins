@@ -1,0 +1,6 @@
+{
+  "name": "Human Origins",
+  "description": "A source-aware interactive atlas of human evolution, evidence, specimens, time and migration.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
