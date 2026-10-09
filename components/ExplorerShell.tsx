@@ -15,7 +15,7 @@ import {getCopy} from '../content/copy-registry'
 import {useExplorerController} from '../features/explorer/useExplorerController'
 import type {ExplorerState} from '../features/explorer/state'
 
-const EvolutionGraph=dynamic(()=>import('./EvolutionGraph'),{ssr:false,loading:()=><div className="atlas-graph-loading" aria-hidden="true"/>})
+const EvolutionGraph=dynamic(()=>import('./EvolutionGraph'),{loading:()=><div className="atlas-graph-loading" aria-hidden="true"/>})
 import TaxonNavigator from './TaxonNavigator'
 import TimeMilestones from './TimeMilestones'
 import SearchResultsPanel from './SearchResultsPanel'
@@ -23,8 +23,8 @@ import FamilyView from './FamilyView'
 import RelationshipLegend from './RelationshipLegend'
 import RelationshipTable from './RelationshipTable'
 import {groupColors} from '../presentation/palette'
-const Inspector=dynamic(()=>import('./Inspector'),{ssr:false})
-const MigrationGlobe=dynamic(()=>import('./MigrationGlobe'),{ssr:false})
+const Inspector=dynamic(()=>import('./Inspector'))
+const MigrationGlobe=dynamic(()=>import('./MigrationGlobe'))
 import SpeciesJourney from './SpeciesJourney'
 
 export default function ExplorerShell({bootstrap,initialState}:{bootstrap:ExplorerBootstrap;initialState?:Partial<ExplorerState>}){

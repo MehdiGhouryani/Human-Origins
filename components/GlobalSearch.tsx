@@ -71,7 +71,7 @@ export default function GlobalSearch(){
       <Search size={15} aria-hidden="true"/>
       <label className="sr-only" htmlFor={`${uid}-input`}>Search taxa, specimens, sites, evidence or sources</label>
       <input ref={inputRef} id={`${uid}-input`} name="q" type="search" role="combobox" aria-expanded={showPanel&&flat.length>0} aria-controls={showPanel&&flat.length>0?listId:undefined} aria-autocomplete="list" aria-activedescendant={active>=0?optionId(active):undefined}
-        placeholder="Search taxa, fossils, sites, sources..." autoComplete="off" maxLength={MAX_QUERY_LENGTH} value={value}
+        placeholder="Search species, topics, or years..." autoComplete="off" maxLength={MAX_QUERY_LENGTH} value={value}
         onChange={event=>{setTyped(event.target.value);setOpen(true)}} onFocus={()=>setOpen(true)} onKeyDown={onKeyDown}/>
       <input type="hidden" name="mode" value="tree"/>
       {value&&<button type="button" className="search-clear-btn" aria-label="Clear search" onClick={()=>{setTyped('');setOpen(false);inputRef.current?.focus()}}><X size={14} aria-hidden="true"/></button>}

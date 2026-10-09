@@ -11,7 +11,6 @@ const securityHeaders=[
 ]
 
 const nextConfig:NextConfig={
-  // `npm run build:standalone` (NEXT_OUTPUT=standalone) emits the self-contained server; the default build works with `next start`.
   ...(process.env.NEXT_OUTPUT==='standalone'?{output:'standalone' as const}:{}),
   poweredByHeader:false,
   reactStrictMode:true,

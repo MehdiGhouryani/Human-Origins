@@ -110,6 +110,18 @@ body {
   box-shadow: 0 0 10px #d99b4f;
 }
 
+.topbar nav .active:before {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  left: 50%;
+  bottom: -21.5px;
+  transform: translateX(-50%) rotate(45deg);
+  background: #f1d29a;
+  box-shadow: 0 0 6px #d99b4f;
+}
+
 .top-actions {
   display: flex;
   gap: 10px;
@@ -178,6 +190,10 @@ body {
 
 .hero-copy {
   position: absolute;
+  left: 48px;
+  top: 26px;
+  max-width: 440px;
+  z-index: 2;
 }
 
 .eyebrow {
@@ -187,36 +203,41 @@ body {
 }
 
 .hero h1 {
-  font: 600 51px/.83 var(--font-display);
-  margin: 9px 0 5px;
-  letter-spacing: -1px;
+  font: 600 45px/0.95 var(--font-display);
+  margin: 8px 0 6px;
+  letter-spacing: -0.5px;
 }
 
 .tagline {
-  font: italic 25px var(--font-display);
-  margin: 0 0 5px;
+  font: italic 21px/1.2 var(--font-display);
+  margin: 0 0 6px;
   color: #ddd7cc;
 }
 
 .intro {
-  font: 13px/1.35 var(--font-display);
+  font: 13.5px/1.4 var(--font-display);
   color: #ddd9d0;
   margin: 0;
+  max-width: 410px;
 }
 
 .quote {
   position: absolute;
   right: 48px;
-  top: 28px;
-  font: italic 16px/1.3 var(--font-display);
+  top: 32px;
+  font: italic 16.5px/1.35 var(--font-display);
   text-align: right;
   color: #e6e0d7;
+  max-width: 270px;
+  z-index: 2;
 }
 
 .quote small {
   display: block;
   font: 11px var(--font-ui);
+  color: #9da8a6;
   margin-top: 6px;
+  font-style: normal;
 }
 
 .workspace {
@@ -2994,9 +3015,10 @@ body {
   }
   .quote {
     right: 20px;
-    top: auto;
-    bottom: 26px;
+    top: 24px;
+    bottom: auto;
     font-size: 13px;
+    max-width: 220px;
   }
   .hero-meta {
     right: 20px;
@@ -3474,12 +3496,13 @@ body {
 }
 
 .hero-copy {
-  left: 42px;
-  top: 30px;
+  left: 48px;
+  top: 26px;
+  max-width: 440px;
 }
 
 .hero h1 {
-  font-size: 58px;
+  font-size: 45px;
 }
 
 .hero-meta {

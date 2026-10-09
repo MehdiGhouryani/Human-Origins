@@ -22,6 +22,8 @@
  */
 
 import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,useSyncExternalStore,type CSSProperties,type KeyboardEvent as ReactKeyboardEvent,type PointerEvent as ReactPointerEvent} from 'react'
+
+const useIsomorphicLayoutEffect=typeof window!=='undefined'?useLayoutEffect:useEffect
 import {Crosshair,GitBranch,List,Maximize2,Minus,Plus,Route} from 'lucide-react'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {ExplorerSpecies} from '../features/explorer/types'
@@ -99,7 +101,7 @@ export function initialZoom(containerWidth:number,layoutWidth:number):number{
 function useElementWidth<T extends HTMLElement>(){
   const ref=useRef<T>(null)
   const [width,setWidth]=useState(0)
-  useLayoutEffect(()=>{
+  useIsomorphicLayoutEffect(()=>{
     const element=ref.current
     if(!element) return
     setWidth(element.clientWidth)
@@ -232,7 +234,7 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
   const k=zoom??initialZoom(containerWidth,layout.width)
   // Handlers read the zoom through a ref so they stay stable (memoised children) and never act on a stale value.
   const kRef=useRef(k)
-  useLayoutEffect(()=>{kRef.current=k},[k])
+  useIsomorphicLayoutEffect(()=>{kRef.current=k},[k])
   const anchorRef=useRef<{cx:number;cy:number;px:number;py:number}|null>(null)
   const zoomTo=useCallback((next:number|null,anchor?:{clientX:number;clientY:number})=>{
     const canvas=canvasRef.current,current=kRef.current
@@ -244,7 +246,7 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
     }
     setZoom(next===null?null:clamp(next,MIN_ZOOM,MAX_ZOOM))
   },[])
-  useLayoutEffect(()=>{
+  useIsomorphicLayoutEffect(()=>{
     const canvas=canvasRef.current,anchor=anchorRef.current
     if(!canvas||!anchor) return
     anchorRef.current=null
@@ -351,7 +353,7 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
   const activeLink=activeId?linkById.get(activeId):undefined
   // Stable handlers: memoised nodes and edges must not re-render because a closure was re-created.
   const pinnedRef=useRef(pinnedRelationId),onPinRef=useRef(onPinRelation),setSelectedRef=useRef(setSelected)
-  useLayoutEffect(()=>{pinnedRef.current=pinnedRelationId;onPinRef.current=onPinRelation;setSelectedRef.current=setSelected})
+  useIsomorphicLayoutEffect(()=>{pinnedRef.current=pinnedRelationId;onPinRef.current=onPinRelation;setSelectedRef.current=setSelected})
   const pin=useCallback((id:string)=>{if(suppressClick.current) return;setHover(null);onPinRef.current?.(pinnedRef.current===id?null:id)},[])
   const select=useCallback((id:string)=>{if(suppressClick.current) return;setSelectedRef.current(id)},[])
 

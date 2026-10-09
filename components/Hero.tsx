@@ -1,6 +1,6 @@
 import {getCopy} from '../content/copy-registry'
 
-export default function Hero({release,copy}:{release:string;copy:Readonly<Record<string,string>>}){
+export default function Hero({copy}:{release?:string;copy:Readonly<Record<string,string>>}){
   return <section className="hero" aria-labelledby="hero-title">
     <div className="hero-art" aria-hidden="true"/>
     <div className="hero-shade" aria-hidden="true"/>
@@ -10,7 +10,9 @@ export default function Hero({release,copy}:{release:string;copy:Readonly<Record
       <p className="tagline">{getCopy(copy,'hero.tagline')}</p>
       <p className="intro">{getCopy(copy,'hero.intro')}</p>
     </div>
-    <div className="quote">A branching history,<br/>reconstructed from evidence.</div>
-    <div className="hero-meta"><span>RESEARCH ATLAS</span><b>v{release} · source-linked</b></div>
+    <div className="quote">
+      “We are not a single line,<br/>but a branching tree of life.”
+      <small>— Human Origins</small>
+    </div>
   </section>
 }

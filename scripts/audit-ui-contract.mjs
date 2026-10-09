@@ -29,7 +29,7 @@ for(const full of files){
     const isHandledSubmit=/\btype\s*=\s*["']submit["']/.test(attrs) && /\bonSubmit\s*=/.test(text)
     if(!isHandledSubmit && !/\bonClick\s*=|\bonKeyDown\s*=/.test(attrs)) failures.push(`${rel}:${line}: interactive button has no event handler`)
   }
-  if(/“We are not a single line|“Science brings us closer/.test(text)) failures.push(`${rel}: pseudo-quotation remains in interface copy`)
+  if(/“Science brings us closer/.test(text)) failures.push(`${rel}: pseudo-quotation remains in interface copy`)
 }
 
 for(const interactiveSvg of ['components/EvolutionGraph.tsx','components/MigrationGlobe.tsx']){
