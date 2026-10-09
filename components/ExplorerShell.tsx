@@ -22,8 +22,7 @@ import SearchResultsPanel from './SearchResultsPanel'
 import FamilyView from './FamilyView'
 import RelationshipLegend from './RelationshipLegend'
 import RelationshipTable from './RelationshipTable'
-import {groupColors} from '../presentation/palette'
-const Inspector=dynamic(()=>import('./Inspector'))
+import Inspector from './Inspector'
 const MigrationGlobe=dynamic(()=>import('./MigrationGlobe'))
 import SpeciesJourney from './SpeciesJourney'
 
@@ -41,6 +40,11 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
   const handleSelectSpecies=useCallback((id:string)=>{
     setSelected(id)
     setInspectorOpen(true)
+    if (typeof window !== 'undefined' && window.innerWidth <= 820) {
+      setTimeout(() => {
+        document.querySelector('.inspector')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 70)
+    }
   },[setSelected])
 
   const jumpToAge=useCallback((ageMa:number)=>setState(prev=>({...prev,time:ageMaToSlider(ageMa),playing:false})),[setState])
@@ -72,8 +76,7 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
           {!state.journey&&state.mode==='migration'&&<div className="migration-view"><div className="view-kicker">SPATIAL LAYER · {formatAgeMa(age)}</div><h3>{getCopy(immutableBootstrap.copy,'migration.heading')}</h3><p>Rotate the Earth, inspect broad migration corridors, and move through time. The map separates generalized population movement from individual travel and flags uncertainty instead of drawing a false single route.</p><MigrationGlobe bootstrap={immutableBootstrap} time={age} selected={state.selectedId} focusSite={state.focusSite} onFocused={()=>setState(prev=>({...prev,focusSite:null}))}/></div>}
         </div>
         <div className="model-note">Scientific framing: each species sits at its first appearance in the fossil record; branches are contextual or possible relationships, not guaranteed direct ancestry. Migration lines are generalized population corridors.</div>
-        <div className="clade-legend" aria-label="Clade colours">{clades.map(group=><span key={group.name}><i style={{background:groupColors[group.name as keyof typeof groupColors]??'#28a9ff'}}/> {group.name}</span>)}</div>
-        <RelationshipLegend present={presentRelations}/>
+        <RelationshipLegend present={presentRelations} clades={clades}/>
         {!state.journey&&state.mode==='tree'&&<details className="rel-details"><summary>Relationship table: text version of the graph</summary><RelationshipTable bootstrap={immutableBootstrap} onShow={id=>{setPinnedRelationId(id);document.querySelector('.graph-region')?.scrollIntoView({block:'nearest'})}}/></details>}
         <div className="timebar">
           <button type="button" className="play" onClick={()=>setState(prev=>({...prev,playing:!prev.playing}))} aria-label={state.playing?'Pause time':'Play time'}>{state.playing?<Pause size={18}/>:<Play size={18}/>}</button>
@@ -88,6 +91,24 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
         {inspectorOpen&&<Inspector key={current.id} bootstrap={immutableBootstrap} species={current} bookmarked={bookmarks.has(current.id)} onToggleBookmark={()=>bookmarks.toggle(current.id)} onSelectTaxon={handleSelectSpecies} onClose={()=>setInspectorOpen(false)} onRevealSite={(id)=>setState(prev=>({...prev,focusSite:id,mode:'migration',journey:false}))}/>}
       </AnimatePresence>
     </main>
+
+    {current&&!isInferredNode(current)&&<div className="mobile-species-dock" aria-label="Selected species quick bar">
+      <div className="mobile-species-dock-content">
+        <div className="mobile-species-dock-info">
+          <strong className="mobile-species-dock-name">{current.name}</strong>
+          <span className="mobile-species-dock-date">{current.date}</span>
+        </div>
+        <div className="mobile-species-dock-actions">
+          <Link href={`/species/${current.id}`} className="mobile-species-dock-profile-btn" title="Open full profile">
+            <span>View page</span>
+            <ChevronRight size={13}/>
+          </Link>
+          <button type="button" className="mobile-species-dock-scroll-btn" onClick={()=>{setInspectorOpen(true);setTimeout(()=>document.querySelector('.inspector')?.scrollIntoView({behavior:'smooth',block:'start'}),50)}} aria-label="Scroll to inspector">
+            Dossier ↓
+          </button>
+        </div>
+      </div>
+    </div>}
 
     <footer id="about" className="evidence-strip"><div><b>◉</b><strong>Fossil Record</strong><small>Physical evidence of our past.</small></div><div><b>〽</b><strong>Genetic Evidence</strong><small>Ancient DNA and population history.</small></div><div><b>◈</b><strong>Archaeology</strong><small>Tools, sites and behavior.</small></div><div><b>▤</b><strong>Geology & Dating</strong><small>Stratigraphy and age estimates.</small></div><em>Evidence · interpretation · provenance<small>Human Origins research interface</small></em></footer>
 

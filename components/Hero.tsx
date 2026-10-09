@@ -6,7 +6,7 @@ export default function Hero({copy}:{release?:string;copy:Readonly<Record<string
     <div className="hero-shade" aria-hidden="true"/>
     <div className="hero-copy">
       <div className="eyebrow">8 MILLION YEARS AGO — PRESENT</div>
-      <h1 id="hero-title">The Evolutionary<br/>Tree of Humans</h1>
+      <h1 id="hero-title">The Evolutionary <br className="hero-br"/>Tree of Humans</h1>
       <p className="tagline">{getCopy(copy,'hero.tagline')}</p>
       <p className="intro">{getCopy(copy,'hero.intro')}</p>
     </div>

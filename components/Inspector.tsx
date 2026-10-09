@@ -79,6 +79,7 @@ export default function Inspector({bootstrap,species,bookmarked,onToggleBookmark
       <div className="pill-row"><span className={`pill ${inferred?'pill-inferred':''}`}>{taxonStatusLabel(species)}</span><span className="pill">{species.group}</span></div>
       <h2>{species.name}</h2>
       <div className="species-date">{inferred?`Model construct · ${species.date}`:`${species.taxonomy.scientificName} · ${species.taxonomy.rank} · ${species.date}`}</div>
+      {!inferred&&<div className="inspector-top-cta"><Link className="cta primary-cta inspector-quick-cta" href={`/species/${species.id}`} title={`Explore full profile of ${species.short}`}><span><ArrowRight size={14}/> Explore full species profile</span><ChevronRight size={15}/></Link></div>}
       {inferred&&<p className="inferred-note" role="note">This is an inferred ancestral node used to anchor the graph. It is not a named fossil species and has no specimens of its own.</p>}
       <div className="media-provenance"><div><b>Image provenance</b><span>{m.credit}</span></div>{m.sourceUrl&&<a href={m.sourceUrl} target="_blank" rel="noreferrer">View source <ExternalLink size={12}/><span className="sr-only"> (opens in a new tab)</span></a>}</div>
       {m.publicationStatus==='review-required'&&<div className="media-review-banner" role="note"><b>Media review status</b><span>This reconstruction is marked for provenance review before final publication. It is not presented as a fossil photograph.</span></div>}
