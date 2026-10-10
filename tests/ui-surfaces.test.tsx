@@ -12,8 +12,8 @@ import Inspector,{type InspectorTab} from '../components/Inspector'
 
 const bootstrap=buildExplorerBootstrap()
 const noop=()=>{}
-const nav=(selectedId:string,saved:string[]=[])=>renderToStaticMarkup(h(TaxonNavigator,{species:bootstrap.species,selectedId,onSelect:noop,savedIds:new Set(saved)}))
-const inspector=(id:string,initialTab:InspectorTab='Overview')=>renderToStaticMarkup(h(Inspector,{bootstrap,species:getExplorerSpeciesById(bootstrap,id),bookmarked:false,onToggleBookmark:()=>true,onSelectTaxon:noop,onRevealSite:noop,initialTab}))
+const nav=(selectedId:string,saved:string[]=[])=>renderToStaticMarkup(h(TaxonNavigator,{species:bootstrap.species,selectedId,onSelect:noop,savedIds:new Set(saved),graphIds:new Set(bootstrap.graph.taxonIds)}))
+const inspector=(id:string,initialTab:InspectorTab='Overview')=>renderToStaticMarkup(h(Inspector,{bootstrap,species:getExplorerSpeciesById(bootstrap,id),bookmarked:false,onToggleBookmark:()=>true,onRevealSite:noop,initialTab}))
 const count=(html:string,needle:RegExp)=>(html.match(needle)||[]).length
 
 describe('taxon navigator',()=>{
@@ -59,20 +59,26 @@ describe('family view (mobile relationship surface)',()=>{
   it('lists documented gene flow separately from descent',()=>{const html=renderToStaticMarkup(h(FamilyView,{bootstrap,taxonId:'neanderthal',onSelect:noop}));expect(html).toContain('Documented genetic exchange');expect(html).toContain('Drawn from')})
 })
 
+describe('species navigator',()=>{
+  it('labels exactly the taxa that are not drawn on the main graph (7 of 18)',()=>{
+    const html=nav('neanderthal');expect(count(html,/taxon-chip-off/g)).toBe(7);expect(count(html,/class="taxon-chip /g)).toBe(18)
+  })
+})
+
 describe('inspector',()=>{
   it('labels the inferred common ancestor as an inferred node, never "Extinct"',()=>{
     const html=inspector('common');expect(html).toContain('Inferred ancestral node');expect(html).not.toMatch(/>Extinct</);expect(html).toContain('not a named fossil species')
   })
   it('keeps "Extinct" for recorded taxa',()=>{expect(inspector('erectus')).toMatch(/>Extinct</)})
-  it('uses "not represented in the atlas" wording, not "no evidence exists", for empty Genetics and Lifestyle',()=>{
-    for(const tab of ['Genetics','Lifestyle'] as const){const html=inspector('common',tab);expect(html).toMatch(/is represented for/);expect(html).toMatch(/not a finding that none exists/);expect(html).not.toMatch(/no (archaeological|genetic) (record|evidence) (is|exists)/i)}
+  it('uses "not represented in the atlas" wording, not "no evidence exists", for empty genetic evidence and Lifestyle',()=>{
+    for(const tab of ['Evidence','Lifestyle'] as const){const html=inspector('common',tab);expect(html).toMatch(/is represented for/);expect(html).toMatch(/not a finding that none exists/);expect(html).not.toMatch(/no (archaeological|genetic) (record|evidence) (is|exists)/i)}
   })
-  it('lists genetic evidence records and gene flow for Neanderthals',()=>{const html=inspector('neanderthal','Genetics');expect(html).toContain('Genetic evidence records');expect(html).toContain('Documented gene flow')})
-  it('has a real Relationships tab',()=>{expect(inspector('heidelbergensis','Relationships')).toContain('Relationships of')})
-  it('exposes tablist semantics with roving tabindex',()=>{const html=inspector('erectus');expect(html).toContain('role="tablist"');expect(count(html,/role="tab"/g)).toBe(6);expect(count(html,/role="tab"[^>]*tabindex="0"/g)).toBe(1)})
-  it('renders every catalogue taxon without throwing (missing optional fields tolerated)',()=>{for(const t of bootstrap.species) for(const tab of ['Overview','Lifestyle','Genetics','Relationships'] as const) expect(()=>inspector(t.id,tab),`${t.id}/${tab}`).not.toThrow()})
+  it('lists genetic evidence records and gene flow for Neanderthals',()=>{const html=inspector('neanderthal','Evidence');expect(html).toContain('Genetic evidence records');expect(html).toContain('Documented gene flow')})
+  it('has three views: Overview, Evidence and Lifestyle',()=>{const html=inspector('heidelbergensis');expect(count(html,/role="tab"/g)).toBe(3);expect(html).not.toContain('>Specimens<');expect(html).not.toContain('>Relationships<')})
+  it('exposes tablist semantics with roving tabindex',()=>{const html=inspector('erectus');expect(html).toContain('role="tablist"');expect(count(html,/role="tab"/g)).toBe(3);expect(count(html,/role="tab"[^>]*tabindex="0"/g)).toBe(1)})
+  it('renders every catalogue taxon without throwing (missing optional fields tolerated)',()=>{for(const t of bootstrap.species) for(const tab of ['Overview','Evidence','Lifestyle'] as const) expect(()=>inspector(t.id,tab),`${t.id}/${tab}`).not.toThrow()})
   it('does not throw for a taxon with no media or facts',()=>{
     const bare={...getExplorerSpeciesById(bootstrap,'erectus'),media:[],facts:[]} as never
-    expect(()=>renderToStaticMarkup(h(Inspector,{bootstrap,species:bare,bookmarked:false,onToggleBookmark:()=>true,onSelectTaxon:noop,onRevealSite:noop}))).not.toThrow()
+    expect(()=>renderToStaticMarkup(h(Inspector,{bootstrap,species:bare,bookmarked:false,onToggleBookmark:()=>true,onRevealSite:noop}))).not.toThrow()
   })
 })

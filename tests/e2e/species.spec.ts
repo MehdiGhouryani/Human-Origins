@@ -11,7 +11,7 @@ test('species dossier renders a source-backed page',async({page})=>{
 
 test('the Inspector call to action opens the species page',async({page})=>{
   await page.goto('/?species=sapiens&mode=tree')
-  await page.getByRole('link',{name:/Open the full .* page/}).click()
+  await page.getByRole('link',{name:/Explore full species profile/}).click()
   await expect(page).toHaveURL(/\/species\/sapiens$/)
   await expect(page.getByRole('heading',{level:1,name:'Homo sapiens'})).toBeVisible()
 })
@@ -24,5 +24,6 @@ test('unknown species ids return the 404 surface',async({page})=>{
 test('species index lists every taxon',async({page})=>{
   await page.goto('/species')
   await expect(page.getByRole('heading',{level:1,name:'Species of the atlas'})).toBeVisible()
-  await expect(page.locator('.species-index-group li')).toHaveCount(26)
+  // One entry per taxon in the catalogue (18). The session cookie is Secure in production, so admin tests use localhost.
+  await expect(page.locator('.species-index-group li')).toHaveCount(18)
 })

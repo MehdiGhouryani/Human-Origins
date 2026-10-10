@@ -1,6 +1,6 @@
 # Human Origins — Architecture & Rules
 
-Reference for how the system is built and the rules it enforces. The plan lives in [`IMPLEMENTATION-PLAN.md`](./IMPLEMENTATION-PLAN.md); setup is in the [`README`](../README.md).
+Reference for how the system is built and the rules it enforces. The work plan is [`HUMAN-ORIGINS-FIX-PLAN.md`](./HUMAN-ORIGINS-FIX-PLAN.md). Setup is in the [`README`](../README.md).
 
 ## 1. Principles
 
@@ -49,7 +49,7 @@ Data flow: `content/` → `buildResearchIndexes` / `buildResearchGraph` → `bui
 
 `features/explorer/slots.ts` decides what each slot shows (live image, neutral frame, locked, hidden): the portrait and hero slots always render a frame, other empty slots are hidden from visitors and shown as dashed frames with an Upload link to a logged-in admin. In the CMS, `/admin/media/slots` lists the slots of a species with their status; an upload to a slot is centre-cropped server-side to the slot's ratio, and the slot's role, kind and evidence class are applied by the server, not taken from the client.
 
-* **Roles**: `tree-thumbnail`, `profile-portrait`, `dossier-hero`, `anatomy-plate`, `comparative-morphology`, `specimen-reference`, `habitat`, `behavior`, `scale-reference`, `gallery`, `context`. *Today the UI uses only `tree-thumbnail` and `profile-portrait`; the other roles are reserved (see the plan, phase 11).*
+* **Roles**: `tree-thumbnail`, `profile-portrait`, `dossier-hero`, `anatomy-plate`, `comparative-morphology`, `specimen-reference`, `habitat`, `behavior`, `scale-reference`, `gallery`, `context`. *Today the UI uses only `tree-thumbnail` and `profile-portrait`; the other roles are reserved for the image briefs in `tools/images/`.*
 * **Publication status** (`approved`, `review-required`, `schematic`; `legacy`/`retired` are audit errors for live media) is separate from **rights status** (`clear`, `review-required`, `institutional-terms`, `unknown`).
 * **Audit rules**: alt text required; a scientific note recommended; `approved` needs a license or source URL; `review-required` needs a source URL; a `reconstruction` must say it is a reconstruction/illustration; media is self-hosted: local paths must be `/assets/` or `/cms-media/`, `next.config.ts` has no `remotePatterns`, and the CSP `img-src` is `self`.
 * **Delivery** (`presentation/mediaDelivery.ts`): declared variant closest to the wanted width → `src` → raw `src`.
@@ -60,7 +60,7 @@ Server builds the bootstrap once per request; the client only reads it. URL stat
 
 ## 5b. Species pages (`/species`, `/species/[id]`)
 
-Server-rendered per request from `getLiveContent()`. `features/explorer/dossier.ts` is the pure read model: lineage and gene flow from registered relationships only, coexistence by time overlap (never ancestry), sites with dating method, merged sources, previous/next, a **computed** completeness tier (ROADMAP §8) and schema.org `Taxon` JSON-LD. Unknown ids → `notFound()`. Canonical URLs, OG, `sitemap.xml` and `robots.txt` use `SITE_URL` (`infrastructure/site/url.ts`).
+Server-rendered per request from `getLiveContent()`. `features/explorer/dossier.ts` is the pure read model: lineage and gene flow from registered relationships only, coexistence by time overlap (never ancestry), sites with dating method, merged sources, previous/next, a **computed** completeness tier and schema.org `Taxon` JSON-LD. Unknown ids → `notFound()`. Canonical URLs, OG, `sitemap.xml` and `robots.txt` use `SITE_URL` (`infrastructure/site/url.ts`).
 
 ## 6. CMS (`/admin`)
 
@@ -102,7 +102,7 @@ Self-hosted admin for species images and site copy. Requires **Node ≥ 22.5** (
 | `audit:research-model`, `-indexes`, `semantic`, `provenance`, `uncertainty`, `graph`, `migration`, `graph-traversal` | Model invariants, indexes, provenance, uncertainty, graph safety, migration manifest, traversal (every claim reaches a source) |
 | `audit:reproducibility` | Live fingerprint equals the manifest |
 | `check` | syntax + lint + data + assets + `tsc --noEmit` |
-| `test` | Vitest (all unit tests; count in the plan's snapshot) |
+| `test` | Vitest (all unit tests; `npm test` prints the count) |
 | `build` | `next build` |
 
 Also available: `npm run test:e2e` (Playwright: smoke, species, responsive, visual), `qa:installed`, `backup:cms`, `restore:cms`.
@@ -118,4 +118,4 @@ Accessibility is checked ad hoc with axe-core (WCAG A/AA) — not yet a CI gate.
 
 ## 10. Known technical debt
 
-Tracked and scheduled in [`IMPLEMENTATION-PLAN.md`](./IMPLEMENTATION-PLAN.md) (phase 0): visual baselines not committed · bootstrap payload carries unused fields · URL state is not fully server-read · CSS tokens/hard-coded colours in `globals.css` · thin e2e (no CMS upload→publish scenario, no axe gate) · login rate limit is per process (in-memory) · dev-only `npm audit` findings in the `eslint-config-next` chain (no patched `braces` release exists; production dependencies report 0).
+Tracked in [`HUMAN-ORIGINS-FIX-PLAN.md`](./HUMAN-ORIGINS-FIX-PLAN.md) where it is covered: e2e coverage (phase 0) · bootstrap payload (phases 0 and 7) · URL state (phase 1) · CSS tokens and hard-coded colours (phase 7). Not yet in the fix plan: login rate limit is per process (in-memory) · thin CMS e2e (no upload→publish scenario, no axe gate) · dev-only `npm audit` findings in the `eslint-config-next` chain (no patched `braces` release exists; production dependencies report 0).

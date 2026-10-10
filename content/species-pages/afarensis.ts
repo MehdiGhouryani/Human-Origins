@@ -1,8 +1,8 @@
 import type {SpeciesPageContent} from '../../domain/species-page'
 
 /**
- * Pilot page (plan task T15.2). Every statement cites references from content/publications.ts that were verified
- * on 2026-10-09 (repository and indexing records). Owner approval of layout and wording is still required (T15.2).
+ * Pilot page. Every statement cites references from content/publications.ts that were verified
+ * on 2026-10-09 (repository and indexing records). Owner approval of layout and wording is still required.
  */
 export const afarensisPage:SpeciesPageContent={
   taxonId:'afarensis',

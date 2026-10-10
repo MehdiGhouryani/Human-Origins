@@ -41,7 +41,8 @@ export default function MigrationGlobe({bootstrap,time,selected,focusSite,onFocu
  const projection=useMemo(()=>geoOrthographic().translate([420,270]).scale(scale).rotate(rot),[rot,scale]); const path=useMemo(()=>geoPath(projection),[projection]); const graticule=useMemo(()=>geoGraticule().step([20,20])(),[])
  const continentPaths=useMemo(()=>continents.map(([name,coords])=>({name,d:path({type:'Feature',properties:null,geometry:{type:'Polygon',coordinates:[[...coords,coords[0]]]}} as GeoPermissibleObjects)??''})),[path])
  const graticulePath=useMemo(()=>path(graticule)??'',[path,graticule])
- const visibleRoutes=useMemo(()=>routes.filter(r=>timeKa<=r.startKa&&timeKa>=r.endKa),[timeKa])
+ // Corridors are Homo sapiens dispersals: they are drawn only when H. sapiens is the selected taxon (BUG-74).
+ const visibleRoutes=useMemo(()=>selected==='sapiens'?routes.filter(r=>timeKa<=r.startKa&&timeKa>=r.endKa):[],[timeKa,selected])
  const routePaths=useMemo(()=>new Map(visibleRoutes.map(r=>[r.id,projectRoute(r,projection,rot)])),[visibleRoutes,projection,rot]); const activeRoute=visibleRoutes.find(r=>r.id===active)??visibleRoutes[0]
  const visibleEvidence=evidenceSites.filter(s=>filter==='all'||s.kind===filter).filter(s=>s.ageKa>=timeKa||s.id===focusSite)
  const routeProgress=(r:Route)=>Math.max(0,Math.min(1,(r.startKa-timeKa)/Math.max(1,r.startKa-r.endKa)))

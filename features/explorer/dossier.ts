@@ -12,8 +12,8 @@ import {
  * Species dossier read model (Milestone M2, `/species/[id]`).
  *
  * Pure and client-safe: it only reads the frozen explorer bootstrap. Everything the page shows is derived
- * from canonical records; nothing here invents facts, coordinates or scores. The completeness tier follows
- * the "completeness contract" in docs/IMPLEMENTATION-PLAN.md (section "Completeness contract") and is *computed*, never hand-set.
+ * from canonical records; nothing here invents facts, coordinates or scores. The completeness tier is
+ * computed by `computeCompleteness` and is never hand-set.
  */
 
 export type DossierLink={id:string;name:string;short:string;type:RelationshipType;relation:RelationClass;label:string;certainty?:string;note?:string}

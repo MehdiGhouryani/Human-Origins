@@ -58,7 +58,7 @@ function Cell({state,adminPreview,sizes}:{state:SlotState;adminPreview:boolean;s
   return <SlotFigure state={state} sizes={sizes}/>
 }
 
-/** The wide image at the top of the page (slot S03). Empty: a neutral frame for everyone (decision D-19). */
+/** The wide image at the top of the page (slot S03). Empty: a neutral frame for everyone. */
 export function SlotHero({states,adminPreview}:{states:readonly SlotState[];adminPreview:boolean}){
   const [state]=slotsInGroup(states,'hero')
   if(!state) return null

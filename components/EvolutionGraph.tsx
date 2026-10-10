@@ -51,7 +51,7 @@ type ViewPreference=View|'auto'
 
 const MIN_ZOOM=.45,MAX_ZOOM=2
 /** Below this container width the vertical list reads better than a horizontally scrolling map. */
-export const GRAPH_COMPACT_WIDTH=820
+export const GRAPH_COMPACT_WIDTH=600
 const VIEW_STORAGE_KEY='human-origins:graph-view'
 // View preference store: localStorage when available, in-memory otherwise (private mode / blocked storage).
 const viewPreferenceListeners=new Set<()=>void>()
@@ -150,8 +150,8 @@ const GeneFlowArc=memo(function GeneFlowArc({flow,label,active,onHover,onPin}:Ge
   </g>
 })
 
-type NodeProps={species:ExplorerSpecies;node:GraphLayout['nodes'][string];r:number;isSelected:boolean;alive:boolean;onLineage:boolean;partner:boolean;iconFailed:boolean;onFailed:(id:string)=>void;onSelect:(id:string)=>void;onKeyNav:(event:ReactKeyboardEvent,id:string)=>void;registerRef:(id:string,el:SVGGElement|null)=>void}
-const GraphNode=memo(function GraphNode({species,node,r,isSelected,alive,onLineage,partner,iconFailed,onFailed,onSelect,onKeyNav,registerRef}:NodeProps){
+type NodeProps={species:ExplorerSpecies;node:GraphLayout['nodes'][string];r:number;isSelected:boolean;tabStop:boolean;alive:boolean;onLineage:boolean;partner:boolean;iconFailed:boolean;onFailed:(id:string)=>void;onSelect:(id:string)=>void;onKeyNav:(event:ReactKeyboardEvent,id:string)=>void;registerRef:(id:string,el:SVGGElement|null)=>void}
+const GraphNode=memo(function GraphNode({species,node,r,isSelected,tabStop,alive,onLineage,partner,iconFailed,onFailed,onSelect,onKeyNav,registerRef}:NodeProps){
   const inferred=isInferredNode(species)
   const media=findMedia(species.media,species.treeIconId)
   const showIcon=Boolean(media&&!iconFailed)
@@ -160,7 +160,7 @@ const GraphNode=memo(function GraphNode({species,node,r,isSelected,alive,onLinea
   const dateY=node.labelSide==='above'?-r-7:r+28
   const clipId=`atlas-graph-clip-${species.id}`
   const ref=useCallback((el:SVGGElement|null)=>registerRef(species.id,el),[registerRef,species.id])
-  return <g ref={ref} className={`atlas-graph-node ${isSelected?'selected':''} ${alive?'in-time':'out-time'} ${onLineage?'on-lineage':''} ${partner?'gene-partner':''}`} transform={`translate(${node.x} ${node.y})`} tabIndex={isSelected?0:-1} role="button" aria-pressed={isSelected} aria-label={`${species.name}, ${species.date}${inferred?', inferred node':''}`} data-taxon={species.id} onClick={()=>onSelect(species.id)} onKeyDown={event=>onKeyNav(event,species.id)}>
+  return <g ref={ref} className={`atlas-graph-node ${isSelected?'selected':''} ${alive?'in-time':'out-time'} ${onLineage?'on-lineage':''} ${partner?'gene-partner':''}`} transform={`translate(${node.x} ${node.y})`} tabIndex={tabStop?0:-1} role="button" aria-pressed={isSelected} aria-label={`${species.name}, ${species.date}${inferred?', inferred node':''}`} data-taxon={species.id} onClick={()=>onSelect(species.id)} onKeyDown={event=>onKeyNav(event,species.id)}>
     <circle className="atlas-graph-halo" r={isSelected?r+9:0}/>
     {/* Finger-sized hit target (r+12 ≈ 44px at 100%), drawn transparent. */}
     <circle r={r+12} fill="transparent"/>
@@ -359,6 +359,8 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
 
   // Roving focus across nodes in chronological order: ←/→ step, Home/End jump, Enter/Space select.
   const order=layout.order
+  // One node stays reachable with Tab: the selected one, or the oldest node when the selected taxon is not on the graph.
+  const tabStopId=layout.nodes[selected]?selected:(order[0]??'')
   const onKeyNav=useCallback((event:ReactKeyboardEvent,id:string)=>{
     const index=order.indexOf(id)
     let target:string|undefined
@@ -415,7 +417,7 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
           <g className="atlas-graph-edges">{layout.edges.map(edge=>{const link=linkById.get(edge.id),child=link?byId.get(String(link.to)):undefined;return link&&child?<Edge key={edge.id} edge={edge} link={link} stroke={colorFor(child)} active={edge.id===activeId} related={lineage.has(String(link.from))&&lineage.has(String(link.to))} onHover={setHover} onPin={pin}/>:null})}</g>
           <g className="atlas-graph-gene-flow">{layout.geneFlow.map(flow=><GeneFlowArc key={flow.id} flow={flow} label={formatEventAge(linkById.get(flow.id)?.eventAgeMa)} active={flow.id===activeId} onHover={setHover} onPin={pin}/>)}</g>
           <line className="atlas-graph-cursor" x1={cursorX} x2={cursorX} y1={layout.plot.top} y2={layout.plot.bottom}/>
-          <g className="atlas-graph-nodes">{species.map(item=>{const node=layout.nodes[item.id];return node?<GraphNode key={item.id} species={item} node={node} r={layout.nodeRadius} isSelected={item.id===selected} alive={!isInferredNode(item)&&currentAge<=item.start&&currentAge>=item.end} onLineage={lineage.has(item.id)} partner={partners.has(item.id)} iconFailed={failed.has(item.id)} onFailed={onFailed} onSelect={select} onKeyNav={onKeyNav} registerRef={registerRef}/>:null})}</g>
+          <g className="atlas-graph-nodes">{species.map(item=>{const node=layout.nodes[item.id];return node?<GraphNode key={item.id} species={item} node={node} r={layout.nodeRadius} isSelected={item.id===selected} tabStop={item.id===tabStopId} alive={!isInferredNode(item)&&currentAge<=item.start&&currentAge>=item.end} onLineage={lineage.has(item.id)} partner={partners.has(item.id)} iconFailed={failed.has(item.id)} onFailed={onFailed} onSelect={select} onKeyNav={onKeyNav} registerRef={registerRef}/>:null})}</g>
         </svg>
       </div>
       :<div className="atlas-graph-list" style={{height:vertical.height}}>

@@ -6,16 +6,16 @@ An interactive, research-oriented atlas of human evolution: an evolutionary tree
 
 **0.32.5** — catalog schema `4.2.0`
 
-Status in one line: strong, tested foundation (data model, provenance, uncertainty, graph, CMS) and a green `qa:release`; the home graph shows the **11-taxon main path** by design (the other 7 taxa keep their own species pages). The Migration view is the next major build. Everything that remains is in the single plan: [`docs/IMPLEMENTATION-PLAN.md`](docs/IMPLEMENTATION-PLAN.md).
+Status in one line: strong, tested foundation (data model, provenance, uncertainty, graph, CMS) and a green `qa:release`; the home graph shows the **11-taxon main path** by design (the other 7 taxa keep their own species pages). The current work is the explorer fix plan, [`docs/HUMAN-ORIGINS-FIX-PLAN.md`](docs/HUMAN-ORIGINS-FIX-PLAN.md), which is the only plan. The paleo Migration rebuild is not part of this plan.
 
 ## Documentation
 
 | File | What it covers |
 |---|---|
-| [`docs/IMPLEMENTATION-PLAN.md`](docs/IMPLEMENTATION-PLAN.md) | **The only plan.** Phased, step-by-step, written for AI agents and updated after every change. Read it first. |
+| [`docs/HUMAN-ORIGINS-FIX-PLAN.md`](docs/HUMAN-ORIGINS-FIX-PLAN.md) | **The only plan (approved basis).** Bug list (BUG-xx) and phased fix plan with acceptance criteria. Read it first. |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Layers and enforced boundaries, data model, media, CMS, editorial rules, quality gates, checklists |
-| [`tools/images/`](tools/images/prompts/_global.md) | Image production plan: 200-row catalog (`catalog.csv`/`.json`) and self-contained prompts for reconstructions (`npm run images:build`) |
-| [`AGENTS.md`](AGENTS.md) | Five-line entry point for AI coding agents |
+| [`tools/images/`](tools/images/prompts/_global.md) | Image production briefs: 237-row catalog (`catalog.csv`/`.json`) and self-contained prompts for reconstructions (`npm run images:build`) |
+| [`AGENTS.md`](AGENTS.md) | Entry point for AI coding agents: how to work through the plan |
 | `docs/reference-ui.png`, `docs/mobile-qa/` | Original UI reference and mobile QA screenshots |
 
 ## Quick start
@@ -50,7 +50,7 @@ Run these in order. Each step says what success looks like.
 4. **Browser tests (not run in the build sandbox).** `npx playwright install chromium`, then `CMS_ADMIN_PASSWORD=choose-a-password npm run test:e2e`. Success: all specs pass. The first run may need `npm run test:visual:update` to create the visual baselines, which you then review and commit.
 5. **Reference check (needs internet).** `npm run check:references` compares every publication DOI with Crossref. Fix any mismatch in `content/publications.ts` before a page cites that reference.
 
-If a step fails, send the exact command and the first error lines; the status of each task is in `docs/IMPLEMENTATION-PLAN.md`.
+If a step fails, send the exact command and the first error lines; the status of each bug and phase is in `docs/HUMAN-ORIGINS-FIX-PLAN.md`.
 
 ## Useful commands
 
@@ -63,6 +63,10 @@ If a step fails, send the exact command and the first error lines; the status of
 | `npm run build:standalone` | Self-contained server build for VPS / container hosts |
 | `npm run backup:cms` | Consistent snapshot of `.cms-data/` (SQLite + media) |
 | `npm run typecheck` · `npm run lint` | Types / architecture + UI audits + ESLint |
+
+## Developing from another device
+
+`npm run dev` accepts requests only from `localhost` and `127.0.0.1`. To open the dev server from a phone or another computer, list its hostname or IP in `ALLOWED_DEV_ORIGINS` (comma-separated, no port), for example `ALLOWED_DEV_ORIGINS=192.168.1.20 npm run dev`. Production is not affected.
 
 ## Repository map
 
