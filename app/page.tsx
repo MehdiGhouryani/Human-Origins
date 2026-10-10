@@ -5,6 +5,7 @@ import {getLiveContent} from '../infrastructure/cms/live'
 import SiteHeader from '../components/SiteHeader'
 import Hero from '../components/Hero'
 import ExplorerShell from '../components/ExplorerShell'
+import ExplorerErrorBoundary from '../components/ExplorerErrorBoundary'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +33,9 @@ export default async function HomePage({searchParams}: PageProps) {
     <div className="site">
       <SiteHeader />
       <Hero release={live.catalog.metadata.release} copy={live.copy} />
-      <ExplorerShell bootstrap={bootstrap} initialState={initialState} />
+      <ExplorerErrorBoundary>
+        <ExplorerShell bootstrap={bootstrap} initialState={initialState} />
+      </ExplorerErrorBoundary>
     </div>
   )
 }

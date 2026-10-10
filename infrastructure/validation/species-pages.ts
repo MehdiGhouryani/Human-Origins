@@ -25,7 +25,7 @@ function blockParts(block:PageBlock,path:string):TextPart[]{
 }
 const blockWords=(block:PageBlock):number=>blockParts(block,'').reduce((sum,part)=>sum+countWords(part.text),0)+(block.type==='table'?countWords(block.caption):0)
 
-/** Validates one page against the writing rules of docs/IMPLEMENTATION-PLAN.md section 9a. Pure. */
+/** Validates one species page against the writing rules enforced here. Pure. */
 export function validateSpeciesPage(page:SpeciesPageContent,context:PageValidationContext):PageIssue[]{
   const issues:PageIssue[]=[]
   const add=(severity:PageIssue['severity'],code:string,path:string,message:string)=>issues.push({severity,code,path,message})

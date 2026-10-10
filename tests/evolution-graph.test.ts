@@ -5,9 +5,9 @@ describe('responsive lineage graph',()=>{
   it('keeps a phone map legible instead of shrinking it below 80 percent',()=>{
     expect(fitZoom(390,1638)).toBe(.45)
     expect(initialZoom(390,1638)).toBe(.8)
-    // At exactly the compact threshold the container is no longer "narrow": the whole map fits (floor((820-2)/1638)=0.49).
+    // At exactly the compact threshold the container is no longer "narrow": the whole map fits (floor((600-2)/1638)=0.36, raised to the 0.45 minimum: the map is panned, not shrunk further).
     expect(initialZoom(GRAPH_COMPACT_WIDTH,1638)).toBe(fitZoom(GRAPH_COMPACT_WIDTH,1638))
-    expect(initialZoom(GRAPH_COMPACT_WIDTH,1638)).toBe(.49)
+    expect(initialZoom(GRAPH_COMPACT_WIDTH,1638)).toBe(.45)
     expect(initialZoom(GRAPH_COMPACT_WIDTH-1,1638)).toBe(.8)
     expect(initialZoom(1200,1638)).toBe(.73)
   })

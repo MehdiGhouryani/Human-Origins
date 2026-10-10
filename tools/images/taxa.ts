@@ -158,7 +158,7 @@ export const TAXA:TaxonBrief[]=[
   {
     id:'erectus',name:'Homo erectus',short:'H. erectus',
     ageText:'about 1.9 million to roughly 0.1 million years ago (Pleistocene)',region:'Africa and Eurasia (Dmanisi in Georgia, Java, China)',
-    basis:{primary:'Dmanisi D2282 (about 1.8 million years old), compared with D2700 and Asian H. erectus crania',also:['KNM-WT 15000 (Turkana Boy; catalogued under H. ergaster — taxonomy decision D-16)'],catalogIds:['d2282']},
+    basis:{primary:'Dmanisi D2282 (about 1.8 million years old), compared with D2700 and Asian H. erectus crania',also:['KNM-WT 15000 (Turkana Boy; catalogued under H. ergaster)'],catalogIds:['d2282']},
     individual:'one adult; sex not asserted — draw an adult male as a visual convention',
     brain:'about 550–1,250 cc (Dmanisi about 546–775 cc; later Asian crania up to about 1,250 cc)',
     body:'Dmanisi adults about 145–166 cm; later H. erectus up to about 170–180 cm (verify); about 40–68 kg; long legs, modern-like proportions',

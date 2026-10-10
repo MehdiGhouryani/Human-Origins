@@ -1,7 +1,7 @@
 import type {SpeciesPageContent} from '../../domain/species-page'
 
 /**
- * Pilot page for *Sahelanthropus tchadensis* (plan task T15.3). Every statement cites references from
+ * Pilot page for *Sahelanthropus tchadensis*. Every statement cites references from
  * content/publications.ts that were verified on 2026-10-09 (repository records, institutional press releases and
  * the publication details they give). Owner approval of text and debate summaries is still required.
  */

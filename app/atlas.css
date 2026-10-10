@@ -462,3 +462,63 @@ details[open] .rel-legend-preview{display:none}
   }
 }
 
+/* About page (phase 2): a plain reading column under the header. */
+.about-page{max-width:760px;margin:0 auto;padding:56px 24px 96px;color:#d9e2df;line-height:1.65}
+.about-page h1{font-size:40px;line-height:1.15;margin:12px 0 24px;color:#f1d29a}
+.about-page h2{font-size:20px;margin:36px 0 8px;color:#f1d29a}
+.about-page p{margin:0 0 14px;font-size:16px}
+.about-page a{color:#f1d29a}
+
+/* ---- Phase 3: explorer layout. Breakpoints of the plan: 1280 (wide), 1024 (middle), 768 (tablet sheet).
+   Wide screens show the tree and the profile side by side. Below 1024px the profile is a bottom sheet: it opens when
+   a species is chosen and closes with its button or Escape. This file loads last, so these rules win over the older
+   ones with the same specificity; the older breakpoints are removed in phase 7. */
+.workspace.with-inspector{display:grid;grid-template-columns:minmax(0,1fr) 420px;align-items:stretch;min-height:680px}
+.inspector{position:relative;overflow-y:auto;border-left:1px solid #2a4143;border-top:0}
+.inspector-close-btn{display:none}
+@media (min-width:1024px) and (max-width:1279px){
+  .workspace.with-inspector{grid-template-columns:minmax(0,1fr) 360px}
+}
+@media (max-width:1023px){
+  .workspace.with-inspector{display:flex;flex-direction:column;min-height:0}
+  .tree-panel{width:100%;border-right:0}
+  .inspector{position:fixed;left:0;right:0;bottom:0;z-index:40;max-height:72vh;border-left:0;border-top:1px solid #203437;border-radius:16px 16px 0 0;box-shadow:0 -18px 40px rgba(0,0,0,.45);transform:translateY(105%);visibility:hidden;transition:transform .28s cubic-bezier(.22,1,.36,1),visibility 0s linear .28s}
+  /* Opening shows the sheet at once, so it can take focus; closing hides it after the slide. */
+  .inspector.is-open{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.22,1,.36,1),visibility 0s linear 0s}
+  .inspector-close-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
+}
+@media (min-width:768px) and (max-width:1023px){
+  .inspector{max-height:64vh}
+}
+
+/* Touch targets: at least 44 by 44 pixels on the controls a reader taps (plan decision D-09, phase 3). */
+.mode-tabs{height:auto;min-height:44px;flex-wrap:wrap}
+.mode-tabs button{min-height:44px;min-width:44px}
+.mobile-menu-toggle{min-width:44px;min-height:44px}
+.timebar .play{min-width:44px;min-height:44px}
+.timebar .world{min-height:44px}
+.inspector .tabs button{min-height:44px}
+.atlas-graph-zoom button{min-width:44px;min-height:44px}
+.cta.primary-cta{min-height:44px}
+
+/* Phase 4: taxon results in search select in place; they look like the other result links. */
+.search-taxon{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;display:block;text-decoration:underline;text-underline-offset:3px}
+
+/* Phase 5: the comparison is a mode of the explorer. The matrix scrolls sideways inside its own region, never the page. */
+.compare-stage{max-width:1200px;margin:0 auto;padding:24px 16px 56px}
+.compare-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;max-width:100%;border-radius:12px}
+.compare-scroll:focus-visible{outline:2px solid #f1d29a;outline-offset:3px}
+.compare-scroll .compare-cell{scroll-snap-align:start}
+.compare-limit{margin:8px 0 0;min-height:1.2em;font-size:13px;color:#f1d29a}
+.compare-chip.is-limit{opacity:.5;cursor:not-allowed}
+.compare-cc-bar-wrap{position:relative}
+.compare-cc-scale{position:relative;height:18px;margin-top:6px;font-size:11px;color:#8fa6a7}
+.compare-cc-scale span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.compare-caveat{display:block;margin-top:8px;font-size:12px;color:#8fa6a7}
+.compare-temporal-callout ul{margin:6px 0 0;padding-left:18px}
+/* The grid clips by default; inside its scroll region it must grow to its tracks so the region can scroll (BUG-54).
+   The remove button sits above the portrait, which is painted after it in the card (found by a real click). */
+.compare-scroll .compare-grid{overflow:visible;min-width:max-content}
+.compare-card-header{position:relative}
+.compare-card-header .compare-remove-btn{z-index:2}
+

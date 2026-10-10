@@ -59,10 +59,10 @@ test.describe('responsive layout contract',()=>{
     await expect(menu).toHaveCount(0)
   })
 
-  test('primary touch targets are at least 36px',async({page})=>{
+  test('primary touch targets are at least 44px',async({page})=>{
     await page.setViewportSize({width:390,height:820})
     await page.goto('/')
-    const small=await page.$$eval('.mode-tabs button,.mobile-menu-toggle,.play,.world,.tabs [role=tab],.tree-zoom-controls button,.cta',els=>els.filter(el=>{const r=el.getBoundingClientRect();return r.width&&(r.height<36||r.width<36)}).map(el=>el.textContent||el.getAttribute('aria-label')))
+    const small=await page.$$eval('.mode-tabs button,.mobile-menu-toggle,.timebar .play,.timebar .world,.inspector .tabs [role=tab],.atlas-graph-zoom button,.cta',els=>els.filter(el=>{const r=el.getBoundingClientRect();return r.width&&(r.height<44||r.width<44)}).map(el=>el.textContent||el.getAttribute('aria-label')))
     expect(small).toEqual([])
   })
 })

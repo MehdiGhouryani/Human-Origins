@@ -10,13 +10,13 @@ import {groupColors} from '../presentation/palette'
 
 export const taxonInitials=(short:string)=>short.replace(/[^A-Za-z ]/g,' ').split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase()
 
-type Props={species:readonly ExplorerSpecies[];selectedId:string;onSelect:(id:string)=>void;savedIds:ReadonlySet<string>}
+type Props={species:readonly ExplorerSpecies[];selectedId:string;onSelect:(id:string)=>void;savedIds:ReadonlySet<string>;graphIds:ReadonlySet<string>}
 
 /**
  * Clade-grouped taxon navigator. Everything comes from the catalogue: groups, order, counts. One tab stop (roving
  * tabindex); arrow keys move through taxa oldest → youngest, Home/End jump to the ends.
  */
-function TaxonNavigator({species,selectedId,onSelect,savedIds}:Props){
+function TaxonNavigator({species,selectedId,onSelect,savedIds,graphIds}:Props){
   const scrollRef=useRef<HTMLDivElement>(null)
   const ordered=useMemo(()=>orderTaxa(species),[species])
   const groups=useMemo(()=>groupTaxaByClade(ordered),[ordered])
@@ -71,6 +71,7 @@ function TaxonNavigator({species,selectedId,onSelect,savedIds}:Props){
             <span className="taxon-chip-thumb">{media&&<MediaImage src={resolveMediaSrc(media,'icon',256)} alt="" loading="lazy" sizes="48px" className="species-thumb-image" fallbackText={taxonInitials(taxon.short)}/>}</span>
             <span className="taxon-chip-text"><strong>{taxon.short}</strong><small>{compactDate(taxon.date)}</small></span>
             {isInferredNode(taxon)&&<span className="taxon-chip-tag">Inferred</span>}
+            {!graphIds.has(taxon.id)&&<span className="taxon-chip-tag taxon-chip-off">Outside graph</span>}
             {savedIds.has(taxon.id)&&<Bookmark size={12} fill="currentColor" className="taxon-chip-saved" aria-label="Saved"/>}
           </button></li>})}
         </ul>
