@@ -5,6 +5,7 @@ import {sapiensPage} from './sapiens'
 import {erectusPage} from './erectus'
 import {heidelbergensisPage} from './heidelbergensis'
 import {habilisPage} from './habilis'
+import {anamensisPage} from './anamensis'
 import {africanusPage} from './africanus'
 import {sahelanthropusPage} from './sahelanthropus'
 
@@ -14,6 +15,7 @@ import {sahelanthropusPage} from './sahelanthropus'
  */
 export const speciesPages:Readonly<Record<string,SpeciesPageContent>>={
   afarensis:afarensisPage,
+  anamensis:anamensisPage,
   sahelanthropus:sahelanthropusPage,
   neanderthal:neanderthalPage,
   sapiens:sapiensPage,

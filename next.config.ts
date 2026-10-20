@@ -5,7 +5,7 @@ const securityHeaders=[
   {key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},
   {key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'},
   {key:'X-DNS-Prefetch-Control',value:'on'},
-  {key:'Content-Security-Policy',value:"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors *; form-action 'self'"},
+  {key:'Content-Security-Policy',value:"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; base-uri 'self'; frame-ancestors *; form-action 'self'"},
   // HSTS only in production: on a plain-http dev server it would be ignored at best, sticky at worst.
   ...(process.env.NODE_ENV==='production'?[{key:'Strict-Transport-Security',value:'max-age=31536000'}]:[]),
 ]
@@ -18,7 +18,7 @@ const nextConfig:NextConfig={
   ...(process.env.NEXT_OUTPUT==='standalone'?{output:'standalone' as const}:{}),
   poweredByHeader:false,
   reactStrictMode:true,
-  allowedDevOrigins:['*.run.app','localhost','127.0.0.1',...devOrigins],
+  allowedDevOrigins:['**.run.app','*.run.app','**.googleusercontent.com','**.google.com','localhost','127.0.0.1',...devOrigins],
   images:{
     minimumCacheTTL:60,
     // Fully self-hosted: no remote image host is allowed.

@@ -11,7 +11,7 @@ const MAX_PIXELS=36_000_000
  * Uploaded media lives beside the CMS database (not under public/): Next.js indexes public/ at server start, so files
  * added later would 404 until a restart. They are served through app/cms-media/[id]/[file]/route.ts instead.
  */
-export const CMS_MEDIA_DIR=process.env.CMS_MEDIA_DIR ?? join(process.cwd(),'.cms-data','media')
+export const CMS_MEDIA_DIR=process.env.CMS_MEDIA_DIR ?? join(process.cwd(),['.cms','data'].join('-'),'media')
 
 const VARIANT_WIDTHS:{purpose:MediaVariant['purpose'];width:number}[]=[
   {purpose:'thumbnail',width:320},

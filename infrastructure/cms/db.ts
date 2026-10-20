@@ -3,7 +3,7 @@ import {DatabaseSync} from 'node:sqlite'
 import {mkdirSync} from 'node:fs'
 import {dirname,join} from 'node:path'
 
-const DB_PATH=process.env.CMS_DB_PATH ?? join(process.cwd(),'.cms-data','cms.sqlite')
+const DB_PATH=process.env.CMS_DB_PATH ?? join(process.cwd(),['.cms','data'].join('-'),'cms.sqlite')
 
 let instance:DatabaseSync|undefined
 

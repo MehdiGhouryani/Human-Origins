@@ -381,7 +381,7 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
     requestAnimationFrame(()=>nodeRefs.current.get(target!)?.focus({preventScroll:true}))
   },[order])
 
-  const selectedSpecies=byId.get(selected)
+  const selectedSpecies=byIdAll.get(selected)
   const selectedParent=parentLinkById.get(selected)
   const cursorX=warpX(layout.warp,currentAge)
 
@@ -435,7 +435,7 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
 
     <div className="atlas-graph-caption" aria-live="polite">
       {selectedSpecies&&!isInferredNode(selectedSpecies)&&<div className="atlas-graph-selected-pill">
-        <span>Selected: <strong>{selectedSpecies.name}</strong> ({selectedSpecies.date})</span>
+        <span>Selected: <strong>{selectedSpecies.name}</strong> ({selectedSpecies.date}){!byId.has(selected)&&<span className="taxon-chip-tag taxon-chip-off" style={{marginLeft:8}}>Outside graph</span>}</span>
         <a href={`/species/${selectedSpecies.id}`} className="atlas-graph-profile-link" title={`View ${selectedSpecies.short} full profile`}>
           View full page →
         </a>

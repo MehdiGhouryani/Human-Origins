@@ -1,13 +1,13 @@
 {
   "release": "0.33.0",
   "schemaVersion": "4.2.0",
-  "fingerprint": "d1cd207ac1928d3f477ed1b905e03246",
+  "fingerprint": "be141b6d4f5f0f04248dc61ce26e4497",
   "counts": {
     "taxa": 18,
     "taxonNames": 18,
-    "media": 18,
+    "media": 36,
     "sources": 55,
-    "publications": 21,
+    "publications": 99,
     "institutions": 10,
     "collections": 0,
     "materialEntities": 22,
