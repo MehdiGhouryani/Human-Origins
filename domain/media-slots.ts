@@ -30,7 +30,7 @@ export const sampleIconId=(taxonId:string)=>`media:${taxonId}-icon`
  * ---------------------------------------------------------------------------------------------- */
 
 export type SlotEvidenceClass=MediaEvidenceClass
-/** `always`: the public page shows a frame even when empty (decision D-19); `whenFilled`: hidden until an image is live. */
+/** `always`: the public page shows a frame even when empty; `whenFilled`: hidden until an image is live. */
 export type SlotPublicRule='always'|'whenFilled'
 
 export type MediaSlotDefinition={

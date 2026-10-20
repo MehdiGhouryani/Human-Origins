@@ -47,7 +47,7 @@ describe('generated slot definitions',()=>{
     expect(MEDIA_SLOTS.filter(slot=>slot.taxonId===null)).toHaveLength(21)
   })
 
-  it('applies decision D-19: only portrait and hero are shown as frames when empty',()=>{
+  it('shows only portrait and hero as frames when empty',()=>{
     for(const slot of MEDIA_SLOTS) expect(slot.publicRule,String(slot.id)).toBe(slot.series==='S02'||slot.series==='S03'?'always':'whenFilled')
   })
 

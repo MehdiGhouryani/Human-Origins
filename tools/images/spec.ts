@@ -113,7 +113,7 @@ const PROMPT_FILE=(taxonId:string)=>`prompts/${taxonId}.md`
 function statusFor(taxon:TaxonBrief,series:string):{status:RowStatus;reason:string}{
   if(series.startsWith('L')&&!taxon.lithics) return {status:'NOT-APPLICABLE',reason:taxon.noLithicsReason}
   if(series==='S11'&&!taxon.behavior) return {status:'NOT-APPLICABLE',reason:'No source-supported behaviour for this taxon; revisit only when evidence is registered.'}
-  if(taxon.basis.catalogIds.length===0) return {status:'BLOCKED-NO-SPECIMEN',reason:'No specimen record exists in content/specimens.ts yet (plan task T11.1); no image may be made before it exists.'}
+  if(taxon.basis.catalogIds.length===0) return {status:'BLOCKED-NO-SPECIMEN',reason:'No specimen record exists in content/specimens.ts yet; no image may be made before it exists.'}
   return {status:'TODO',reason:''}
 }
 

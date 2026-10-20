@@ -18,7 +18,7 @@ export const media:MediaAsset[]=taxa.map(taxon=>({taxonId:String(taxon.id),name:
     kind:'context-schematic' as const,
     sourceUrl:'',
     credit:'Human Origins · sample illustration (self-hosted)',
-    note:`Sample schematic only: it does not depict the fossils or the appearance of ${item.name}. Replace it from the admin panel (CMS → Media).`,
+    note:`Schematic only. It does not show the fossils or the appearance of ${item.name}.`,
     publicationStatus:'schematic' as const,
     rightsStatus:'clear' as const,
     sourceLinks:[],

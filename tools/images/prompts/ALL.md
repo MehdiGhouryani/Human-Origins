@@ -625,7 +625,7 @@ After the image, add an ASSUMPTIONS list of at most 120 words stating which feat
 Create ONE scientific paleoart portrait of Homo erectus for a science-education atlas of human evolution (Human Origins). It must be an evidence-based facial reconstruction, not entertainment art.
 OUTPUT: single image, portrait 4:5, 1000×1250 px, head and shoulders, three-quarter view, neutral mid-grey seamless background, even soft studio-style light.
 SUBJECT: one adult; sex not asserted — draw an adult male as a visual convention. Lived about 1.9 million to roughly 0.1 million years ago (Pleistocene); region: Africa and Eurasia (Dmanisi in Georgia, Java, China).
-BASIS: Dmanisi D2282 (about 1.8 million years old), compared with D2700 and Asian H. erectus crania; also consulted: KNM-WT 15000 (Turkana Boy; catalogued under H. ergaster — taxonomy decision D-16).
+BASIS: Dmanisi D2282 (about 1.8 million years old), compared with D2700 and Asian H. erectus crania; also consulted: KNM-WT 15000 (Turkana Boy; catalogued under H. ergaster).
 REFERENCE INPUT (optional; attach if the tool accepts images): (a) a lateral-view photograph or render of Dmanisi D2282 (about 1.8 million years old), compared with D2700 and Asian H. erectus crania; (b) a frontal-view photograph or render of the same specimen; (c) a modern human skull in the same view and at the same scale, for proportion only. If nothing is attached, follow the written morphology literally and say so in the assumptions list.
 BONE-ANCHORED FEATURES (render with confidence):
 - long, low braincase, widest low on the skull

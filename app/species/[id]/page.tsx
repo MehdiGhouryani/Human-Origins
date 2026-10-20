@@ -29,6 +29,7 @@ import {citationKey} from '../../../domain/species-page-render'
 import {Cite,RichText} from '../../../components/species/Rich'
 import SpeciesNarrative from '../../../components/species/SpeciesNarrative'
 import ReferenceList from '../../../components/species/ReferenceList'
+import ResponsiveDetails from '../../../components/species/ResponsiveDetails'
 import SectionNav from '../../../components/species/SectionNav'
 import {MEDIA_SLOTS} from '../../../content/media-slots.generated'
 import {resolveSlots} from '../../../features/explorer/slots'
@@ -124,14 +125,14 @@ export default async function SpeciesPage({params}:Params){
       <div className="dossier-hero-copy">
         <div className="pill-row"><span className="pill">{species.status==='living'?'Living':'Extinct'}</span><span className="pill">{species.group}</span><span className={`pill tier-pill tier-${completeness.tier}`}>{completenessTierLabel[completeness.tier]}</span></div>
         <h1>{species.name}</h1>
-        <p className="dossier-sub"><i>{species.taxonomy.scientificName}</i> · {species.taxonomy.rank} · {species.taxonomy.taxonomicStatus} · <CalendarDays size={13}/> {species.date}</p>
+        <p className="dossier-sub">{species.taxonomy.scientificName!==species.name&&<><i>{species.taxonomy.scientificName}</i> · </>}{species.taxonomy.rank} · {species.taxonomy.taxonomicStatus} · <CalendarDays size={13}/> {species.date}</p>
         <p className="dossier-lead">{content&&numbering?<><RichText text={content.lead.text}/><Cite refs={content.lead.refs} numbering={numbering} where={citationKey.lead}/></>:species.description}</p>
         {portrait?.publicationStatus==='review-required'&&<p className="dossier-note" role="note">This image is a reconstruction marked for provenance review. It is not a fossil photograph.</p>}
         {portrait?.publicationStatus==='schematic'&&<p className="dossier-note" role="note">This graphic is schematic and does not show a recovered fossil appearance.</p>}
         <div className="dossier-actions">
           <Link className="cta" href={`/?species=${species.id}&mode=tree`}><span><GitBranch size={14}/> Show in the tree</span><ArrowRight size={14}/></Link>
           <Link className="cta ghost" href={`/?species=${species.id}&mode=migration`}><span><MapPin size={14}/> Show on globe</span><ArrowRight size={14}/></Link>
-          <Link className="cta ghost" href="/compare"><span><GitCompare size={14}/> Compare matrix</span><ArrowRight size={14}/></Link>
+          <Link className="cta ghost" href={`/?mode=compare&cmp=${species.id}`}><span><GitCompare size={14}/> Compare matrix</span><ArrowRight size={14}/></Link>
         </div>
       </div>
     </header>
@@ -171,7 +172,7 @@ export default async function SpeciesPage({params}:Params){
       </section>}
 
       <section className="dossier-card" aria-labelledby="lineage-h">
-        <h2 id="lineage-h"><Network size={16}/> Place in the tree</h2>
+        <h2 id="lineage-h"><Network size={16}/> {content?'Lineage links':'Place in the tree'}</h2>
         <h3>Proposed origin</h3>
         <LinkList items={ancestors} empty="Root of this tree: no earlier lineage is registered."/>
         <h3>Leads to</h3>
@@ -186,29 +187,36 @@ export default async function SpeciesPage({params}:Params){
         <p className="dossier-muted">Overlap in time says who coexisted. It never implies ancestry.</p>
       </section>
 
-      <section className="dossier-card" aria-labelledby="sites-h">
-        <h2 id="sites-h"><MapPin size={16}/> Where and when</h2>
+      <section className="dossier-card dossier-fold" aria-labelledby="sites-h">
+        <ResponsiveDetails id="panel-sites" summary={<h2 id="sites-h"><MapPin size={16}/> Where and when{sites.length>0&&` (${sites.length})`}</h2>}>
         {sites.length?<ul className="dossier-sites">{sites.map(site=><li key={String(site.id)}>
           <div><strong>{site.name}</strong><small>{[site.country,site.region].filter(Boolean).join(' · ')}</small></div>
           <span>{site.ageLabel}{site.datingClass&&site.datingClass!=='unspecified'?` · ${datingClassLabel[site.datingClass]}`:''}</span>
           <Link href={`/?species=${species.id}&mode=migration&site=${String(site.id)}`} aria-label={`Show ${site.name} on the globe`}><MapPin size={12}/></Link>
         </li>)}</ul>:<p className="dossier-muted">No site is registered for this taxon yet.</p>}
+        </ResponsiveDetails>
       </section>
     </div>
 
     <SlotGallery states={slotStates} extras={looseImages} adminPreview={adminPreview}/>
 
-    <section className="dossier-section dossier-panel" aria-label="Evidence">
-      <EvidenceGraph bootstrap={bootstrap} species={species}/>
-      <RelationshipHypotheses bootstrap={bootstrap} species={species}/>
+    <section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-evidence-h">
+      <ResponsiveDetails id="panel-evidence" summary={<h2 id="panel-evidence-h">Evidence and relationships</h2>}>
+        <EvidenceGraph bootstrap={bootstrap} species={species}/>
+        <RelationshipHypotheses bootstrap={bootstrap} species={species}/>
+      </ResponsiveDetails>
     </section>
 
-    <section className="dossier-section dossier-panel" aria-label="Specimens">
-      <SpecimenGallery bootstrap={bootstrap} species={species}/>
+    <section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-specimens-h">
+      <ResponsiveDetails id="panel-specimens" summary={<h2 id="panel-specimens-h">Specimens and records</h2>}>
+        <SpecimenGallery bootstrap={bootstrap} species={species}/>
+      </ResponsiveDetails>
     </section>
 
-    {content&&numbering?<ReferenceList numbering={numbering} publications={publicationsById}/>:<section className="dossier-section dossier-panel" aria-label="Sources">
-      <SourceIntelligence bootstrap={bootstrap} species={species}/>
+    {content&&numbering?<ReferenceList numbering={numbering} publications={publicationsById}/>:<section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-sources-h">
+      <ResponsiveDetails id="panel-sources" summary={<h2 id="panel-sources-h">Sources and claims</h2>}>
+        <SourceIntelligence bootstrap={bootstrap} species={species}/>
+      </ResponsiveDetails>
     </section>}
 
     <section className="dossier-section dossier-completeness" aria-labelledby="complete-h">

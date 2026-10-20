@@ -1,13 +1,13 @@
 import {describe,it,expect} from 'vitest'
-import {fitZoom,initialZoom,GRAPH_COMPACT_WIDTH,lineageOf} from '../components/EvolutionGraph'
+import {fitZoom,initialZoom,pickGraphView,GRAPH_COMPACT_WIDTH,lineageOf} from '../components/EvolutionGraph'
 
 describe('responsive lineage graph',()=>{
   it('keeps a phone map legible instead of shrinking it below 80 percent',()=>{
     expect(fitZoom(390,1638)).toBe(.45)
     expect(initialZoom(390,1638)).toBe(.8)
-    // At exactly the compact threshold the container is no longer "narrow": the whole map fits (floor((820-2)/1638)=0.49).
+    // At exactly the compact threshold the container is no longer "narrow": the whole map fits (floor((600-2)/1638)=0.36, raised to the 0.45 minimum: the map is panned, not shrunk further).
     expect(initialZoom(GRAPH_COMPACT_WIDTH,1638)).toBe(fitZoom(GRAPH_COMPACT_WIDTH,1638))
-    expect(initialZoom(GRAPH_COMPACT_WIDTH,1638)).toBe(.49)
+    expect(initialZoom(GRAPH_COMPACT_WIDTH,1638)).toBe(.45)
     expect(initialZoom(GRAPH_COMPACT_WIDTH-1,1638)).toBe(.8)
     expect(initialZoom(1200,1638)).toBe(.73)
   })
@@ -24,5 +24,20 @@ describe('responsive lineage graph',()=>{
     // 'donor' is connected only by gene flow, which is not ancestry: it never appears in any lineage.
     expect([...lineageOf(links,'grandchild')]).not.toContain('donor')
     expect([...lineageOf(links,'donor')]).toEqual(['donor'])
+  })
+})
+
+describe('graph view choice by container width',()=>{
+  it('narrow containers (phones) always show the list, even when a map was stored',()=>{
+    expect(pickGraphView('rails',GRAPH_COMPACT_WIDTH-1)).toBe('list')
+    expect(pickGraphView('auto',368)).toBe('list')
+  })
+  it('wide containers show the map by default and honour a stored choice',()=>{
+    expect(pickGraphView('auto',GRAPH_COMPACT_WIDTH)).toBe('rails')
+    expect(pickGraphView('rails',GRAPH_COMPACT_WIDTH)).toBe('rails')
+    expect(pickGraphView('list',1280)).toBe('list')
+  })
+  it('before the first measurement the map is the default, as before',()=>{
+    expect(pickGraphView('auto',0)).toBe('rails')
   })
 })

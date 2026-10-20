@@ -21,9 +21,10 @@
  * map around the pinch centre, and zooming no longer snaps the view back to the selected taxon.
  */
 
-import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,useSyncExternalStore,type CSSProperties,type KeyboardEvent as ReactKeyboardEvent,type PointerEvent as ReactPointerEvent} from 'react'
+import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,useSyncExternalStore,type KeyboardEvent as ReactKeyboardEvent,type PointerEvent as ReactPointerEvent} from 'react'
 
 const useIsomorphicLayoutEffect=typeof window!=='undefined'?useLayoutEffect:useEffect
+import type {ReactNode} from 'react'
 import {Crosshair,GitBranch,List,Maximize2,Minus,Plus,Route} from 'lucide-react'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {ExplorerSpecies} from '../features/explorer/types'
@@ -33,9 +34,10 @@ import {findMedia,resolveMediaSrc} from '../presentation/mediaDelivery'
 import {RELATION_SEMANTICS} from '../domain/relationship-semantics'
 import {certaintyLabel} from '../domain/labels'
 import {isInferredNode} from '../domain/taxon-model'
-import {ageMaToFraction,sliderToAgeMa} from '../domain/time'
+import {sliderToAgeMa} from '../domain/time'
 import {taxonInitials} from './TaxonNavigator'
-import {computeGraphLayout,computeVerticalGraphLayout,warpX,type GraphEdge,type GraphLayout} from '../presentation/graphLayout'
+import {computeGraphLayout,warpX,type GraphEdge,type GraphLayout} from '../presentation/graphLayout'
+import {LineageList,buildLineageTree} from './LineageList'
 
 type Props={
   bootstrap:ExplorerBootstrap
@@ -50,8 +52,11 @@ type View='rails'|'list'
 type ViewPreference=View|'auto'
 
 const MIN_ZOOM=.45,MAX_ZOOM=2
+/** The one circular clip every node avatar uses (defined once in the graph SVG). */
+const AVATAR_CLIP_ID='atlas-graph-avatar-clip'
 /** Below this container width the vertical list reads better than a horizontally scrolling map. */
-export const GRAPH_COMPACT_WIDTH=820
+/** Measured on the graph's own container (not the window): below this width the lineage list replaces the map, because 11 taxa cannot be read on a narrow map. */
+export const GRAPH_COMPACT_WIDTH=600
 const VIEW_STORAGE_KEY='human-origins:graph-view'
 // View preference store: localStorage when available, in-memory otherwise (private mode / blocked storage).
 const viewPreferenceListeners=new Set<()=>void>()
@@ -77,8 +82,10 @@ const formatEventAge=(ageMa?:number)=>ageMa===undefined?'':ageMa<1?`${Math.round
 
 /** Pure helper (exported for tests): which projection fits a container of this width. */
 export function pickGraphView(preference:ViewPreference,containerWidth:number):View{
+  // Narrow containers always show the list: a stored map choice cannot force a map that cannot be read.
+  if(containerWidth>0&&containerWidth<GRAPH_COMPACT_WIDTH) return 'list'
   if(preference!=='auto') return preference
-  return containerWidth>0&&containerWidth<GRAPH_COMPACT_WIDTH?'list':'rails'
+  return 'rails'
 }
 
 /** Pure helper (exported for tests): the zoom at which the whole map fits the container, bounded to a legible range. */
@@ -150,24 +157,22 @@ const GeneFlowArc=memo(function GeneFlowArc({flow,label,active,onHover,onPin}:Ge
   </g>
 })
 
-type NodeProps={species:ExplorerSpecies;node:GraphLayout['nodes'][string];r:number;isSelected:boolean;alive:boolean;onLineage:boolean;partner:boolean;iconFailed:boolean;onFailed:(id:string)=>void;onSelect:(id:string)=>void;onKeyNav:(event:ReactKeyboardEvent,id:string)=>void;registerRef:(id:string,el:SVGGElement|null)=>void}
-const GraphNode=memo(function GraphNode({species,node,r,isSelected,alive,onLineage,partner,iconFailed,onFailed,onSelect,onKeyNav,registerRef}:NodeProps){
+type NodeProps={species:ExplorerSpecies;node:GraphLayout['nodes'][string];r:number;isSelected:boolean;tabStop:boolean;alive:boolean;onLineage:boolean;partner:boolean;iconFailed:boolean;onFailed:(id:string)=>void;onSelect:(id:string)=>void;onKeyNav:(event:ReactKeyboardEvent,id:string)=>void;registerRef:(id:string,el:SVGGElement|null)=>void}
+const GraphNode=memo(function GraphNode({species,node,r,isSelected,tabStop,alive,onLineage,partner,iconFailed,onFailed,onSelect,onKeyNav,registerRef}:NodeProps){
   const inferred=isInferredNode(species)
   const media=findMedia(species.media,species.treeIconId)
   const showIcon=Boolean(media&&!iconFailed)
   const color=colorFor(species)
   const nameY=node.labelSide==='above'?-r-21:r+14
   const dateY=node.labelSide==='above'?-r-7:r+28
-  const clipId=`atlas-graph-clip-${species.id}`
   const ref=useCallback((el:SVGGElement|null)=>registerRef(species.id,el),[registerRef,species.id])
-  return <g ref={ref} className={`atlas-graph-node ${isSelected?'selected':''} ${alive?'in-time':'out-time'} ${onLineage?'on-lineage':''} ${partner?'gene-partner':''}`} transform={`translate(${node.x} ${node.y})`} tabIndex={isSelected?0:-1} role="button" aria-pressed={isSelected} aria-label={`${species.name}, ${species.date}${inferred?', inferred node':''}`} data-taxon={species.id} onClick={()=>onSelect(species.id)} onKeyDown={event=>onKeyNav(event,species.id)}>
+  return <g ref={ref} className={`atlas-graph-node ${isSelected?'selected':''} ${alive?'in-time':'out-time'} ${onLineage?'on-lineage':''} ${partner?'gene-partner':''}`} transform={`translate(${node.x} ${node.y})`} tabIndex={tabStop?0:-1} role="button" aria-pressed={isSelected} aria-label={`${species.name}, ${species.date}${inferred?', inferred node':''}`} data-taxon={species.id} onClick={()=>onSelect(species.id)} onKeyDown={event=>onKeyNav(event,species.id)}>
     <circle className="atlas-graph-halo" r={isSelected?r+9:0}/>
     {/* Finger-sized hit target (r+12 ≈ 44px at 100%), drawn transparent. */}
     <circle r={r+12} fill="transparent"/>
     <circle className="atlas-graph-ring" r={r} fill="#09181a" stroke={isSelected?'#f1d29a':color} strokeWidth={isSelected?3:1.8} strokeDasharray={inferred?'4 3':undefined}/>
-    <clipPath id={clipId}><circle r={r-3}/></clipPath>
     {showIcon
-      ?<image href={resolveMediaSrc(media!,'icon',128)} x={-(r-3)} y={-(r-3)} width={(r-3)*2} height={(r-3)*2} preserveAspectRatio="xMidYMid slice" clipPath={`url(#${clipId})`} onError={()=>onFailed(species.id)}/>
+      ?<image href={resolveMediaSrc(media!,'icon',128)} x={-(r-3)} y={-(r-3)} width={(r-3)*2} height={(r-3)*2} preserveAspectRatio="xMidYMid slice" clipPath={`url(#${AVATAR_CLIP_ID})`} onError={()=>onFailed(species.id)}/>
       :<text className="atlas-graph-initials" textAnchor="middle" dominantBaseline="central">{inferred?'?':taxonInitials(species.short)}</text>}
     <text className="atlas-graph-name" y={nameY} textAnchor="middle">{species.short}</text>
     <text className="atlas-graph-date" y={dateY} textAnchor="middle">{inferred?'Inferred node':species.date}</text>
@@ -209,7 +214,6 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
   const links=bootstrap.graph.relationships
   const graphLinks=useMemo(()=>links.map(link=>({id:String(link.id),from:String(link.from),to:String(link.to),type:link.type,relation:link.relation,eventAgeMa:link.eventAgeMa})),[links])
   const layout=useMemo(()=>computeGraphLayout(species,graphLinks),[species,graphLinks])
-  const vertical=useMemo(()=>computeVerticalGraphLayout(species,graphLinks,{rowHeight:84,laneWidth:22,dotRadius:9}),[species,graphLinks])
   const byId=useMemo(()=>new Map(species.map(item=>[item.id,item])),[species])
   const linkById=useMemo(()=>new Map(links.map(link=>[String(link.id),link])),[links])
   const currentAge=useMemo(()=>sliderToAgeMa(time),[time])
@@ -349,6 +353,8 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
     return out
   },[links])
 
+  const lineageRoots=useMemo(()=>buildLineageTree(species,parentLinkById,geneFlowById,byId),[species,parentLinkById,geneFlowById,byId])
+
   const activeId=hover??pinnedRelationId
   const activeLink=activeId?linkById.get(activeId):undefined
   // Stable handlers: memoised nodes and edges must not re-render because a closure was re-created.
@@ -359,6 +365,8 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
 
   // Roving focus across nodes in chronological order: ←/→ step, Home/End jump, Enter/Space select.
   const order=layout.order
+  // One node stays reachable with Tab: the selected one, or the oldest node when the selected taxon is not on the graph.
+  const tabStopId=layout.nodes[selected]?selected:(order[0]??'')
   const onKeyNav=useCallback((event:ReactKeyboardEvent,id:string)=>{
     const index=order.indexOf(id)
     let target:string|undefined
@@ -389,16 +397,19 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
     ?<line className="atlas-graph-lifespan" x1={selectedNode.x} x2={Math.max(selectedNode.x,warpX(layout.warp,selectedSpecies.end))} y1={selectedNode.y} y2={selectedNode.y} stroke={colorFor(selectedSpecies)} strokeWidth="10" strokeLinecap="round"/>
     :null
 
+  // Phones: the relation caption folds under the selected card, so the card stays the focus ("Why this line?").
+  const phoneWrap=(node:ReactNode)=>containerWidth<GRAPH_COMPACT_WIDTH
+    ?<details className="atlas-graph-why"><summary>Why this line?</summary>{node}</details>
+    :node
   return <div ref={wrapRef} className={`atlas-graph view-${view}`} data-view={view}>
     <div className="atlas-graph-toolbar">
       <div className="atlas-graph-title"><GitBranch size={15} aria-hidden="true"/><strong>Lineage graph</strong><span>{species.length} taxa{bootstrap.graph.off.length?` · ${bootstrap.graph.off.length} hidden`:''}</span></div>
-      <div className="atlas-graph-views" role="group" aria-label="Graph layout">
+      {containerWidth>=GRAPH_COMPACT_WIDTH&&<div className="atlas-graph-views" role="group" aria-label="Graph layout">
         <button type="button" onClick={()=>choose('rails')} className={view==='rails'?'active':''} aria-pressed={view==='rails'}><Route size={14} aria-hidden="true"/> Map</button>
         <button type="button" onClick={()=>choose('list')} className={view==='list'?'active':''} aria-pressed={view==='list'}><List size={14} aria-hidden="true"/> List</button>
-      </div>
+      </div>}
       {view==='rails'&&<div className="atlas-graph-zoom" role="group" aria-label="Zoom">
         <button type="button" onClick={()=>zoomTo(k/1.25)} aria-label="Zoom out" disabled={k<=MIN_ZOOM+.001}><Minus size={15} aria-hidden="true"/></button>
-        <output aria-label="Current zoom">{Math.round(k*100)}%</output>
         <button type="button" onClick={()=>zoomTo(k*1.25)} aria-label="Zoom in" disabled={k>=MAX_ZOOM-.001}><Plus size={15} aria-hidden="true"/></button>
         <button type="button" onClick={()=>zoomTo(fit)} aria-label="Fit to width" className={Math.abs(k-fit)<.005?'active':''}><Maximize2 size={14} aria-hidden="true"/></button>
         <button type="button" onClick={()=>centerOn(selected)} aria-label="Centre the selected taxon"><Crosshair size={15} aria-hidden="true"/></button>
@@ -409,44 +420,18 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
       ?<div ref={canvasRef} className="atlas-graph-canvas" tabIndex={0} aria-label="Evolutionary graph, older taxa on the left. Scroll or drag to pan; pinch, or Ctrl and the mouse wheel, to zoom." onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}>
         <svg className="atlas-graph-svg" width={Math.round(layout.width*k)} height={Math.round(layout.height*k)} viewBox={`0 0 ${layout.width} ${layout.height}`} role="group" aria-labelledby="atlas-graph-title atlas-graph-desc">
           <title id="atlas-graph-title">Evolutionary graph, older taxa on the left and younger taxa on the right</title>
+          {/* One circular clip for every avatar: a unit circle in the image's own box, so each node needs no clip path of its own. */}
+          <defs><clipPath id={AVATAR_CLIP_ID} clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath></defs>
           <desc id="atlas-graph-desc">Each taxon has its own column on a warped time axis. Solid rails show the curated path, elbows show side branches and pink arcs show gene flow. The band behind the selected taxon is its documented time range. Lines are relationships with stated certainty, not guaranteed direct ancestry.</desc>
           {gridLayer}
           <g className="atlas-graph-bars">{lifespan}</g>
           <g className="atlas-graph-edges">{layout.edges.map(edge=>{const link=linkById.get(edge.id),child=link?byId.get(String(link.to)):undefined;return link&&child?<Edge key={edge.id} edge={edge} link={link} stroke={colorFor(child)} active={edge.id===activeId} related={lineage.has(String(link.from))&&lineage.has(String(link.to))} onHover={setHover} onPin={pin}/>:null})}</g>
           <g className="atlas-graph-gene-flow">{layout.geneFlow.map(flow=><GeneFlowArc key={flow.id} flow={flow} label={formatEventAge(linkById.get(flow.id)?.eventAgeMa)} active={flow.id===activeId} onHover={setHover} onPin={pin}/>)}</g>
           <line className="atlas-graph-cursor" x1={cursorX} x2={cursorX} y1={layout.plot.top} y2={layout.plot.bottom}/>
-          <g className="atlas-graph-nodes">{species.map(item=>{const node=layout.nodes[item.id];return node?<GraphNode key={item.id} species={item} node={node} r={layout.nodeRadius} isSelected={item.id===selected} alive={!isInferredNode(item)&&currentAge<=item.start&&currentAge>=item.end} onLineage={lineage.has(item.id)} partner={partners.has(item.id)} iconFailed={failed.has(item.id)} onFailed={onFailed} onSelect={select} onKeyNav={onKeyNav} registerRef={registerRef}/>:null})}</g>
+          <g className="atlas-graph-nodes">{species.map(item=>{const node=layout.nodes[item.id];return node?<GraphNode key={item.id} species={item} node={node} r={layout.nodeRadius} isSelected={item.id===selected} tabStop={item.id===tabStopId} alive={!isInferredNode(item)&&currentAge<=item.start&&currentAge>=item.end} onLineage={lineage.has(item.id)} partner={partners.has(item.id)} iconFailed={failed.has(item.id)} onFailed={onFailed} onSelect={select} onKeyNav={onKeyNav} registerRef={registerRef}/>:null})}</g>
         </svg>
       </div>
-      :<div className="atlas-graph-list" style={{height:vertical.height}}>
-        <svg className="atlas-graph-list-lines" width={vertical.gutter} height={vertical.height} aria-hidden="true">
-          {vertical.paths.map(path=>{const link=linkById.get(path.id),child=link?byId.get(String(link.to)):undefined;const on=link?lineage.has(String(link.from))&&lineage.has(String(link.to)):false;return <path key={path.id} d={path.d} fill="none" className={`list-edge ${path.kind} ${on?'on-lineage':''}`} stroke={child?colorFor(child):'#7b89bb'} strokeDasharray={link?RELATION_SEMANTICS[link.relation].stroke.dash:undefined}/>})}
-          {vertical.rows.map(row=>{const item=byId.get(row.id)!;const on=row.id===selected;return <circle key={row.id} cx={row.x} cy={row.y} r={on?vertical.dotRadius+2:vertical.dotRadius} fill={on?'#f1d29a':'#09181a'} stroke={colorFor(item)} strokeWidth={on?3:2} strokeDasharray={isInferredNode(item)?'3 2':undefined}/>})}
-        </svg>
-        <ol aria-label="Evolutionary graph as a list, oldest first">{vertical.rows.map(row=>{
-          const item=byId.get(row.id)!,isSelected=item.id===selected,inferred=isInferredNode(item)
-          const parent=parentLinkById.get(item.id),parentTaxon=parent?byId.get(String(parent.from)):undefined
-          const flowPartners=(geneFlowById.get(item.id)??[]).map(link=>byId.get(String(link.from)===item.id?String(link.to):String(link.from))?.short).filter(Boolean)
-          const media=findMedia(item.media,item.treeIconId)
-          const alive=!inferred&&currentAge<=item.start&&currentAge>=item.end
-          const left=ageMaToFraction(item.start)*100,right=ageMaToFraction(item.end)*100
-          return <li key={row.id} className="atlas-graph-list-item" style={{top:row.y-vertical.rowHeight/2,height:vertical.rowHeight,left:vertical.gutter}}>
-            <button type="button" onClick={()=>setSelected(item.id)} className={`atlas-graph-row ${isSelected?'selected':''} ${alive?'in-time':''} ${lineage.has(item.id)?'on-lineage':''}`} aria-pressed={isSelected} aria-label={`${item.name}, ${inferred?'inferred node':item.date}${alive?', alive at the selected time':''}`} style={{'--clade':colorFor(item)} as CSSProperties}>
-              <span className="atlas-graph-row-avatar" aria-hidden="true">{media&&!failed.has(item.id)
-                ?(
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={resolveMediaSrc(media,'icon',128)} alt="" width={36} height={36} loading="lazy" decoding="async" onError={()=>onFailed(item.id)}/>
-              )
-                :<b>{inferred?'?':taxonInitials(item.short)}</b>}</span>
-              <span className="atlas-graph-row-text">
-                <strong>{item.short}</strong>
-                <small>{inferred?'Inferred node':item.date}{alive?' · alive at selected time':''}</small>
-                <span className="atlas-graph-row-rel">{parent&&parentTaxon?<>{RELATION_SEMANTICS[parent.relation].label} · from {parentTaxon.short}</>:'Root of the drawn graph'}{flowPartners.length>0&&<em> · ⇄ {flowPartners.join(', ')}</em>}</span>
-              </span>
-              <span className="atlas-graph-row-time" aria-hidden="true"><i style={{left:`${left}%`,width:`${Math.max(2,right-left)}%`}}/><u style={{left:`${ageMaToFraction(currentAge)*100}%`}}/></span>
-            </button>
-          </li>})}</ol>
-      </div>}
+      :<LineageList flat={containerWidth<GRAPH_COMPACT_WIDTH} roots={lineageRoots} selected={selected} lineage={lineage} currentAge={currentAge} failedIds={failed} onSelect={setSelected} onImageFailed={onFailed}/>}
 
     <div className="atlas-graph-caption" aria-live="polite">
       {selectedSpecies&&!isInferredNode(selectedSpecies)&&<div className="atlas-graph-selected-pill">
@@ -456,10 +441,10 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
         </a>
       </div>}
       {view==='rails'&&activeLink
-        ?<RelationCaption bootstrap={bootstrap} link={activeLink} byId={byId}/>
+        ?phoneWrap(<RelationCaption bootstrap={bootstrap} link={activeLink} byId={byId}/>)
         :view==='list'&&selectedSpecies&&selectedParent
-          ?<RelationCaption bootstrap={bootstrap} link={selectedParent} byId={byId}/>
-          :<span><strong>Clean rails, honest uncertainty.</strong> {view==='rails'?'Tap a taxon to inspect it, or a line to read exactly what it claims. Pinch or use the buttons to zoom.':'Tap a taxon to inspect it; the line that places it in the tree is explained here.'} Hidden taxa remain in the atlas but do not break the curated path.</span>}
+          ?phoneWrap(<RelationCaption bootstrap={bootstrap} link={selectedParent} byId={byId}/>)
+          :<span>{view==='rails'?'Tap a taxon to inspect it, or a line to read its claim.':'Tap a taxon to inspect it. The line that places it in the tree is explained here.'}</span>}
     </div>
   </div>
 }

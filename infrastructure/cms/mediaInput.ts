@@ -119,7 +119,7 @@ export function parseMediaPatch(body:Record<string,unknown>,knownTaxonIds:Readon
   return patch
 }
 
-/* ---- Scientific-image metadata (plan task T13.1) ---- */
+/* ---- Scientific-image metadata ---- */
 
 const ISO_DATE=/^\d{4}-\d{2}-\d{2}$/
 const isRealDate=(value:string)=>{

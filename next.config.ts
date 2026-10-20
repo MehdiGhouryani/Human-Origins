@@ -10,11 +10,15 @@ const securityHeaders=[
   ...(process.env.NODE_ENV==='production'?[{key:'Strict-Transport-Security',value:'max-age=31536000'}]:[]),
 ]
 
+// Dev only: hostnames (no port) allowed to load dev resources, e.g. ALLOWED_DEV_ORIGINS=192.168.1.20,mybox.local.
+// localhost and 127.0.0.1 are always listed because the Playwright config and most local tools use them.
+const devOrigins=(process.env.ALLOWED_DEV_ORIGINS??'').split(',').map(origin=>origin.trim()).filter(Boolean)
+
 const nextConfig:NextConfig={
   ...(process.env.NEXT_OUTPUT==='standalone'?{output:'standalone' as const}:{}),
   poweredByHeader:false,
   reactStrictMode:true,
-  allowedDevOrigins:['*.run.app','localhost:3000'],
+  allowedDevOrigins:['*.run.app','localhost','127.0.0.1',...devOrigins],
   images:{
     minimumCacheTTL:60,
     // Fully self-hosted: no remote image host is allowed.

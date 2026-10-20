@@ -69,7 +69,6 @@
 .admin-matrix td{text-align:center;font-weight:600}
 .admin-matrix td.met{color:#6fd39a;background:rgba(111,211,154,.06)}
 .admin-matrix td.missing{color:#ff7a8a}
-.admin-slot-badges{display:flex;gap:6px;flex-wrap:wrap}
 .admin-badge.slot{background:#173a2c;color:#9ff0c2}
 .graph-admin-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px;margin:22px 0}
 .graph-admin-summary>div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:4px}

@@ -4,39 +4,46 @@ import {Menu,X} from 'lucide-react'
 import GlobalSearch from './GlobalSearch'
 import {useEffect,useRef,useState} from 'react'
 import Link from 'next/link'
+import {usePathname,useSearchParams} from 'next/navigation'
 
-const navItems=[
-  ['Explore','/'],
-  ['Evolution Tree','/?mode=tree'],
-  ['Timeline','/?mode=timeline'],
-  ['Migration','/?mode=migration'],
-  ['Evidence','/?mode=evidence'],
-  ['About','/#about'],
-] as const
+type Item={label:string;path:string;query:Record<string,string>;carry:boolean}
+// Views of the explorer that live on the home page are reached from the tab bar (Tree, Timeline, Migration).
+const navItems:Item[]=[
+  {label:'Species',path:'/species',query:{},carry:false},
+  {label:'Journey',path:'/',query:{journey:'1'},carry:true},
+  {label:'Evidence',path:'/',query:{mode:'evidence'},carry:true},
+  {label:'About',path:'/about',query:{},carry:false},
+]
+
+/** Explorer links keep the species and time the reader is looking at. */
+function hrefFor(item:Item,params:URLSearchParams):string{
+  const next=new URLSearchParams()
+  if(item.carry) for(const key of ['species','time']){const value=params.get(key); if(value) next.set(key,value)}
+  for(const [key,value] of Object.entries(item.query)) next.set(key,value)
+  const query=next.toString()
+  return `${item.path}${query?`?${query}`:''}`
+}
+
+/** The active item follows the route and the URL on every render, so it cannot drift from what is shown. */
+function activeLabel(pathname:string,params:URLSearchParams):string|null{
+  if(pathname==='/species'||pathname.startsWith('/species/')) return 'Species'
+  if(pathname==='/about') return 'About'
+  if(pathname!=='/') return null
+  if(params.get('journey')==='1') return 'Journey'
+  if(params.get('mode')==='evidence') return 'Evidence'
+  return null
+}
 
 export default function SiteHeader(){
+  const pathname=usePathname()
+  const params=useSearchParams()
   const [open,setOpen]=useState(false)
-  const [activeLabel,setActiveLabel]=useState('Explore')
   const toggleRef=useRef<HTMLButtonElement>(null)
   const menuRef=useRef<HTMLDivElement>(null)
   const headerRef=useRef<HTMLElement>(null)
   const close=()=>setOpen(false)
-  useEffect(()=>{
-    const sync=()=>{
-      const params=new URLSearchParams(window.location.search)
-      if(window.location.hash==='#about') setActiveLabel('About')
-      else if(params.get('journey')==='1') setActiveLabel('Journey')
-      else {
-        const mode=params.get('mode')
-        setActiveLabel(mode==='tree'?'Evolution Tree':mode==='timeline'?'Timeline':mode==='migration'?'Migration':mode==='evidence'?'Evidence':'Explore')
-      }
-    }
-    sync()
-    window.addEventListener('popstate',sync)
-    window.addEventListener('hashchange',sync)
-    window.addEventListener('human-origins:navigation',sync)
-    return ()=>{window.removeEventListener('popstate',sync);window.removeEventListener('hashchange',sync);window.removeEventListener('human-origins:navigation',sync)}
-  },[])
+  const active=activeLabel(pathname,params)
+
   // Mobile menu (0.29): focus moves into the menu on open, Tab/Shift+Tab stay inside menu + toggle,
   // Escape / outside tap / rotating to desktop width close it, and focus returns to the toggle on Escape.
   useEffect(()=>{
@@ -61,13 +68,14 @@ export default function SiteHeader(){
     desktop.addEventListener('change',onResize)
     return ()=>{window.removeEventListener('keydown',onKey);document.removeEventListener('pointerdown',onPointer);desktop.removeEventListener('change',onResize)}
   },[open])
+
   return <header ref={headerRef} className={`topbar ${open?'menu-open':''}`} aria-label="Human Origins primary navigation">
     <Link className="brand" href="/" aria-label="Human Origins home" onClick={close}>
       <span className="mark" aria-hidden="true">✦</span>
       <span><strong>HUMAN ORIGINS</strong><small>OUR STORY. A SHARED PAST.</small></span>
     </Link>
     <nav aria-label="Modes">
-      {navItems.map(([label,href])=><a className={activeLabel===label?'active':''} href={href} key={label} aria-current={activeLabel===label?'page':undefined}>{label}</a>)}
+      {navItems.map(item=><Link className={active===item.label?'active':''} href={hrefFor(item,params)} key={item.label} aria-current={active===item.label?'page':undefined}>{item.label}</Link>)}
     </nav>
     <div className="top-actions">
       <GlobalSearch/>
@@ -78,7 +86,7 @@ export default function SiteHeader(){
     </div>
     {open&&<div ref={menuRef} id="mobile-navigation" className="mobile-navigation">
       <nav aria-label="Mobile navigation">
-        {navItems.map(([label,href])=><a href={href} key={label} onClick={close} className={activeLabel===label?'active':''} aria-current={activeLabel===label?'page':undefined}>{label}</a>)}
+        {navItems.map(item=><Link href={hrefFor(item,params)} key={item.label} onClick={close} className={active===item.label?'active':''} aria-current={active===item.label?'page':undefined}>{item.label}</Link>)}
       </nav>
     </div>}
   </header>

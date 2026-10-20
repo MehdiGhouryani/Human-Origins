@@ -1,6 +1,8 @@
 import {expect,test} from '@playwright/test'
 
-// Runs on the phone, iPhone SE and tablet projects (file name matches the responsive/visual pattern).
+// Runs on the phone, iPhone SE and tablet projects only. On the desktop sidebar the links are 36px tall with a mouse,
+// and the touch rule applies to touch layouts.
+test.beforeEach(({},testInfo)=>{test.skip(testInfo.project.name==='desktop','phone and tablet projects only')})
 for(const id of ['afarensis','sahelanthropus']){
   test(`${id}: no horizontal page scroll and reachable navigation`,async({page})=>{
     await page.goto(`/species/${id}`)

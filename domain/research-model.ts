@@ -122,7 +122,7 @@ export type PublicationRecord={
   institutionIds:readonly InstitutionId[]
   identifiers:readonly ExternalIdentifier[]
   note?:string
-  /** Reference metadata for species pages (plan task T14.4). Absent on records that no page cites yet. */
+  /** Reference metadata for species pages. Absent on records that no page cites yet. */
   kind?:ReferenceKind
   /** ISO date (YYYY-MM-DD) on which title, authors, year, venue and DOI were checked against `verification`. */
   verifiedOn?:string

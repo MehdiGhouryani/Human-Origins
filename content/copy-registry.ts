@@ -1,6 +1,9 @@
 export type CopySlot={id:string;label:string;appliesTo:string;defaultValue:string;multiline:boolean}
 
 export const copyRegistry:readonly CopySlot[]=[
+  {id:'hero.eyebrow',label:'Hero eyebrow',appliesTo:'Homepage hero',defaultValue:'8 MILLION YEARS AGO — PRESENT',multiline:false},
+  {id:'hero.title.line1',label:'Hero title, first line',appliesTo:'Homepage hero',defaultValue:'The Evolutionary',multiline:false},
+  {id:'hero.title.line2',label:'Hero title, second line',appliesTo:'Homepage hero',defaultValue:'Tree of Humans',multiline:false},
   {id:'hero.tagline',label:'Hero tagline',appliesTo:'Homepage hero',defaultValue:'Different branches. One story.',multiline:false},
   {id:'hero.intro',label:'Hero introduction',appliesTo:'Homepage hero',defaultValue:'Explore the relationships between human species, their shared history, and the evidence that connects us.',multiline:true},
   {id:'evidence.heading',label:'Evidence tab heading',appliesTo:'Explorer · Evidence mode',defaultValue:'Evidence you can trace.',multiline:false},

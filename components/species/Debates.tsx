@@ -2,6 +2,7 @@ import type {SpeciesPageContent} from '../../domain/species-page'
 import type {ReferenceNumbering} from '../../domain/species-page-render'
 import {citationKey} from '../../domain/species-page-render'
 import {Cite,RichText} from './Rich'
+import ResponsiveDetails from './ResponsiveDetails'
 
 const formatDate=(iso:string)=>new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB',{year:'numeric',month:'long',timeZone:'UTC'})
 
@@ -10,13 +11,14 @@ export default function Debates({page,numbering}:{page:SpeciesPageContent;number
   return <>
     <section className="sp-section sp-debates" id="debated" aria-labelledby="debated-h">
       <h2 id="debated-h">What is debated</h2>
-      {page.debates.map(debate=><article key={debate.id} className="sp-debate" aria-labelledby={`debate-${debate.id}-q`}>
-        <h3 id={`debate-${debate.id}-q`}>{debate.question}</h3>
+      {page.debates.map((debate,debateIndex)=><article key={debate.id} className="sp-debate" aria-labelledby={`debate-${debate.id}-q`}>
+        <ResponsiveDetails id={`debate-${debate.id}`} keepOpenOnMobile={debateIndex===0} summary={<h3 id={`debate-${debate.id}-q`}>{debate.question}</h3>}>
         <ol className="sp-positions">{debate.positions.map((position,index)=><li key={index}>
           <strong>{position.label}</strong>
           <p><RichText text={position.summary}/><Cite refs={position.refs} numbering={numbering} where={citationKey.position(debate.id,index)}/></p>
         </li>)}</ol>
         <p className="sp-updated">Updated {formatDate(debate.updated)}</p>
+        </ResponsiveDetails>
       </article>)}
     </section>
     <section className="sp-section sp-unknowns" id="unknown" aria-labelledby="unknown-h">

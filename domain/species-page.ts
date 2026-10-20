@@ -1,5 +1,5 @@
 /**
- * Structure of a species page's scientific text (plan phase P14/P15). The text lives in code under
+ * Structure of a species page's scientific text. The text lives in code under
  * `content/species-pages/<taxon>.ts`, is validated by `infrastructure/validation/species-pages.ts` and
  * cites only references from `content/publications.ts`. Citation numbers are never typed by hand:
  * the UI numbers `refs` by first appearance.

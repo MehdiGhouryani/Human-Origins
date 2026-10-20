@@ -22,7 +22,7 @@ export const contentCatalog:ContentCatalog=deepFreeze({
   metadata:{
     schemaVersion:'4.2.0',
     modelVersion:'4.2.0',
-    release:'0.32.5',
+    release:'0.33.0',
     purpose:'curated-research-interface',
     conceptualStandards:['Darwin Core','CIDOC CRM','W3C PROV-O'],
     snapshotKind:'curated',

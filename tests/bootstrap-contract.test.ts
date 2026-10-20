@@ -5,7 +5,7 @@ import {getExplorerSpeciesById,getExplorerClaimsForTaxon,getExplorerSpecimensFor
 describe('Explorer read model',()=>{
   it('exposes deterministic release metadata and frozen indexes',()=>{
     const bootstrap=buildExplorerBootstrap()
-    expect(bootstrap.release).toBe('0.32.5')
+    expect(bootstrap.release).toBe('0.33.0')
     expect(bootstrap.schemaVersion).toBe('4.2.0')
     expect(bootstrap.fingerprint).toMatch(/^[a-f0-9]{32}$/)
     expect(Object.isFrozen(bootstrap)).toBe(true)

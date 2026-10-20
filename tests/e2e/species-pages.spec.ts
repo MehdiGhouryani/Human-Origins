@@ -1,6 +1,6 @@
 import {expect,test} from '@playwright/test'
 
-// Species pages with scientific text (phase P14/P15). Runs on the desktop project.
+// Species pages with scientific text. Runs on the desktop project.
 const PILOTS=[
   {id:'afarensis',name:'Australopithecus afarensis'},
   {id:'sahelanthropus',name:'Sahelanthropus tchadensis'},

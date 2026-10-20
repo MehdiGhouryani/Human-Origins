@@ -64,7 +64,7 @@ function migrate(db:DatabaseSync){
   // CREATE TABLE IF NOT EXISTS never alters an existing table, so columns added after the first release need an explicit, idempotent migration.
   const columns=(db.prepare('PRAGMA table_info(media_assets)').all() as {name:string}[]).map(column=>column.name)
   if(!columns.includes('variants')) db.exec("ALTER TABLE media_assets ADD COLUMN variants TEXT NOT NULL DEFAULT '[]'")
-  // Scientific-image metadata (plan task T13.1): slot, evidence class, specimen, assumptions sheet, generator, review.
+  // Scientific-image metadata: slot, evidence class, specimen, assumptions sheet, generator, review.
   const scientificColumns:[string,string][]=[['slot_id','TEXT'],['evidence_class','TEXT'],['specimen_ref',"TEXT NOT NULL DEFAULT ''"],['assumptions',"TEXT NOT NULL DEFAULT ''"],['generator','TEXT'],['reviewed_by','TEXT']]
   for(const [name,type] of scientificColumns) if(!columns.includes(name)) db.exec(`ALTER TABLE media_assets ADD COLUMN ${name} ${type}`)
   db.exec('CREATE INDEX IF NOT EXISTS idx_media_slot ON media_assets(slot_id)')

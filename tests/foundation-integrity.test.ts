@@ -12,7 +12,7 @@ describe('Human Origins foundation',()=>{
   })
   it('keeps every taxon connected to canonical media and sources',()=>{
     expect(contentCatalog.metadata.schemaVersion).toBe('4.2.0')
-    expect(contentCatalog.metadata.release).toBe('0.32.5')
+    expect(contentCatalog.metadata.release).toBe('0.33.0')
     expect(contentCatalog.taxa).toHaveLength(18)
     for(const taxon of contentCatalog.taxa){
       expect(taxon.mediaIds.length).toBeGreaterThan(0)

@@ -54,9 +54,13 @@ function ClaimChain({bootstrap,claim,open}:{bootstrap:ExplorerBootstrap;claim:Pr
   </details>
 }
 
+/** Source cards shown before "Show all": 16 of 18 species have no authored page, and their full registry made the page about 4,000px long on a phone. */
+const SOURCE_PREVIEW=4
+
 export default function SourceIntelligence({bootstrap,species}:{bootstrap:ExplorerBootstrap;species:ExplorerSpecies}){
   const [filter,setFilter]=useState<'all'|SourceType>('all')
   const [showAllClaims,setShowAllClaims]=useState(false)
+  const [showAllSources,setShowAllSources]=useState(false)
   const claims=getExplorerClaimsForTaxon(bootstrap,species.id)
   const records=useMemo(()=>{
     const fromClaims=claims.flatMap(claim=>claim.sourceIds).map(id=>getExplorerSourceById(bootstrap,String(id))).filter((source):source is SourceRecord=>Boolean(source))
@@ -71,11 +75,12 @@ export default function SourceIntelligence({bootstrap,species}:{bootstrap:Explor
   const peer=records.filter(r=>r.type==='primary-study'||r.type==='peer-reviewed-paper').length
   const institutional=records.filter(r=>r.type!=='primary-study'&&r.type!=='peer-reviewed-paper').length
   const visibleClaims=showAllClaims?claims:claims.slice(0,3)
+  const visibleSources=showAllSources?filtered:filtered.slice(0,SOURCE_PREVIEW)
   const evidenceCount=new Set(claims.flatMap(c=>c.evidenceIds)).size
 
   return <section className="source-intelligence" aria-label={`Source intelligence for ${species.name}`}>
-    <div className="source-intel-head"><div><span>SOURCE INTELLIGENCE 2.0</span><h3>Trace the claim.</h3></div><b>{claims.length} claims · {records.length} linked sources</b></div>
-    <p className="source-intel-intro">Every highlighted statement can point through a claim → evidence → source chain. Publication metadata is shown only when it is registered, and interpretation is labeled separately from a documented record.</p>
+    <div className="source-intel-head"><div><span>SOURCES</span><h3>Trace the claim.</h3></div><b>{claims.length} claims · {records.length} linked sources</b></div>
+    <p className="source-intel-intro">Each highlighted statement links through a claim → evidence → source chain. Interpretation is labeled separately from documented records.</p>
 
     {claims.length>0&&<div className="claim-ledger">
       <div className="claim-ledger-head"><div><span>CLAIM LEDGER</span><h4>Why this statement?</h4></div><span className="claim-ledger-count"><ShieldCheck size={12}/> {evidenceCount} linked evidence records</span></div>
@@ -86,7 +91,8 @@ export default function SourceIntelligence({bootstrap,species}:{bootstrap:Explor
     <div className="source-intel-head source-registry-head"><div><span>SOURCE REGISTRY</span><h4>Publication & institution trail</h4></div><b>{records.length} records</b></div>
     <div className="source-filter-row"><button type="button" aria-pressed={filter==='all'} className={filter==='all'?'on':''} onClick={()=>setFilter('all')}>All</button>{(['primary-study','peer-reviewed-paper','institutional-record','institutional-synthesis','museum-3d','educational-synthesis'] as SourceType[]).map(type=><button type="button" key={type} aria-pressed={filter===type} className={filter===type?'on':''} onClick={()=>setFilter(type)}>{sourceTypeLabel[type]}</button>)}</div>
     <div className="source-stats"><span><strong>{peer}</strong> primary / peer-reviewed</span><span><strong>{institutional}</strong> institutional / synthesis</span><span><ShieldCheck size={12}/> registered provenance</span></div>
-    <div className="source-intel-list">{filtered.map(source=><SourceCard key={source.id} source={source} bootstrap={bootstrap}/>)}</div>
+    <div className="source-intel-list">{visibleSources.map(source=><SourceCard key={source.id} source={source} bootstrap={bootstrap}/>)}</div>
+    {filtered.length>SOURCE_PREVIEW&&<button type="button" className="claims-toggle" aria-expanded={showAllSources} onClick={()=>setShowAllSources(v=>!v)}>{showAllSources?'Show fewer sources':`Show all ${filtered.length} sources`}</button>}
     <div className="citation-note"><Link2 size={13}/><span><b>How to read this:</b> a source record documents or contextualizes a claim; it does not automatically make every interpretation on the page a settled fact. Dating values retain uncertainty, and relationship models can remain debated.</span></div>
   </section>
 }

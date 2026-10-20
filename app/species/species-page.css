@@ -122,3 +122,49 @@
 .sp-frame-locked{opacity:.8}
 .sp-frame-upload{justify-self:center;margin-top:6px;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid var(--sp-accent);border-radius:999px;color:var(--sp-accent);text-decoration:none;font-size:13px}
 .sp-frame-upload:hover,.sp-frame-upload:focus-visible{background:var(--sp-accent);color:var(--bg)}
+
+/* Touch targets (D-09) on species pages: standalone links and buttons reach 44px; the hit area of a DOI link grows without
+   changing the reference list's layout. Citation numbers inside sentences are exempt (WCAG 2.5.8). */
+@media (max-width:1023px),(pointer:coarse){
+  .dossier-crumbs a{display:inline-flex;align-items:center;min-height:44px}
+  .dossier-links a{min-height:44px;justify-content:center}
+  .dossier-sites a{width:44px;height:44px}
+  .graph-record a{display:inline-flex;align-items:center;justify-content:center;min-width:44px}
+  .specimen-source-row a{display:inline-flex;align-items:center;min-height:44px}
+  .viewer-btn,.record-btn{min-height:44px}
+  .sp-copy{min-height:44px;min-width:44px}
+  .sp-ref-back{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0}
+  .sp-ref-text a{display:inline-block;max-width:100%;overflow-wrap:anywhere;padding:15px 0;margin:-15px 0}
+}
+
+/* Responsive review R6: a short portrait on phones; breadcrumb links are wide enough to hit. */
+@media (max-width:639px){.dossier-portrait{aspect-ratio:16/9;max-height:210px}}
+@media (max-width:1023px),(pointer:coarse){.dossier-crumbs a{padding:0 8px}}
+
+/* Heavy data panels are accordions like the authored sections: open on wide screens, collapsed on phones (ResponsiveDetails). */
+.dossier-fold>details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.dossier-fold>details>summary::-webkit-details-marker{display:none}
+.dossier-fold>details>summary::after{content:'+';color:var(--sp-quiet);font-size:20px}
+.dossier-fold>details[open]>summary::after{content:'\2212'}
+.dossier-fold>details>summary h2{margin:0}
+.sp-debate>details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.sp-debate>details>summary::-webkit-details-marker{display:none}
+.sp-debate>details>summary::after{content:'+';color:var(--sp-quiet);font-size:20px}
+.sp-debate>details[open]>summary::after{content:'\2212'}
+.sp-debate>details>summary h3{margin:0}
+
+/* Compact sources (owner decision, 2026-10-12): citation numbers in the text are quiet, not accent-coloured, and the
+   reference list at the bottom is small and tight. Citations still link to the full entry; nothing is removed. */
+.sp-cite a{color:var(--sp-quiet)}
+.sp-cite-sep{padding:0}
+.sp-references h2{font-size:20px}
+.sp-reflist{font-size:12px;gap:5px;line-height:1.35}
+.sp-reflist li{padding-top:1px;padding-bottom:1px}
+.sp-reflist li{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px}
+.sp-ref-text{flex:1 1 300px;min-width:0}
+.sp-ref-meta{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto}
+@media (min-width:1024px){
+  .sp-reflist{columns:2;column-gap:28px;display:block}
+  .sp-reflist li{break-inside:avoid;margin-bottom:5px}
+}
+

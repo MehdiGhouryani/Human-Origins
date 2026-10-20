@@ -10,13 +10,13 @@ import {groupColors} from '../presentation/palette'
 
 export const taxonInitials=(short:string)=>short.replace(/[^A-Za-z ]/g,' ').split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase()
 
-type Props={species:readonly ExplorerSpecies[];selectedId:string;onSelect:(id:string)=>void;savedIds:ReadonlySet<string>}
+type Props={species:readonly ExplorerSpecies[];selectedId:string;onSelect:(id:string)=>void;savedIds:ReadonlySet<string>;graphIds:ReadonlySet<string>}
 
 /**
  * Clade-grouped taxon navigator. Everything comes from the catalogue: groups, order, counts. One tab stop (roving
  * tabindex); arrow keys move through taxa oldest → youngest, Home/End jump to the ends.
  */
-function TaxonNavigator({species,selectedId,onSelect,savedIds}:Props){
+function TaxonNavigator({species,selectedId,onSelect,savedIds,graphIds}:Props){
   const scrollRef=useRef<HTMLDivElement>(null)
   const ordered=useMemo(()=>orderTaxa(species),[species])
   const groups=useMemo(()=>groupTaxaByClade(ordered),[ordered])
@@ -45,12 +45,12 @@ function TaxonNavigator({species,selectedId,onSelect,savedIds}:Props){
     <div className="taxon-nav-bar">
       <div className="taxon-nav-info">
         <p className="taxon-nav-count" aria-live="polite">
-          <span className="sr-only">{selected?`${index} of ${total} · ${selected.group}` : `${total} taxa`}</span>
+          {selected?`${index} of ${total} · ${selected.group}`:`${total} taxa`}
         </p>
       </div>
       <div className="taxon-nav-actions">
-        <button type="button" onClick={()=>older&&onSelect(older.id)} disabled={!older} aria-label={older?`Previous, older taxon: ${older.short}`:'No older taxon'}><ChevronLeft size={16}/></button>
-        <button type="button" onClick={()=>younger&&onSelect(younger.id)} disabled={!younger} aria-label={younger?`Next, younger taxon: ${younger.short}`:'No younger taxon'}><ChevronRight size={16}/></button>
+        <button type="button" onClick={()=>older&&onSelect(older.id)} disabled={!older} aria-label={older?`Previous, older taxon: ${older.short}`:'No older taxon'}><ChevronLeft size={16} aria-hidden="true"/><span>Older</span></button>
+        <button type="button" onClick={()=>younger&&onSelect(younger.id)} disabled={!younger} aria-label={younger?`Next, younger taxon: ${younger.short}`:'No younger taxon'}><span>Younger</span><ChevronRight size={16} aria-hidden="true"/></button>
       </div>
     </div>
     <div className="taxon-nav-scroll" ref={scrollRef} role="group" aria-label="Taxa grouped by clade">
@@ -71,6 +71,7 @@ function TaxonNavigator({species,selectedId,onSelect,savedIds}:Props){
             <span className="taxon-chip-thumb">{media&&<MediaImage src={resolveMediaSrc(media,'icon',256)} alt="" loading="lazy" sizes="48px" className="species-thumb-image" fallbackText={taxonInitials(taxon.short)}/>}</span>
             <span className="taxon-chip-text"><strong>{taxon.short}</strong><small>{compactDate(taxon.date)}</small></span>
             {isInferredNode(taxon)&&<span className="taxon-chip-tag">Inferred</span>}
+            {!graphIds.has(taxon.id)&&<span className="taxon-chip-tag taxon-chip-off">Outside graph</span>}
             {savedIds.has(taxon.id)&&<Bookmark size={12} fill="currentColor" className="taxon-chip-saved" aria-label="Saved"/>}
           </button></li>})}
         </ul>
