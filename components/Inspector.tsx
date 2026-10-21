@@ -75,6 +75,8 @@ export default function Inspector({bootstrap,species,bookmarked,onToggleBookmark
   const panelId=`species-panel-${tab.toLowerCase()}`
   const closeButton=onClose?<button type="button" className="inspector-close-btn" onClick={onClose} aria-label="Close details panel" title="Close"><X size={16}/></button>:null
 
+  const hasAuthoredDisclaimer=Boolean(m?.note&&/not a fossil photograph/i.test(m.note))
+
   // The record has no portrait: the profile still offers the way to the species page.
   if(!m) return <aside className={`inspector ${sheet}`} aria-label={`${species.name} details`} id="inspector">
     <div className="inspector-body">
@@ -104,7 +106,7 @@ export default function Inspector({bootstrap,species,bookmarked,onToggleBookmark
         <div className="species-date">{inferred?`Model construct · ${species.date}`:`${species.taxonomy.scientificName} · ${species.taxonomy.rank} · ${species.date}`}</div>
         {inferred&&<p className="inferred-note" role="note">This is an inferred ancestral node used to anchor the graph. It is not a named fossil species and has no specimens of its own.</p>}
         <div className="media-provenance"><span>{m.credit}</span>{m.sourceUrl&&<a href={m.sourceUrl} target="_blank" rel="noreferrer">View source <ExternalLink size={12}/><span className="sr-only"> (opens in a new tab)</span></a>}</div>
-        {m.publicationStatus==='review-required'&&<div className="media-note" role="note">Reconstruction, pending provenance review. It is not a fossil photograph.</div>}
+        {m.publicationStatus==='review-required'&&!hasAuthoredDisclaimer&&<div className="media-note" role="note">Reconstruction, pending provenance review. It is not a fossil photograph.</div>}
         {m.note&&m.publicationStatus!=='schematic'&&<div className="media-note">{m.note}</div>}
         {m.publicationStatus==='schematic'&&<div className="media-note" role="note">{m.note}</div>}
         <div className="evidence-chips" aria-label="Kinds of evidence recorded">{species.evidence.map(e=><span key={e}>{e}</span>)}</div>

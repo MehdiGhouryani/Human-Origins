@@ -1,4 +1,4 @@
-import {describe,expect,it} from 'vitest'
+import {describe,expect,it,vi} from 'vitest'
 import {renderToStaticMarkup} from 'react-dom/server'
 import {createElement as h} from 'react'
 import {buildExplorerBootstrap} from '../features/explorer/bootstrap'
@@ -9,11 +9,23 @@ import RelationshipTable from '../components/RelationshipTable'
 import RelationshipLegend from '../components/RelationshipLegend'
 import FamilyView from '../components/FamilyView'
 import Inspector,{type InspectorTab} from '../components/Inspector'
+import ExplorerShell from '../components/ExplorerShell'
+import type {ExplorerState} from '../features/explorer/state'
+
+vi.mock('next/navigation', async (importOriginal) => {
+  const mod = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...mod,
+    useSearchParams: () => new URLSearchParams(),
+    usePathname: () => '/',
+  }
+})
 
 const bootstrap=buildExplorerBootstrap()
 const noop=()=>{}
 const nav=(selectedId:string,saved:string[]=[])=>renderToStaticMarkup(h(TaxonNavigator,{species:bootstrap.species,selectedId,onSelect:noop,savedIds:new Set(saved),graphIds:new Set(bootstrap.graph.taxonIds)}))
 const inspector=(id:string,initialTab:InspectorTab='Overview')=>renderToStaticMarkup(h(Inspector,{bootstrap,species:getExplorerSpeciesById(bootstrap,id),bookmarked:false,onToggleBookmark:()=>true,onRevealSite:noop,initialTab}))
+const shell=(initialState?:Partial<ExplorerState>)=>renderToStaticMarkup(h(ExplorerShell,{bootstrap,initialState}))
 const count=(html:string,needle:RegExp)=>(html.match(needle)||[]).length
 
 describe('taxon navigator',()=>{
@@ -97,4 +109,106 @@ describe('inspector Map range action',()=>{
     expect(inspector('sapiens')).toContain('Map range')
   })
 })
+
+describe('inspector media disclaimer deduplication',()=>{
+  it('renders the "not a fossil photograph" disclaimer only once when the authored note already includes it',()=>{
+    const baseSpecies=getExplorerSpeciesById(bootstrap,'erectus')
+    const baseMedia=baseSpecies.media[0]
+    const reviewSpeciesWithDisclaimer={
+      ...baseSpecies,
+      media:[
+        {
+          ...baseMedia,
+          kind:'reconstruction' as const,
+          credit:'Test Reconstruction Artist',
+          sourceUrl:'https://example.com/source',
+          note:'Artistic scientific reconstruction; not a fossil photograph.',
+          publicationStatus:'review-required' as const,
+          rightsStatus:'review-required' as const,
+        },
+      ],
+    }
+    const html=renderToStaticMarkup(h(Inspector,{
+      bootstrap,
+      species:reviewSpeciesWithDisclaimer,
+      bookmarked:false,
+      onToggleBookmark:()=>true,
+      onRevealSite:noop,
+    }))
+
+    // 1. Equivalent "not a fossil photograph" disclaimer appears only once
+    expect(count(html,/not a fossil photograph/gi)).toBe(1)
+    // 2. Visible rights-review status remains present
+    expect(html).toContain('Rights review required')
+    // 3. Authored scientific note is not lost
+    expect(html).toContain('Artistic scientific reconstruction; not a fossil photograph.')
+    // 4. Media kind, credit and existing inspector properties remain intact
+    expect(html).toContain('Scientific reconstruction')
+    expect(html).toContain('Test Reconstruction Artist')
+    expect(html).toContain('View source')
+  })
+
+  it('preserves the generic disclaimer when the authored note does not convey the limitation',()=>{
+    const baseSpecies=getExplorerSpeciesById(bootstrap,'erectus')
+    const baseMedia=baseSpecies.media[0]
+    const reviewSpeciesUnrelatedNote={
+      ...baseSpecies,
+      media:[
+        {
+          ...baseMedia,
+          kind:'reconstruction' as const,
+          credit:'Test Reconstruction Artist',
+          sourceUrl:'https://example.com/source',
+          note:'Cranial morphology based on Sangiran 17.',
+          publicationStatus:'review-required' as const,
+          rightsStatus:'review-required' as const,
+        },
+      ],
+    }
+    const html=renderToStaticMarkup(h(Inspector,{
+      bootstrap,
+      species:reviewSpeciesUnrelatedNote,
+      bookmarked:false,
+      onToggleBookmark:()=>true,
+      onRevealSite:noop,
+    }))
+
+    // Generic disclaimer is retained
+    expect(html).toContain('Reconstruction, pending provenance review. It is not a fossil photograph.')
+    // Authored note is preserved
+    expect(html).toContain('Cranial morphology based on Sangiran 17.')
+    // Disclaimer appears once (from generic)
+    expect(count(html,/not a fossil photograph/gi)).toBe(1)
+    // Rights review status is present
+    expect(html).toContain('Rights review required')
+  })
+})
+
+describe('context-aware explorer controls',()=>{
+  it('displays the relationship legend in Tree mode',()=>{
+    const html=shell({mode:'tree'})
+    expect(html).toContain('rel-legend')
+  })
+
+  it('hides the relationship legend in Timeline, Migration, Evidence, and Journey modes',()=>{
+    expect(shell({mode:'timeline'})).not.toContain('rel-legend')
+    expect(shell({mode:'migration'})).not.toContain('rel-legend')
+    expect(shell({mode:'evidence'})).not.toContain('rel-legend')
+    expect(shell({journey:true})).not.toContain('rel-legend')
+  })
+
+  it('hides "View World at This Time" button in Migration mode',()=>{
+    const html=shell({mode:'migration'})
+    expect(html).not.toContain('View World at This Time')
+  })
+
+  it('preserves "View World at This Time" button in Tree, Timeline, Evidence, and Journey modes',()=>{
+    expect(shell({mode:'tree'})).toContain('View World at This Time')
+    expect(shell({mode:'timeline'})).toContain('View World at This Time')
+    expect(shell({mode:'evidence'})).toContain('View World at This Time')
+    expect(shell({journey:true})).toContain('View World at This Time')
+  })
+})
+
+
 

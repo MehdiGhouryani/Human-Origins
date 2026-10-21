@@ -106,13 +106,13 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
           {!state.journey&&state.mode==='migration'&&<div className="migration-view"><div className="view-kicker">SPATIAL LAYER · {formatAgeMa(age)}</div><h3>{getCopy(immutableBootstrap.copy,'migration.heading')}</h3><p>Rotate the Earth, inspect broad migration corridors, and move through time. The map separates generalized population movement from individual travel and flags uncertainty instead of drawing a false single route.</p><MigrationGlobe bootstrap={immutableBootstrap} time={age} selected={state.selectedId} focusSite={state.focusSite} onFocused={()=>setState(prev=>({...prev,focusSite:null}))}/></div>}
         </div>
         <div className="model-note">Scientific framing: each species sits at its first appearance in the fossil record; branches are contextual or possible relationships, not guaranteed direct ancestry. Migration lines are generalized population corridors.</div>
-        <RelationshipLegend present={presentRelations} clades={clades}/>
+        {!state.journey&&state.mode==='tree'&&<RelationshipLegend present={presentRelations} clades={clades}/>}
         {!state.journey&&state.mode==='tree'&&<details className="rel-details"><summary>Relationship table: text version of the graph</summary><RelationshipTable bootstrap={immutableBootstrap} onShow={id=>{setPinnedRelationId(id);document.querySelector('.graph-region')?.scrollIntoView({block:'nearest'})}}/></details>}
         <div className="timebar">
           <button type="button" className="play" onClick={()=>setState(prev=>({...prev,playing:!prev.playing}))} aria-label={state.playing?'Pause time':'Play time'}>{state.playing?<Pause size={18}/>:<Play size={18}/>}</button>
           <div className="time-readout"><strong>{formatAgeMa(age)}</strong><small>{coexisting.length?`Coexisting: ${coexisting.map(s=>s.short).join(' · ')}`:'Deep-time control · nonlinear scale'}</small></div>
           <div className="scrubber"><div className="ticks" aria-hidden="true">{TIME_AXIS_ANCHORS_MA.map(anchor=><span key={anchor} style={{left:`${ageMaToSlider(anchor)}%`}}>{formatAxisAnchor(anchor)}</span>)}</div><input aria-label="Time travel" aria-valuetext={formatAgeMa(age)} type="range" min="0" max="100" step="0.1" value={state.time} onChange={e=>setState(prev=>({...prev,time:+e.target.value}))}/></div>
-          <button type="button" className="world" onClick={()=>setMode('migration')}><Globe2 size={15}/> View World at This Time</button>
+          {(state.journey||state.mode!=='migration')&&<button type="button" className="world" onClick={()=>setMode('migration')}><Globe2 size={15}/> View World at This Time</button>}
         </div>
         <TimeMilestones species={explorerSpecies} selected={current} onJump={jumpToAge}/>
       </section>
