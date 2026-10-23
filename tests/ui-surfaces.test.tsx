@@ -72,8 +72,9 @@ describe('family view (mobile relationship surface)',()=>{
 })
 
 describe('species navigator',()=>{
-  it('labels exactly the taxa that are not drawn on the main graph (7 of 18)',()=>{
-    const html=nav('neanderthal');expect(count(html,/taxon-chip-off/g)).toBe(7);expect(count(html,/class="taxon-chip /g)).toBe(18)
+  it('explains taxa not drawn on the main graph in the shared status area',()=>{
+    const html=nav('neanderthal');expect(html).toContain('7 taxa outside main graph');expect(count(html,/class="taxon-chip /g)).toBe(18)
+    const htmlOutside=nav('common');expect(htmlOutside).toContain('Common ancestor is outside the main graph')
   })
 })
 

@@ -120,7 +120,7 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
       <Inspector bootstrap={immutableBootstrap} species={current} bookmarked={bookmarks.has(current.id)} onToggleBookmark={()=>bookmarks.toggle(current.id)} open={sheetOpen} onClose={closeSheet} onRevealSite={(id)=>setState(prev=>({...prev,focusSite:id,mode:'migration',journey:false}))}/>
     </main>}
 
-    <footer id="about" className="evidence-strip"><div><b>◉</b><strong>Fossil Record</strong><small>Physical evidence of our past.</small></div><div><b>〽</b><strong>Genetic Evidence</strong><small>Ancient DNA and population history.</small></div><div><b>◈</b><strong>Archaeology</strong><small>Tools, sites and behavior.</small></div><div><b>▤</b><strong>Geology & Dating</strong><small>Stratigraphy and age estimates.</small></div><em>Evidence · interpretation · provenance<small>Human Origins research interface</small></em></footer>
+    <footer id="about" className="evidence-strip"><div><b>◉</b><strong>Fossil Record</strong></div><div><b>〽</b><strong>Genetic Evidence</strong></div><div><b>◈</b><strong>Archaeology</strong></div><div><b>▤</b><strong>Geology & Dating</strong></div><em>Evidence · interpretation · provenance</em></footer>
 
   </></MotionConfig>
 }

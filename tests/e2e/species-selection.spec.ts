@@ -32,15 +32,15 @@ test('all eleven main-path taxa on the graph select their own profile', async({p
   }
 })
 
-test('the seven taxa outside the main graph are labelled, and the graph still shows eleven', async({page})=>{
+test('the taxa outside the main graph are explained in the status area, and the graph shows eleven', async({page})=>{
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/')
-  const outside=page.locator('.taxon-chip:has(.taxon-chip-off)')
-  await expect(outside).toHaveCount(7)
-  const offIds=await outside.evaluateAll(els=>els.map(el=>el.getAttribute('data-taxon')??''))
+  const status=page.locator('.taxon-nav-status')
+  await expect(status).toContainText('7 taxa outside main graph')
   const graphIds=await page.locator('.atlas-graph-node').evaluateAll(els=>els.map(el=>el.getAttribute('data-taxon')??''))
   expect(graphIds).toHaveLength(11)
-  expect(offIds.filter(id=>graphIds.includes(id))).toEqual([])
+  await page.locator('.taxon-chip[data-taxon="common"]').click()
+  await expect(status).toContainText('Common ancestor is outside the main graph')
 })
 
 test('with a taxon outside the graph selected, one graph node stays reachable from the keyboard', async({page})=>{

@@ -24,6 +24,8 @@ function TaxonNavigator({species,selectedId,onSelect,savedIds,graphIds}:Props){
   const selected=species.find(t=>t.id===selectedId)
   const selectedVisible=ordered.some(t=>t.id===selectedId)
   const older=adjacentTaxon(species,selectedId,-1),younger=adjacentTaxon(species,selectedId,1)
+  const outsideCount=useMemo(()=>species.filter(t=>!graphIds.has(t.id)).length,[species,graphIds])
+  const isSelectedOutside=Boolean(selected&&!graphIds.has(selected.id))
 
   useEffect(()=>{
     const box=scrollRef.current;const el=box?.querySelector<HTMLElement>('[aria-current="true"]')
@@ -47,6 +49,11 @@ function TaxonNavigator({species,selectedId,onSelect,savedIds,graphIds}:Props){
         <p className="taxon-nav-count" aria-live="polite">
           {selected?`${index} of ${total} · ${selected.group}`:`${total} taxa`}
         </p>
+        {outsideCount>0&&<span className="taxon-nav-status" aria-live="polite">
+          {isSelectedOutside
+            ?`${selected?.short} is outside the main graph (${outsideCount} of ${total} taxa not drawn)`
+            : `${outsideCount} taxa outside main graph`}
+        </span>}
       </div>
       <div className="taxon-nav-actions">
         <button type="button" onClick={()=>older&&onSelect(older.id)} disabled={!older} aria-label={older?`Previous, older taxon: ${older.short}`:'No older taxon'}><ChevronLeft size={16} aria-hidden="true"/><span>Older</span></button>
@@ -65,13 +72,12 @@ function TaxonNavigator({species,selectedId,onSelect,savedIds,graphIds}:Props){
             aria-current={isSelected?'true':undefined}
             tabIndex={tabStop}
             onClick={()=>onSelect(taxon.id)}
-            title={!isInferredNode(taxon) ? `Select ${taxon.short}` : undefined}
+            title={!isInferredNode(taxon) ? (!graphIds.has(taxon.id) ? `${taxon.short} (outside main graph)` : `Select ${taxon.short}`) : undefined}
             onKeyDown={e=>move(e,flat)}
           >
             <span className="taxon-chip-thumb">{media&&<MediaImage src={resolveMediaSrc(media,'icon',256)} alt="" loading="lazy" sizes="48px" className="species-thumb-image" fallbackText={taxonInitials(taxon.short)}/>}</span>
             <span className="taxon-chip-text"><strong>{taxon.short}</strong><small>{compactDate(taxon.date)}</small></span>
             {isInferredNode(taxon)&&<span className="taxon-chip-tag">Inferred</span>}
-            {!graphIds.has(taxon.id)&&<span className="taxon-chip-tag taxon-chip-off">Outside graph</span>}
             {savedIds.has(taxon.id)&&<Bookmark size={12} fill="currentColor" className="taxon-chip-saved" aria-label="Saved"/>}
           </button></li>})}
         </ul>

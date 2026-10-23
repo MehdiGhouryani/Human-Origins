@@ -15,6 +15,7 @@
 .taxon-nav-bar{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;margin-bottom:var(--sp-2)}
 .taxon-nav-info{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .taxon-nav-count{margin:0;font-size:var(--fs-small);color:var(--text-soft)}
+.taxon-nav-status{margin:0;font-size:var(--fs-meta);color:var(--text-soft);padding:2px 8px;border-radius:var(--radius-pill);background:var(--surface-2);border:1px solid var(--border)}
 .taxon-nav-actions{display:flex;gap:var(--sp-2)}
 .taxon-nav-actions button{min-height:36px;min-width:36px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 var(--sp-3);background:var(--surface);color:var(--text-strong);border:1px solid var(--border);border-radius:var(--radius-pill);font:inherit;font-size:var(--fs-small);cursor:pointer}
 .taxon-nav-actions button:disabled{opacity:.4;cursor:default}
@@ -185,15 +186,20 @@ details[open] .rel-legend-preview{display:none}
 .gs-option:focus-visible,.search-clear-btn:focus-visible,.gs-all:focus-visible,.search-clear:focus-visible,.global-search input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 
 /* Time milestones */
-.time-milestones{margin:var(--sp-2) 0 var(--sp-3)}
-.time-milestone-row{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
-.time-milestone{display:inline-flex;flex-direction:column;align-items:flex-start;min-height:var(--touch);padding:4px var(--sp-3);background:var(--surface);color:var(--text-strong);border:1px solid var(--border);border-radius:var(--radius-m);font:inherit;cursor:pointer}
-.time-milestone strong{font-size:var(--fs-small);font-weight:600}
-.time-milestone small{font-size:var(--fs-meta);color:var(--text-soft)}
+.time-milestones{margin:var(--sp-2) 0 var(--sp-3);max-width:100%}
+.time-milestone-row{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:var(--sp-2);padding:0 0 var(--sp-1);max-width:100%;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.time-milestone{flex:0 0 auto;scroll-snap-align:start;display:inline-flex;flex-direction:column;align-items:flex-start;min-height:var(--touch);padding:4px var(--sp-3);background:var(--surface);color:var(--text-strong);border:1px solid var(--border);border-radius:var(--radius-m);font:inherit;cursor:pointer}
+.time-milestone strong{font-size:var(--fs-small);font-weight:600;white-space:nowrap}
+.time-milestone small{font-size:var(--fs-meta);color:var(--text-soft);white-space:nowrap}
 .time-milestone:hover{background:var(--surface-2)}
 .time-milestone:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-.time-milestone-selected{border-color:var(--accent)}
-.time-scale-note{margin:var(--sp-2) 0 0;font-size:var(--fs-meta);line-height:1.5;color:var(--text-soft)}
+.time-milestone-selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.time-scale-guide{margin-top:var(--sp-2)}
+.time-scale-guide summary{font-size:var(--fs-meta);color:var(--text-soft);cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px;padding:2px 0}
+.time-scale-guide summary:hover{color:var(--accent)}
+.time-scale-guide summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.time-scale-guide[open] summary{margin-bottom:var(--sp-1);color:var(--accent)}
+.time-scale-note{margin:var(--sp-1) 0 0;font-size:var(--fs-meta);line-height:1.5;color:var(--text-soft)}
 
 /* Graph toolbar: zoom and current time live in a sticky row above the canvas, so they never cover data or axis labels. */
 .tree-panel .tree-shell{max-height:max(880px,78vh)}
@@ -375,7 +381,7 @@ details[open] .rel-legend-preview{display:none}
 
 /* Responsive review: header targets reach 44px on touch widths; the brand label and the language code are at least 11px. */
 @media (max-width:1023px){.brand{min-height:44px;display:inline-flex;align-items:center}}
-.brand small,.lang{font-size:11px}
+.brand small{font-size:11px}
 
 /* Responsive review R3–R4: on phones the relation caption folds under the selected card, and the hero is a short band. */
 .atlas-graph-why{border-top:1px solid var(--border)}

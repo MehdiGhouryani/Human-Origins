@@ -436,9 +436,6 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
     <div className="atlas-graph-caption" aria-live="polite">
       {selectedSpecies&&!isInferredNode(selectedSpecies)&&<div className="atlas-graph-selected-pill">
         <span>Selected: <strong>{selectedSpecies.name}</strong> ({selectedSpecies.date}){!byId.has(selected)&&<span className="taxon-chip-tag taxon-chip-off" style={{marginLeft:8}}>Outside graph</span>}</span>
-        <a href={`/species/${selectedSpecies.id}`} className="atlas-graph-profile-link" title={`View ${selectedSpecies.short} full profile`}>
-          View full page →
-        </a>
       </div>}
       {view==='rails'&&activeLink
         ?phoneWrap(<RelationCaption bootstrap={bootstrap} link={activeLink} byId={byId}/>)

@@ -79,7 +79,6 @@ export default function SiteHeader(){
     </nav>
     <div className="top-actions">
       <GlobalSearch/>
-      <span className="lang" aria-label="Current language">EN</span>
       <button ref={toggleRef} type="button" className="mobile-menu-toggle" aria-label={open?'Close navigation':'Open navigation'} aria-expanded={open} aria-controls="mobile-navigation" onClick={()=>setOpen(value=>!value)}>
         {open?<X size={17} aria-hidden="true"/>:<Menu size={17} aria-hidden="true"/>}
       </button>

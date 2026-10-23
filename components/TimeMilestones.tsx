@@ -14,7 +14,10 @@ function TimeMilestones({species,selected,onJump}:{species:readonly ExplorerSpec
       {milestones.map(m=><button type="button" key={m.id} className="time-milestone" title={m.detail} aria-label={`Jump to ${m.detail}`} onClick={()=>onJump(m.ageMa)}><strong>{m.label}</strong><small>{m.ageMa===0?'now':formatAgeMa(m.ageMa).replace(' ago','')}</small></button>)}
       {showSelected&&<button type="button" className="time-milestone time-milestone-selected" aria-label={`Jump to the middle of ${selected.short}'s documented range, ${selected.date}`} onClick={()=>onJump((selected.start+selected.end)/2)}><strong>{selected.short}</strong><small>selected taxon</small></button>}
     </div>
-    <p className="time-scale-note">{scaleExplanation()} <span className="kbd-hint">Arrow keys fine-tune the time; Page Up and Page Down move in larger steps.</span></p>
+    <details className="time-scale-guide">
+      <summary>Time scale guide</summary>
+      <p className="time-scale-note">{scaleExplanation()} <span className="kbd-hint">Arrow keys fine-tune the time; Page Up and Page Down move in larger steps.</span></p>
+    </details>
   </div>
 }
 
