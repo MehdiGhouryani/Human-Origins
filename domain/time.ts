@@ -64,7 +64,7 @@ export function sliderToAgeMa(value:number):number{return fractionToAgeMa(Math.m
 export function ageMaToSlider(ageMa:number):number{return ageMaToFraction(ageMa)*100}
 export function maToKa(ageMa:number):number{return Math.max(0,ageMa*1000)}
 export function kaToMa(ageKa:number):number{return Math.max(0,ageKa/1000)}
-export function formatAgeMa(ageMa:number):string{if(ageMa>=1){const digits=ageMa>=2.95?0:1;return `${Number(ageMa.toFixed(digits))} Ma ago`};if(ageMa>=0.001)return `${Math.round(ageMa*1000)} ka ago`;if(ageMa>0)return `${Math.round(ageMa*1_000_000)} years ago`;return 'Present'}
+export function formatAgeMa(ageMa:number):string{if(ageMa>=1){const isIntegral=Math.abs(ageMa-Math.round(ageMa))<0.01;const digits=isIntegral&&ageMa>=2.95?0:1;return `${Number(ageMa.toFixed(digits))} Ma ago`};if(ageMa>=0.001)return `${Math.round(ageMa*1000)} ka ago`;if(ageMa>0)return `${Math.round(ageMa*1_000_000)} years ago`;return 'Present'}
 export function containsAge(interval:TimeInterval,ageMa:number):boolean{return ageMa<=interval.olderMa&&ageMa>=interval.youngerMa}
 export function containsAgeWithUncertainty(interval:TimeInterval,ageMa:number):boolean{const u=interval.uncertaintyMa??0;return ageMa<=interval.olderMa+u&&ageMa>=Math.max(0,interval.youngerMa-u)}
 export function normalizeInterval(olderMa:number,youngerMa:number,label?:string):TimeInterval{const older=Math.max(0,Math.max(youngerMa,olderMa));const younger=Math.max(0,Math.min(olderMa,youngerMa));return {olderMa:older,youngerMa:younger,label:label??formatAgeMa(older),estimateKind:older===younger?'point':'interval'}}
@@ -155,6 +155,10 @@ export type TemporalWindow={
   halfWidthKa:number
   olderMa:number
   youngerMa:number
+  nominalOlderMa:number
+  nominalYoungerMa:number
+  clippedAtPresent:boolean
+  clippedAtOldestLimit:boolean
   label:string
 }
 
@@ -181,10 +185,34 @@ export function getExploratoryTemporalWindow(centerMa:number,customHalfWidthKa?:
     ? customHalfWidthKa
     : center<=0.5 ? 50 : center<=2.0 ? 150 : 300
   const halfWidthMa=halfWidthKa*0.001
-  const olderMa=Math.min(TIME_DOMAIN.oldestMa,center+halfWidthMa)
-  const youngerMa=Math.max(TIME_DOMAIN.youngestMa,center-halfWidthMa)
-  const label=`${formatAgeMa(olderMa)} – ${formatAgeMa(youngerMa)} (±${halfWidthKa} ka)`
-  return {centerMa:center,halfWidthMa,halfWidthKa,olderMa,youngerMa,label}
+  const nominalOlderMa=center+halfWidthMa
+  const nominalYoungerMa=center-halfWidthMa
+  const clippedAtOldestLimit=nominalOlderMa>TIME_DOMAIN.oldestMa
+  const clippedAtPresent=nominalYoungerMa<TIME_DOMAIN.youngestMa
+  const olderMa=Math.min(TIME_DOMAIN.oldestMa,nominalOlderMa)
+  const youngerMa=Math.max(TIME_DOMAIN.youngestMa,nominalYoungerMa)
+
+  let label:string
+  if(clippedAtPresent){
+    label=`${formatAgeMa(olderMa)} – ${formatAgeMa(youngerMa)} (clipped at present, nominal ±${halfWidthKa} ka)`
+  }else if(clippedAtOldestLimit){
+    label=`${formatAgeMa(olderMa)} – ${formatAgeMa(youngerMa)} (clipped at 8 Ma limit, nominal ±${halfWidthKa} ka)`
+  }else{
+    label=`${formatAgeMa(olderMa)} – ${formatAgeMa(youngerMa)} (±${halfWidthKa} ka)`
+  }
+
+  return {
+    centerMa:center,
+    halfWidthMa,
+    halfWidthKa,
+    olderMa,
+    youngerMa,
+    nominalOlderMa,
+    nominalYoungerMa,
+    clippedAtPresent,
+    clippedAtOldestLimit,
+    label,
+  }
 }
 
 /**

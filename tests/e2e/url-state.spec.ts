@@ -80,4 +80,35 @@ test.describe('the URL is the source of explorer state',()=>{
     await expect(page).toHaveURL(/mode=evidence/)
     expect(await stillNoReload(page)).toBe(true)
   })
+
+  test('browser Back and Forward restore temporal mode, species, and time correctly across history entries', async({page})=>{
+    await page.goto('/?species=sapiens&mode=migration&time=40')
+    await expect(page.locator('.migration-view')).toBeVisible()
+
+    // 1. Switch to temporal window mode
+    await page.getByRole('radio',{name:'Evidence near this time'}).click()
+    await expect(page).toHaveURL(/tmode=window/)
+    await expect(page.getByRole('radio',{name:'Evidence near this time'})).toHaveAttribute('aria-checked','true')
+
+    // 2. Make a species change (creates a new History entry via pushState)
+    await page.locator('.taxon-chip[data-taxon="erectus"]').click()
+    await expect(page).toHaveURL(/species=erectus/)
+    await expect(page).toHaveURL(/tmode=window/)
+
+    // 3. Switch back to historical trail mode on the new history entry (via replaceState)
+    await page.getByRole('radio',{name:'Historical evidence trail'}).click()
+    await expect(page).not.toHaveURL(/tmode=window/)
+    await expect(page.getByRole('radio',{name:'Historical evidence trail'})).toHaveAttribute('aria-checked','true')
+
+    // 4. Navigate Back in browser history: should restore sapiens in window mode
+    await page.goBack()
+    await expect(page).toHaveURL(/species=sapiens/)
+    await expect(page).toHaveURL(/tmode=window/)
+    await expect(page.getByRole('radio',{name:'Evidence near this time'})).toHaveAttribute('aria-checked','true')
+
+    // 5. Navigate Forward in browser history: should restore erectus in trail mode
+    await page.goForward()
+    await expect(page).toHaveURL(/species=erectus/)
+    await expect(page.getByRole('radio',{name:'Historical evidence trail'})).toHaveAttribute('aria-checked','true')
+  })
 })

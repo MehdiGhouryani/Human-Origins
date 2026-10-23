@@ -152,6 +152,10 @@ describe('Migration Atlas — Phase 2: Explicit Temporal Semantics',()=>{
         halfWidthKa:50,
         olderMa:0.200,
         youngerMa:0.100,
+        nominalOlderMa:0.200,
+        nominalYoungerMa:0.100,
+        clippedAtPresent:false,
+        clippedAtOldestLimit:false,
         label:'0.200 Ma – 0.100 Ma (±50 ka)',
       }
       // Site whose older bound exactly touches 0.100 Ma
@@ -182,6 +186,73 @@ describe('Migration Atlas — Phase 2: Explicit Temporal Semantics',()=>{
         estimateKind:'interval',
       }
       expect(evaluateSiteWindowOverlap(75,outsideSiteInterval,customWindow).matches).toBe(false)
+    })
+
+    it('correctly handles window centered exactly at 0 Ma (Present) with clipping metadata and label',()=>{
+      const w0=getExploratoryTemporalWindow(0)
+      expect(w0.centerMa).toBe(0)
+      expect(w0.halfWidthKa).toBe(50)
+      expect(w0.halfWidthMa).toBe(0.05)
+      expect(w0.nominalOlderMa).toBe(0.05)
+      expect(w0.nominalYoungerMa).toBe(-0.05)
+      expect(w0.olderMa).toBe(0.05)
+      expect(w0.youngerMa).toBe(0)
+      expect(w0.clippedAtPresent).toBe(true)
+      expect(w0.clippedAtOldestLimit).toBe(false)
+      expect(w0.label).toBe('50 ka ago – Present (clipped at present, nominal ±50 ka)')
+
+      // Overlap checks at 0 Ma
+      const recentSite:TimeInterval={olderMa:0.030,youngerMa:0.010,label:'30–10 ka',estimateKind:'interval'}
+      expect(evaluateSiteWindowOverlap(20,recentSite,w0).matches).toBe(true)
+
+      const olderOutsideSite:TimeInterval={olderMa:0.120,youngerMa:0.060,label:'120–60 ka',estimateKind:'interval'}
+      expect(evaluateSiteWindowOverlap(90,olderOutsideSite,w0).matches).toBe(false)
+    })
+
+    it('correctly handles window centered exactly at 8 Ma (oldest limit) with clipping metadata and label',()=>{
+      const w8=getExploratoryTemporalWindow(8.0)
+      expect(w8.centerMa).toBe(8.0)
+      expect(w8.halfWidthKa).toBe(300)
+      expect(w8.halfWidthMa).toBe(0.3)
+      expect(w8.nominalOlderMa).toBe(8.3)
+      expect(w8.nominalYoungerMa).toBe(7.7)
+      expect(w8.olderMa).toBe(8.0)
+      expect(w8.youngerMa).toBe(7.7)
+      expect(w8.clippedAtPresent).toBe(false)
+      expect(w8.clippedAtOldestLimit).toBe(true)
+      expect(w8.label).toBe('8 Ma ago – 7.7 Ma ago (clipped at 8 Ma limit, nominal ±300 ka)')
+
+      // Overlap check at 8 Ma
+      const mioceneSite:TimeInterval={olderMa:7.9,youngerMa:7.5,label:'7.9–7.5 Ma',estimateKind:'interval'}
+      expect(evaluateSiteWindowOverlap(7700,mioceneSite,w8).matches).toBe(true)
+
+      const youngerOutsideSite:TimeInterval={olderMa:7.6,youngerMa:7.2,label:'7.6–7.2 Ma',estimateKind:'interval'}
+      expect(evaluateSiteWindowOverlap(7400,youngerOutsideSite,w8).matches).toBe(false)
+    })
+
+    it('correctly identifies clipped vs non-clipped windows just inside domain boundaries',()=>{
+      // Just inside present boundary (0.020 Ma / 20 ka)
+      const w20ka=getExploratoryTemporalWindow(0.020)
+      expect(w20ka.nominalYoungerMa).toBeCloseTo(-0.030,3)
+      expect(w20ka.youngerMa).toBe(0)
+      expect(w20ka.clippedAtPresent).toBe(true)
+      expect(w20ka.clippedAtOldestLimit).toBe(false)
+      expect(w20ka.label).toContain('clipped at present')
+
+      // Just inside oldest boundary (7.900 Ma)
+      const w79Ma=getExploratoryTemporalWindow(7.900)
+      expect(w79Ma.nominalOlderMa).toBeCloseTo(8.200,3)
+      expect(w79Ma.olderMa).toBe(8.0)
+      expect(w79Ma.clippedAtOldestLimit).toBe(true)
+      expect(w79Ma.label).toContain('clipped at 8 Ma limit')
+
+      // Fully unclipped window in late Pleistocene (0.200 Ma / 200 ka)
+      const w200ka=getExploratoryTemporalWindow(0.200)
+      expect(w200ka.clippedAtPresent).toBe(false)
+      expect(w200ka.clippedAtOldestLimit).toBe(false)
+      expect(w200ka.olderMa).toBeCloseTo(0.250,3)
+      expect(w200ka.youngerMa).toBeCloseTo(0.150,3)
+      expect(w200ka.label).toBe('250 ka ago – 150 ka ago (±50 ka)')
     })
   })
 

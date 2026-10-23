@@ -58,7 +58,7 @@ export function applyUrlState(current:ExplorerState,decoded:Partial<ExplorerStat
     mode:decoded.mode ?? 'tree',
     query:decoded.query ?? '',
     focusSite:decoded.focusSite && valid.siteIds.has(decoded.focusSite) ? decoded.focusSite : null,
-    temporalMode:decoded.temporalMode ?? current.temporalMode ?? 'trail',
+    temporalMode:decoded.temporalMode ?? 'trail',
     playing:false,
   }
 }
