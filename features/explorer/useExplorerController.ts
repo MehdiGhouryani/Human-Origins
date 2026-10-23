@@ -94,7 +94,7 @@ export function useExplorerController(bootstrap:ExplorerBootstrap,initialState:P
     if(state.selectedId!==lastPushedIdRef.current){writeUrl();return}
     const id=window.setTimeout(writeUrl,120)
     return ()=>window.clearTimeout(id)
-  },[state.selectedId,state.mode,state.focusSite,state.journey,state.time,state.query,compareKey,state.playing,writeUrl])
+  },[state.selectedId,state.mode,state.focusSite,state.journey,state.time,state.query,compareKey,state.playing,state.temporalMode,writeUrl])
 
   // A link click starts a navigation. Anything still pending is written first, so the navigation never races a late
   // write from before it (the race that undid a Journey link pressed right after a tab).

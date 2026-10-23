@@ -1,11 +1,11 @@
 'use client'
 import {useEffect,useMemo,useRef,useState} from 'react'
 import {geoDistance,geoGraticule,geoOrthographic,geoPath, type GeoProjection, type GeoPermissibleObjects} from 'd3-geo'
-import {ExternalLink,Info,MapPin,Minus,Plus,RotateCcw,Layers3,Play,Pause,Focus,X} from 'lucide-react'
+import {ExternalLink,Info,MapPin,Minus,Plus,RotateCcw,Layers3,Play,Pause,Focus,X,CalendarRange,History} from 'lucide-react'
 import {getExplorerEvidenceSites,getExplorerSourceById,getExplorerSpeciesById} from '../features/explorer/selectors'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {EvidenceKind} from '../domain/contracts'
-import {maToKa,formatAgeMa} from '../domain/time'
+import {maToKa,formatAgeMa,getExploratoryTemporalWindow,evaluateSiteWindowOverlap,type TemporalMode} from '../domain/time'
 import {continents,routes,stories,type Route} from '../presentation/migrationScene'
 
 function interp(a:number,b:number,t:number){let d=b-a;if(d>180)d-=360;if(d<-180)d+=360;return a+d*t}
@@ -33,18 +33,57 @@ function projectRoute(route:Route,projection:GeoProjection,rot:readonly [number,
 const kindLabel:Record<EvidenceKind,string>={fossil:'Fossil',archaeology:'Archaeology',genetics:'Genetics',dating:'Dating'}
 const storyFor=(time:number)=>stories.find(s=>time<=s.fromKa&&time>=s.toKa)||stories[stories.length-1]
 
-type Props={bootstrap:ExplorerBootstrap;time:number;selected:string;focusSite?:string|null;onFocused?:()=>void}
-export default function MigrationGlobe({bootstrap,time,selected,focusSite,onFocused}:Props){
+type Props={bootstrap:ExplorerBootstrap;time:number;selected:string;focusSite?:string|null;onFocused?:()=>void;temporalMode?:TemporalMode;onTemporalModeChange?:(mode:TemporalMode)=>void}
+export default function MigrationGlobe({bootstrap,time,selected,focusSite,onFocused,temporalMode:propTemporalMode,onTemporalModeChange}:Props){
  const [rot,setRot]=useState<[number,number]>([-20,-8]); const [scale,setScale]=useState(205); const [drag,setDrag]=useState<{x:number;y:number;rot:[number,number]}|null>(null); const [active,setActive]=useState('out-of-africa'); const [filter,setFilter]=useState<'all'|EvidenceKind>('all'); const [site,setSite]=useState<string|null>(null); const [selectionType,setSelectionType]=useState<'site'|'route'|'none'>('route'); const [cinematic,setCinematic]=useState(false); const [appliedCinematicKey,setAppliedCinematicKey]=useState<string|null>(null)
+ const [internalTemporalMode,setInternalTemporalMode]=useState<TemporalMode>(propTemporalMode??'trail')
+ const activeTemporalMode=propTemporalMode??internalTemporalMode
+ const handleSetTemporalMode=(mode:TemporalMode)=>{setInternalTemporalMode(mode);onTemporalModeChange?.(mode)}
+
  const evidenceSites=getExplorerEvidenceSites(bootstrap); const timeKa=maToKa(time)
  const story=storyFor(timeKa)
+ const temporalWindow=useMemo(()=>getExploratoryTemporalWindow(time),[time])
+ const siteContextMap=useMemo(()=>new Map(bootstrap.siteContexts.map(sc=>[String(sc.siteId),sc])),[bootstrap.siteContexts])
+
+ const siteEvaluations=useMemo(()=>{
+  const map=new Map<string,ReturnType<typeof evaluateSiteWindowOverlap>>()
+  for(const s of evidenceSites){
+   const context=siteContextMap.get(String(s.id))
+   map.set(String(s.id),evaluateSiteWindowOverlap(s.ageKa,context?.timeInterval,temporalWindow,s.id===focusSite))
+  }
+  return map
+ },[evidenceSites,siteContextMap,temporalWindow,focusSite])
+
+ const visibleEvidence=useMemo(()=>{
+  return evidenceSites
+   .filter(s=>filter==='all'||s.kind===filter)
+   .filter(s=>{
+    if(activeTemporalMode==='trail'){
+     return s.ageKa>=timeKa||s.id===focusSite
+    }
+    return siteEvaluations.get(String(s.id))?.matches??false
+   })
+ },[evidenceSites,filter,activeTemporalMode,timeKa,focusSite,siteEvaluations])
+
+ const qualitativeExcludedCount=useMemo(()=>{
+  if(activeTemporalMode!=='window') return 0
+  let count=0
+  for(const s of evidenceSites){
+   if(filter!=='all'&&s.kind!==filter) continue
+   const evaluation=siteEvaluations.get(String(s.id))
+   if(evaluation?.isQualitativeOrUnbounded&&s.id!==focusSite){
+    count++
+   }
+  }
+  return count
+ },[activeTemporalMode,evidenceSites,filter,siteEvaluations,focusSite])
+
  const projection=useMemo(()=>geoOrthographic().translate([420,270]).scale(scale).rotate(rot),[rot,scale]); const path=useMemo(()=>geoPath(projection),[projection]); const graticule=useMemo(()=>geoGraticule().step([20,20])(),[])
  const continentPaths=useMemo(()=>continents.map(([name,coords])=>({name,d:path({type:'Feature',properties:null,geometry:{type:'Polygon',coordinates:[[...coords,coords[0]]]}} as GeoPermissibleObjects)??''})),[path])
  const graticulePath=useMemo(()=>path(graticule)??'',[path,graticule])
  // Corridors are Homo sapiens dispersals: they are drawn only when H. sapiens is the selected taxon (BUG-74).
  const visibleRoutes=useMemo(()=>selected==='sapiens'?routes.filter(r=>timeKa<=r.startKa&&timeKa>=r.endKa):[],[timeKa,selected])
  const routePaths=useMemo(()=>new Map(visibleRoutes.map(r=>[r.id,projectRoute(r,projection,rot)])),[visibleRoutes,projection,rot]); const activeRoute=visibleRoutes.find(r=>r.id===active)??visibleRoutes[0]
- const visibleEvidence=evidenceSites.filter(s=>filter==='all'||s.kind===filter).filter(s=>s.ageKa>=timeKa||s.id===focusSite)
  const routeProgress=(r:Route)=>Math.max(0,Math.min(1,(r.startKa-timeKa)/Math.max(1,r.startKa-r.endKa)))
  // Corridors are Homo sapiens dispersals; other taxa get an explicit note instead of a misleading highlight.
  const selectedIsSapiens=selected==='sapiens'
@@ -111,8 +150,21 @@ export default function MigrationGlobe({bootstrap,time,selected,focusSite,onFocu
 
  return <div ref={wrapRef} className={`globe-wrap ${cinematic?'cinematic':''}`}>
   <div className="migration-context-bar">
-   <div className="timelapse-badge"><span className="live-dot" aria-hidden="true"/> Historical evidence trail · <b>{formatAgeMa(time)}</b></div>
-   <p className="trail-explanation" role="note">Earlier-dated site markers remain visible as the timeline moves toward the present. This historical trail is not a complete map of species occupancy at one instant. A site opened directly from another view may remain focused.</p>
+   <div className="temporal-mode-header">
+    <div className="temporal-mode-switcher" role="radiogroup" aria-label="Temporal interpretation mode">
+     <button type="button" role="radio" aria-checked={activeTemporalMode==='trail'} className={`mode-toggle-btn ${activeTemporalMode==='trail'?'active':''}`} onClick={()=>handleSetTemporalMode('trail')}><History size={13} aria-hidden="true"/> <span>Historical evidence trail</span></button>
+     <button type="button" role="radio" aria-checked={activeTemporalMode==='window'} className={`mode-toggle-btn ${activeTemporalMode==='window'?'active':''}`} onClick={()=>handleSetTemporalMode('window')}><CalendarRange size={13} aria-hidden="true"/> <span>Evidence near this time</span></button>
+    </div>
+    <div className="timelapse-badge"><span className="live-dot" aria-hidden="true"/> {activeTemporalMode==='trail'?(<>Cumulative trail · <b>{formatAgeMa(time)}</b> ({visibleEvidence.length} sites)</>):(<>Window [<b>{temporalWindow.label}</b>] ({visibleEvidence.length} sites)</>)}</div>
+   </div>
+   {activeTemporalMode==='trail'?(
+    <p className="trail-explanation" role="note"><strong>Mode A (Historical evidence trail):</strong> Cumulative view showing all documented sites from deep time down to {formatAgeMa(time)}. Earlier evidence remains visible as the timeline advances toward the present. This is not an instantaneous species-distribution map.</p>
+   ):(
+    <div className="window-explanation" role="note">
+     <p className="trail-explanation"><strong>Mode B (Evidence near this time):</strong> Shows sites whose documented dating interval or measurement uncertainty intersects the exploratory window of ±{temporalWindow.halfWidthKa} ka ({temporalWindow.label}). Point estimates without published error margins are matched by central date.</p>
+     {qualitativeExcludedCount>0&&<div className="unbounded-exclusion-note"><Info size={12} aria-hidden="true"/> <span>{qualitativeExcludedCount} site{qualitativeExcludedCount>1?'s':''} with qualitative or open-ended dating (e.g. Levant &lsquo;~100 ka+&rsquo;, Eurasia regional context, Global synthesis) are excluded from the window query to prevent false precision.</span></div>}
+    </div>
+   )}
   </div>
 
   <div className="cinematic-bar">
@@ -137,6 +189,7 @@ export default function MigrationGlobe({bootstrap,time,selected,focusSite,onFocu
     {visibleRoutes.map(r=>{const progress=routeProgress(r);const d=routePaths.get(r.id)??'';const frontLonLat=pointAlong(r,progress);const isActive=r.id===active;const isSelected=selected==='sapiens'&&r.id===activeRoute?.id;const front=isOnFrontHemisphere(rot,frontLonLat)?projection(frontLonLat):null;return <g key={r.id} tabIndex={0} role="button" aria-pressed={isActive} aria-label={`Select corridor ${r.label}`} onClick={e=>{e.stopPropagation();setActive(r.id);setSelectionType('route')}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setActive(r.id);setSelectionType('route')}}} opacity={isActive||isSelected?1:.18} className="migration-route"><path d={d} fill="none" stroke={r.color} strokeWidth={isActive||isSelected?3.5:1.6} strokeDasharray={r.certainty==='possible'?'3 7':'6 5'} filter={isActive||isSelected?'url(#glow-v9)':undefined}/>{front&&<><circle cx={front[0]} cy={front[1]} r="15" fill="url(#pulse-v9)" opacity=".5"/><circle cx={front[0]} cy={front[1]} r="4.5" fill={r.color} stroke="#fff1bd" strokeWidth="1.4" filter="url(#glow-v9)"/></>}</g>})}
     {visibleEvidence.map(s=>{const q=isOnFrontHemisphere(rot,[s.lon,s.lat])?projection([s.lon,s.lat]):null;if(!q)return null;const activeSite=site===s.id&&selectionType==='site';const glyph=s.kind==='fossil'?'F':s.kind==='archaeology'?'A':s.kind==='genetics'?'G':'D';return <g key={s.id} transform={`translate(${q[0]},${q[1]}) scale(${markerScale})`} opacity={activeSite?1:.9} onClick={e=>{e.stopPropagation();setSite(s.id);setSelectionType('site')}} tabIndex={0} role="button" aria-label={`Open ${s.name} evidence`} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSite(s.id);setSelectionType('site')}}} className="evidence-marker"><circle className="marker-hit" r={11} fill="transparent"/><circle r={activeSite?8:5} fill={activeSite?'#f2cf8b':'#0b1b1d'} stroke={activeSite?'#fff2c7':'#d5b36f'} strokeWidth="1.2"/><text textAnchor="middle" dominantBaseline="central" fontSize="6" fontWeight="800" fill={activeSite?'#071315':'#d9e4df'}>{glyph}</text><title>{s.name} · {s.ageLabel}</title></g>})}
    </svg>
+   {visibleEvidence.length===0&&<div className="globe-empty-state" role="status"><strong>No evidence sites intersect this window ({temporalWindow.label})</strong><p>The research catalog has no documented sites overlapping this temporal window. Switch to <em>Historical evidence trail</em> to view cumulative earlier evidence, or move the time scrubber below.</p></div>}
    <div className="globe-controls" role="group" aria-label="Globe navigation controls"><button type="button" onClick={()=>setScale(s=>Math.min(275,s+18))} aria-label="Zoom in"><Plus size={14} aria-hidden="true"/></button><button type="button" onClick={()=>setScale(s=>Math.max(155,s-18))} aria-label="Zoom out"><Minus size={14} aria-hidden="true"/></button><button type="button" onClick={reset} aria-label="Reset globe view"><RotateCcw size={14} aria-hidden="true"/></button></div>
    <div className="globe-caption"><div><span className="live-dot" aria-hidden="true"/> RESEARCH MAP · {visibleEvidence.filter(s=>isOnFrontHemisphere(rot,[s.lon,s.lat])).length} SITES IN FRAME</div><strong>Drag to rotate · Ctrl + wheel to zoom</strong></div>
   </div>
@@ -147,7 +200,7 @@ export default function MigrationGlobe({bootstrap,time,selected,focusSite,onFocu
   </div>}
 
   <div className="migration-details-area">
-   {site&&selectionType==='site'&&(()=>{const s=evidenceSites.find(x=>String(x.id)===site);if(!s)return null;const source=getExplorerSourceById(bootstrap,String(s.sourceIds[0]??''));const taxa=s.relatedTaxonIds.map(id=>getExplorerSpeciesById(bootstrap,String(id))?.short).filter(Boolean).join(' · ')||'Multi-taxon context';return <div className="site-detail" role="region" aria-label={`Site details: ${s.name}`}><div className="site-detail-top"><span className="detail-kind-pill">{kindLabel[s.kind]}</span><button type="button" className="detail-close-btn" onClick={()=>{setSite(null);setSelectionType(activeRoute&&selectedIsSapiens?'route':'none')}} aria-label="Close site details"><X size={15} aria-hidden="true"/></button></div><strong>{s.name}</strong><small>{s.ageLabel} · {taxa} · {s.locationPrecision==='regional'?'regional context':'site context'}</small><p>{s.note}</p>{source?<a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}</span> <ExternalLink size={11} aria-hidden="true"/></a>:<span className="site-source-missing">Source registry record unavailable.</span>}</div>})()}
+   {site&&selectionType==='site'&&(()=>{const s=evidenceSites.find(x=>String(x.id)===site);if(!s)return null;const source=getExplorerSourceById(bootstrap,String(s.sourceIds[0]??''));const taxa=s.relatedTaxonIds.map(id=>getExplorerSpeciesById(bootstrap,String(id))?.short).filter(Boolean).join(' · ')||'Multi-taxon context';const siteCtx=siteContextMap.get(String(s.id));const siteEval=siteEvaluations.get(String(s.id));return <div className="site-detail" role="region" aria-label={`Site details: ${s.name}`}><div className="site-detail-top"><span className="detail-kind-pill">{kindLabel[s.kind]}</span><button type="button" className="detail-close-btn" onClick={()=>{setSite(null);setSelectionType(activeRoute&&selectedIsSapiens?'route':'none')}} aria-label="Close site details"><X size={15} aria-hidden="true"/></button></div><strong>{s.name}</strong><small>{s.ageLabel} · {taxa} · {s.locationPrecision==='regional'?'regional context':'site context'}</small><p>{s.note}</p><div className="site-temporal-badge">{siteCtx?.timeInterval?.estimateKind==='interval'?`Documented age interval: ${siteCtx.timeInterval.label}`:siteCtx?.timeInterval?.uncertaintyMa?`Measured age with uncertainty: ${s.ageLabel} (±${Math.round(siteCtx.timeInterval.uncertaintyMa*1000)} ka)`:siteEval?.isQualitativeOrUnbounded?`Qualitative / open-ended dating: ${s.ageLabel}`:`Point estimate: ${s.ageLabel}`}{s.id===focusSite&&activeTemporalMode==='window'&&!siteEval?.matches&&' · Retained via focused-site exception'}</div>{source?<a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}</span> <ExternalLink size={11} aria-hidden="true"/></a>:<span className="site-source-missing">Source registry record unavailable.</span>}</div>})()}
    {(!site||selectionType==='route')&&selectionType!=='none'&&activeRoute&&selectedIsSapiens&&<div className="route-detail" role="region" aria-label={`Corridor details: ${activeRoute.label}`}><div className="route-detail-top"><div className="route-progress-tag"><span style={{color:activeRoute.color}} aria-hidden="true">●</span> ACTIVE CORRIDOR · {Math.round(routeProgress(activeRoute)*100)}%</div><button type="button" className="detail-close-btn" onClick={()=>setSelectionType('none')} aria-label="Close corridor details"><X size={15} aria-hidden="true"/></button></div><strong>{activeRoute.label}</strong><p>Time window: <b>{activeRoute.startKa}–{activeRoute.endKa} ka</b>. The moving point is a narrative frontier marker, not a reconstructed individual journey.</p>{activeRoute.sourceId&&getExplorerSourceById(bootstrap,activeRoute.sourceId)?(()=>{const source=getExplorerSourceById(bootstrap,activeRoute.sourceId);return <a href={source?.url} target="_blank" rel="noreferrer"><span>Open migration evidence</span> <ExternalLink size={11} aria-hidden="true"/></a>})():<span className="site-source-missing">Source registry record unavailable.</span>}</div>}
   </div>
 

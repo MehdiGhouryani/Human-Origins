@@ -7,6 +7,18 @@ type ApiItem={id:string;title:string;subtitle?:string;href:string;external:boole
 type ApiGroup={kind:SearchGroup['kind'];label:string;items:ApiItem[]}
 type Status='idle'|'loading'|'done'|'error'
 
+const searchListeners=new Set<()=>void>()
+let searchMounted=false
+function getSearchSnapshot():string{
+  if(typeof window==='undefined'||!searchMounted) return ''
+  return (new URLSearchParams(window.location.search).get('q')??'').slice(0,MAX_QUERY_LENGTH)
+}
+const getServerSearchSnapshot=()=>''
+function subscribeSearch(listener:()=>void){
+  searchListeners.add(listener)
+  return ()=>{searchListeners.delete(listener)}
+}
+
 /**
  * Header search: an ARIA combobox over a server-side typed search. The popup is positioned against its own wrapper (no
  * viewport offsets). Options are real links, so open-in-new-tab, copy-link and no-JS fallback all work natively.
@@ -14,8 +26,13 @@ type Status='idle'|'loading'|'done'|'error'
 export default function GlobalSearch(){
   const uid=useId()
   const listId=`${uid}-list`
-  // The URL's ?q= seeds the field without touching state in an effect; server render and hydration both see ''.
-  const urlQuery=useSyncExternalStore(()=>()=>{},()=>(new URLSearchParams(window.location.search).get('q')??'').slice(0,MAX_QUERY_LENGTH),()=>'')
+  useEffect(()=>{
+    if(!searchMounted){
+      searchMounted=true
+      searchListeners.forEach(l=>l())
+    }
+  },[])
+  const urlQuery=useSyncExternalStore(subscribeSearch,getSearchSnapshot,getServerSearchSnapshot)
   const [typed,setTyped]=useState<string|null>(null)
   const value=typed??urlQuery
   const [result,setResult]=useState<{q:string;groups:ApiGroup[];error:boolean}>({q:'',groups:[],error:false})

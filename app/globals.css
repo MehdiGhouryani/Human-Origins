@@ -901,6 +901,57 @@ body {
   z-index: 2;
 }
 
+.temporal-mode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.temporal-mode-switcher {
+  display: inline-flex;
+  border: 1px solid rgba(149,175,169,.26);
+  background: rgba(7,18,20,.85);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.mode-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #9cb0ab;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 36px;
+  transition: all .15s ease;
+}
+
+.mode-toggle-btn:hover {
+  color: #f2ece0;
+  background: rgba(255,255,255,.06);
+}
+
+.mode-toggle-btn.active {
+  background: #d6b875;
+  color: #071518;
+  font-weight: 600;
+  border-color: #d6b875;
+  box-shadow: 0 1px 6px rgba(0,0,0,.28);
+}
+
+.mode-toggle-btn:focus-visible {
+  outline: 2px solid #7cd4ff;
+  outline-offset: 2px;
+}
+
 .timelapse-badge {
   display: inline-flex;
   align-items: center;
@@ -927,12 +978,78 @@ body {
   margin: 0;
 }
 
+.window-explanation {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.unbounded-exclusion-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #dfcb98;
+  background: rgba(223,203,152,.08);
+  border: 1px solid rgba(223,203,152,.22);
+  border-radius: 8px;
+  padding: 6px 10px;
+  max-width: 780px;
+}
+
 .trail-explanation {
   margin: 0;
   font-size: 11.5px;
   line-height: 1.5;
   color: #8fa09d;
   max-width: 720px;
+}
+
+.globe-empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  max-width: 380px;
+  width: calc(100% - 32px);
+  background: rgba(5,16,18,.95);
+  border: 1px solid rgba(232,189,112,.4);
+  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: center;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.5);
+}
+
+.globe-empty-state strong {
+  font-size: 12.5px;
+  color: #f4ead5;
+  font-weight: 600;
+}
+
+.globe-empty-state p {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #9cb0ac;
+  margin: 0;
+}
+
+.site-temporal-badge {
+  display: inline-block;
+  margin: 6px 0 2px 0;
+  padding: 3px 8px;
+  background: rgba(214,184,117,.1);
+  border: 1px solid rgba(214,184,117,.25);
+  border-radius: 6px;
+  font-size: 11px;
+  color: #dfcb98;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 /* 2. Cinematic Story Bar */

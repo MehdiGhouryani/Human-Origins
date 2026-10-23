@@ -146,3 +146,97 @@ export function intervalsOverlap(a:TimeInterval,b:TimeInterval,options:{withUnce
 export function taxaAtAge<T extends {start:number;end:number}>(items:readonly T[],ageMa:number):readonly T[]{
   return items.filter(item=>ageMa<=item.start && ageMa>=item.end)
 }
+
+export type TemporalMode='trail'|'window'
+
+export type TemporalWindow={
+  centerMa:number
+  halfWidthMa:number
+  halfWidthKa:number
+  olderMa:number
+  youngerMa:number
+  label:string
+}
+
+export type SiteTemporalMatch={
+  matches:boolean
+  hasDocumentedInterval:boolean
+  hasUncertainty:boolean
+  isQualitativeOrUnbounded:boolean
+  effectiveOlderMa?:number
+  effectiveYoungerMa?:number
+  explanation:string
+}
+
+/**
+ * Returns an exploratory temporal window around a selected deep-time moment (Ma).
+ * If halfWidthKa is omitted, an adaptive exploratory window is used:
+ * - Late Pleistocene (<= 0.5 Ma / 500 ka): 50 ka (0.05 Ma)
+ * - Middle/Early Pleistocene (0.5 to 2.0 Ma): 150 ka (0.15 Ma)
+ * - Deep time (> 2.0 Ma): 300 ka (0.30 Ma)
+ */
+export function getExploratoryTemporalWindow(centerMa:number,customHalfWidthKa?:number):TemporalWindow{
+  const center=Math.max(TIME_DOMAIN.youngestMa,Math.min(TIME_DOMAIN.oldestMa,centerMa))
+  const halfWidthKa=customHalfWidthKa && customHalfWidthKa>0
+    ? customHalfWidthKa
+    : center<=0.5 ? 50 : center<=2.0 ? 150 : 300
+  const halfWidthMa=halfWidthKa*0.001
+  const olderMa=Math.min(TIME_DOMAIN.oldestMa,center+halfWidthMa)
+  const youngerMa=Math.max(TIME_DOMAIN.youngestMa,center-halfWidthMa)
+  const label=`${formatAgeMa(olderMa)} – ${formatAgeMa(youngerMa)} (±${halfWidthKa} ka)`
+  return {centerMa:center,halfWidthMa,halfWidthKa,olderMa,youngerMa,label}
+}
+
+/**
+ * Evaluates whether an evidence site's documented temporal record overlaps the given exploratory window.
+ * - Retains focused site always.
+ * - Honestly excludes open-ended/qualitative/multi-period sites (where timeInterval is undefined) to prevent false precision.
+ * - Uses published dating uncertainty (uncertaintyMa) to widen bounds before overlap testing.
+ */
+export function evaluateSiteWindowOverlap(
+  siteAgeKa:number,
+  siteInterval:TimeInterval|undefined,
+  window:TemporalWindow,
+  isFocused=false
+):SiteTemporalMatch{
+  if(isFocused){
+    return {
+      matches:true,
+      hasDocumentedInterval:Boolean(siteInterval && siteInterval.estimateKind==='interval'),
+      hasUncertainty:Boolean(siteInterval?.uncertaintyMa && siteInterval.uncertaintyMa>0),
+      isQualitativeOrUnbounded:!siteInterval,
+      explanation:'Retained in view: currently focused site.',
+    }
+  }
+
+  if(!siteInterval){
+    return {
+      matches:false,
+      hasDocumentedInterval:false,
+      hasUncertainty:false,
+      isQualitativeOrUnbounded:true,
+      explanation:'Excluded from window: dating is qualitative or open-ended without documented bounds.',
+    }
+  }
+
+  const u=siteInterval.uncertaintyMa??0
+  const effectiveOlderMa=siteInterval.olderMa+u
+  const effectiveYoungerMa=Math.max(0,siteInterval.youngerMa-u)
+
+  const matches=effectiveOlderMa>=window.youngerMa && effectiveYoungerMa<=window.olderMa
+  const hasInterval=siteInterval.estimateKind==='interval'
+  const hasUncertainty=u>0
+
+  return {
+    matches,
+    hasDocumentedInterval:hasInterval,
+    hasUncertainty,
+    isQualitativeOrUnbounded:false,
+    effectiveOlderMa,
+    effectiveYoungerMa,
+    explanation:matches
+      ? `Documented dating (${siteInterval.label}) intersects the exploratory window [${formatAgeMa(window.olderMa)} – ${formatAgeMa(window.youngerMa)}].`
+      : `Documented dating (${siteInterval.label}) is outside the exploratory window [${formatAgeMa(window.olderMa)} – ${formatAgeMa(window.youngerMa)}].`,
+  }
+}
+

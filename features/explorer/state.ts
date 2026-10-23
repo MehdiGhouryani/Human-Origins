@@ -1,3 +1,5 @@
+import type {TemporalMode} from '../../domain/time'
+
 export type ExplorerMode='tree'|'timeline'|'migration'|'evidence'|'compare'
 /** Most taxa the comparison holds at once. Adding a fourth needs a removal first; nothing is dropped silently. */
 export const COMPARE_LIMIT=3
@@ -10,10 +12,11 @@ export type ExplorerState={
   mode:ExplorerMode
   focusSite:string|null
   compare:string[]
+  temporalMode?:TemporalMode
 }
 
 export const DEFAULT_EXPLORER_STATE:ExplorerState={
-  selectedId:'',time:89.3,journey:false,playing:false,query:'',mode:'tree',focusSite:null,compare:[]
+  selectedId:'',time:89.3,journey:false,playing:false,query:'',mode:'tree',focusSite:null,compare:[],temporalMode:'trail'
 }
 
 /** The ids a URL may name. Anything else falls back to a valid value. */
@@ -32,6 +35,8 @@ export function readExplorerState(search:string):Partial<ExplorerState>{
   const cmp=params.get('cmp'); if(cmp!==null) state.compare=cmp.split(',').map(value=>value.trim()).filter(Boolean)
   const time=params.get('time'); if(time!==null){const parsed=Number(time);if(Number.isFinite(parsed))state.time=clamp(parsed,0,100)}
   state.journey=params.get('journey')==='1'
+  const tmode=params.get('tmode')
+  if(tmode==='window'||tmode==='trail') state.temporalMode=tmode
   return state
 }
 
@@ -53,6 +58,7 @@ export function applyUrlState(current:ExplorerState,decoded:Partial<ExplorerStat
     mode:decoded.mode ?? 'tree',
     query:decoded.query ?? '',
     focusSite:decoded.focusSite && valid.siteIds.has(decoded.focusSite) ? decoded.focusSite : null,
+    temporalMode:decoded.temporalMode ?? current.temporalMode ?? 'trail',
     playing:false,
   }
 }
@@ -64,6 +70,7 @@ export function writeExplorerSearch(state:ExplorerState):string{
   params.set('mode',state.mode)
   params.set('time',Math.round(state.time*10)/10+'')
   if(state.mode==='compare') params.set('cmp',state.compare.join(','))
+  if(state.mode==='migration'&&state.temporalMode==='window') params.set('tmode','window')
   if(state.focusSite) params.set('site',state.focusSite)
   if(state.journey) params.set('journey','1')
   if(state.query.trim()) params.set('q',state.query.trim().slice(0,160))
