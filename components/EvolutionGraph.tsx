@@ -57,13 +57,16 @@ const AVATAR_CLIP_ID='atlas-graph-avatar-clip'
 /** Below this container width the vertical list reads better than a horizontally scrolling map. */
 /** Measured on the graph's own container (not the window): below this width the lineage list replaces the map, because 11 taxa cannot be read on a narrow map. */
 export const GRAPH_COMPACT_WIDTH=600
+const emptySubscribe=()=>()=>{}
+const getClient=()=>true
+const getServer=()=>false
+
 const VIEW_STORAGE_KEY='human-origins:graph-view'
 // View preference store: localStorage when available, in-memory otherwise (private mode / blocked storage).
 const viewPreferenceListeners=new Set<()=>void>()
 let memoryViewPreference:ViewPreference='auto'
-let viewPrefMounted=false
 function readViewPreference():ViewPreference{
-  if(typeof window==='undefined'||!viewPrefMounted) return 'auto'
+  if(typeof window==='undefined') return 'auto'
   try{const stored=window.localStorage.getItem(VIEW_STORAGE_KEY);return stored==='rails'||stored==='list'?stored:'auto'}
   catch{return memoryViewPreference}
 }
@@ -225,15 +228,10 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
   const nodeRefs=useRef(new Map<string,SVGGElement>())
   const registerRef=useCallback((id:string,el:SVGGElement|null)=>{if(el) nodeRefs.current.set(id,el);else nodeRefs.current.delete(id)},[])
 
-  useEffect(()=>{
-    if(!viewPrefMounted){
-      viewPrefMounted=true
-      viewPreferenceListeners.forEach(l=>l())
-    }
-  },[])
+  const isClient=useSyncExternalStore(emptySubscribe,getClient,getServer)
   // The stored view is an external system (localStorage), read through useSyncExternalStore: the server and the first
   // client render both use 'auto', then the stored choice applies without a setState-in-effect cascade.
-  const preference=useSyncExternalStore(subscribeViewPreference,readViewPreference,serverViewPreference)
+  const preference=useSyncExternalStore(subscribeViewPreference,isClient?readViewPreference:serverViewPreference,serverViewPreference)
   const choose=(next:View)=>{
     writeViewPreference(next===pickGraphView('auto',containerWidth)?'auto':next)
   }
@@ -406,13 +404,13 @@ export default function EvolutionGraph({bootstrap,selected,setSelected,time,pinn
     :null
 
   // Phones: the relation caption folds under the selected card, so the card stays the focus ("Why this line?").
-  const phoneWrap=(node:ReactNode)=>containerWidth<GRAPH_COMPACT_WIDTH
+  const phoneWrap=(node:ReactNode)=>containerWidth>0&&containerWidth<GRAPH_COMPACT_WIDTH
     ?<details className="atlas-graph-why"><summary>Why this line?</summary>{node}</details>
     :node
   return <div ref={wrapRef} className={`atlas-graph view-${view}`} data-view={view}>
     <div className="atlas-graph-toolbar">
       <div className="atlas-graph-title"><GitBranch size={15} aria-hidden="true"/><strong>Lineage graph</strong><span>{species.length} taxa{bootstrap.graph.off.length?` · ${bootstrap.graph.off.length} hidden`:''}</span></div>
-      {containerWidth>=GRAPH_COMPACT_WIDTH&&<div className="atlas-graph-views" role="group" aria-label="Graph layout">
+      {(containerWidth===0||containerWidth>=GRAPH_COMPACT_WIDTH)&&<div className="atlas-graph-views" role="group" aria-label="Graph layout">
         <button type="button" onClick={()=>choose('rails')} className={view==='rails'?'active':''} aria-pressed={view==='rails'}><Route size={14} aria-hidden="true"/> Map</button>
         <button type="button" onClick={()=>choose('list')} className={view==='list'?'active':''} aria-pressed={view==='list'}><List size={14} aria-hidden="true"/> List</button>
       </div>}

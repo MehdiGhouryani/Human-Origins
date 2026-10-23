@@ -7,10 +7,13 @@ type ApiItem={id:string;title:string;subtitle?:string;href:string;external:boole
 type ApiGroup={kind:SearchGroup['kind'];label:string;items:ApiItem[]}
 type Status='idle'|'loading'|'done'|'error'
 
+const emptySubscribe=()=>()=>{}
+const getClient=()=>true
+const getServer=()=>false
+
 const searchListeners=new Set<()=>void>()
-let searchMounted=false
 function getSearchSnapshot():string{
-  if(typeof window==='undefined'||!searchMounted) return ''
+  if(typeof window==='undefined') return ''
   return (new URLSearchParams(window.location.search).get('q')??'').slice(0,MAX_QUERY_LENGTH)
 }
 const getServerSearchSnapshot=()=>''
@@ -26,13 +29,8 @@ function subscribeSearch(listener:()=>void){
 export default function GlobalSearch(){
   const uid=useId()
   const listId=`${uid}-list`
-  useEffect(()=>{
-    if(!searchMounted){
-      searchMounted=true
-      searchListeners.forEach(l=>l())
-    }
-  },[])
-  const urlQuery=useSyncExternalStore(subscribeSearch,getSearchSnapshot,getServerSearchSnapshot)
+  const isClient=useSyncExternalStore(emptySubscribe,getClient,getServer)
+  const urlQuery=useSyncExternalStore(subscribeSearch,isClient?getSearchSnapshot:getServerSearchSnapshot,getServerSearchSnapshot)
   const [typed,setTyped]=useState<string|null>(null)
   const value=typed??urlQuery
   const [result,setResult]=useState<{q:string;groups:ApiGroup[];error:boolean}>({q:'',groups:[],error:false})

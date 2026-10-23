@@ -100,7 +100,12 @@ export default function SiteHeader(){
     <nav aria-label="Modes">
       {navItems.map(item=><Link href={item.path} key={item.label}>{item.label}</Link>)}
     </nav>
-    <div className="top-actions"><GlobalSearch/></div>
+    <div className="top-actions">
+      <GlobalSearch/>
+      <button type="button" className="mobile-menu-toggle" aria-label="Open navigation" aria-expanded={false} aria-controls="mobile-navigation" onClick={()=>{}}>
+        <Menu size={17} aria-hidden="true"/>
+      </button>
+    </div>
   </header>}>
     <SiteHeaderContent/>
   </Suspense>

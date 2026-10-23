@@ -1,6 +1,10 @@
 'use client'
-import {useCallback,useEffect,useMemo,useSyncExternalStore} from 'react'
+import {useCallback,useMemo,useSyncExternalStore} from 'react'
 import {BOOKMARK_STORAGE_KEY,EMPTY_BOOKMARKS,isBookmarked,parseBookmarks,toggleBookmark,writeBookmarks,type BookmarkState} from './store'
+
+const emptySubscribe=()=>()=>{}
+const getClient=()=>true
+const getServer=()=>false
 
 const listeners=new Set<()=>void>()
 const emit=()=>listeners.forEach(listener=>listener())
@@ -13,10 +17,9 @@ const subscribe=(listener:()=>void)=>{
 const safeStorage=():Storage|undefined=>{try{return typeof window==='undefined'?undefined:window.localStorage}catch{return undefined}}
 
 // useSyncExternalStore needs a referentially stable snapshot: parse only when the raw string changes.
-let isBookmarksMounted=false
 let lastRaw:string|null|undefined; let lastState:BookmarkState=EMPTY_BOOKMARKS
 function snapshot():BookmarkState{
-  if(typeof window==='undefined'||!isBookmarksMounted) return EMPTY_BOOKMARKS
+  if(typeof window==='undefined') return EMPTY_BOOKMARKS
   let raw:string|null=null
   try{raw=safeStorage()?.getItem(BOOKMARK_STORAGE_KEY)??null}catch{raw=null}
   if(raw!==lastRaw){lastRaw=raw;lastState=parseBookmarks(raw).state}
@@ -26,13 +29,8 @@ const serverSnapshot=()=>EMPTY_BOOKMARKS
 
 /** Bookmarks for the current browser. Server render and first client render are empty, so hydration never mismatches. */
 export function useBookmarks(validIds?:ReadonlySet<string>){
-  useEffect(()=>{
-    if(!isBookmarksMounted){
-      isBookmarksMounted=true
-      emit()
-    }
-  },[])
-  const state=useSyncExternalStore(subscribe,snapshot,serverSnapshot)
+  const isClient=useSyncExternalStore(emptySubscribe,getClient,getServer)
+  const state=useSyncExternalStore(subscribe,isClient?snapshot:serverSnapshot,serverSnapshot)
   const items=useMemo(()=>validIds?state.items.filter(item=>validIds.has(item.id)):state.items,[state,validIds])
   const toggle=useCallback((id:string):boolean=>{
     const ok=writeBookmarks(safeStorage(),toggleBookmark(snapshot(),id))
