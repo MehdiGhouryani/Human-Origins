@@ -79,6 +79,9 @@ describe('species navigator',()=>{
 })
 
 describe('inspector',()=>{
+  it('omits duplicate scientific name from the subtitle while keeping rank and date',()=>{
+    const html=inspector('erectus');expect(html).toContain('species · ~1.9 Ma–100 ka');expect(html).not.toContain('Homo erectus · species')
+  })
   it('labels the inferred common ancestor as an inferred node, never "Extinct"',()=>{
     const html=inspector('common');expect(html).toContain('Inferred ancestral node');expect(html).not.toMatch(/>Extinct</);expect(html).toContain('not a named fossil species')
   })

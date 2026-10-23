@@ -2,7 +2,7 @@
 
 import {Menu,X} from 'lucide-react'
 import GlobalSearch from './GlobalSearch'
-import {useEffect,useRef,useState} from 'react'
+import {Suspense,useEffect,useRef,useState} from 'react'
 import Link from 'next/link'
 import {usePathname,useSearchParams} from 'next/navigation'
 
@@ -34,7 +34,7 @@ function activeLabel(pathname:string,params:URLSearchParams):string|null{
   return null
 }
 
-export default function SiteHeader(){
+function SiteHeaderContent(){
   const pathname=usePathname()
   const params=useSearchParams()
   const [open,setOpen]=useState(false)
@@ -89,4 +89,19 @@ export default function SiteHeader(){
       </nav>
     </div>}
   </header>
+}
+
+export default function SiteHeader(){
+  return <Suspense fallback={<header className="topbar" aria-label="Human Origins primary navigation">
+    <Link className="brand" href="/" aria-label="Human Origins home">
+      <span className="mark" aria-hidden="true">✦</span>
+      <span><strong>HUMAN ORIGINS</strong><small>OUR STORY. A SHARED PAST.</small></span>
+    </Link>
+    <nav aria-label="Modes">
+      {navItems.map(item=><Link href={item.path} key={item.label}>{item.label}</Link>)}
+    </nav>
+    <div className="top-actions"><GlobalSearch/></div>
+  </header>}>
+    <SiteHeaderContent/>
+  </Suspense>
 }
