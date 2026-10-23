@@ -8,7 +8,7 @@ const out=mkdtempSync(join(tmpdir(),'human-origins-research-model-'))
 try{
   execFileSync('tsc',[
     'scripts/audit-research-model-entry.ts',
-    'content/catalog.ts','content/collections.ts','content/evidence.ts','content/foundation.ts','content/institutions.ts','content/interpretations.ts','content/media.ts','content/occurrences.ts','content/provenance.ts','content/publications.ts','content/relationships.ts','content/sites.ts','content/sources.ts','content/specimens.ts','content/taxa.ts',
+    'content/catalog.ts','content/collections.ts','content/evidence.ts','content/foundation.ts','content/institutions.ts','content/interpretations.ts','content/media.ts','content/occurrences.ts','content/provenance.ts','content/publications.ts','content/relationships.ts','content/sites.ts','content/sources.ts','content/specimens.ts','content/taxa.ts','content/migration-corridors.ts',
     'domain/contracts.ts','domain/ids.ts','domain/immutability.ts','domain/research-model.ts','domain/time.ts',
     '--outDir',out,'--module','commonjs','--target','ES2020','--esModuleInterop','--skipLibCheck','--strict'
   ],{cwd:root,stdio:'inherit'})

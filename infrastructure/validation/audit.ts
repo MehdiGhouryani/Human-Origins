@@ -14,7 +14,7 @@ export type ValidationSeverity='error'|'warning'
 export type ValidationIssue={severity:ValidationSeverity;code:string;path:string;message:string}
 export type ValidationReport={ok:boolean;errors:number;warnings:number;issues:ValidationIssue[];summary:Record<string,number>}
 
-type Bucket='taxa'|'taxonNames'|'media'|'sources'|'publications'|'institutions'|'collections'|'materialEntities'|'occurrences'|'evidence'|'specimens'|'claims'|'interpretationSets'|'interpretationPositions'|'sites'|'siteContexts'
+type Bucket='taxa'|'taxonNames'|'media'|'sources'|'publications'|'institutions'|'collections'|'materialEntities'|'occurrences'|'evidence'|'specimens'|'claims'|'interpretationSets'|'interpretationPositions'|'sites'|'siteContexts'|'migrationCorridors'
 const issue=(issues:ValidationIssue[],severity:ValidationSeverity,code:string,path:string,message:string)=>issues.push({severity,code,path,message})
 const isHttp=(value:string)=>/^https?:\/\//.test(value)
 const isHttps=(value:string)=>/^https:\/\//.test(value)
@@ -29,7 +29,7 @@ export function validateCatalog(catalog:ContentCatalog=baseCatalog):ValidationRe
   const contentCatalog=catalog
   const issues:ValidationIssue[]=[]
   const sets:Record<Bucket,Set<string>>={
-    taxa:new Set(),taxonNames:new Set(),media:new Set(),sources:new Set(),publications:new Set(),institutions:new Set(),collections:new Set(),materialEntities:new Set(),occurrences:new Set(),evidence:new Set(),specimens:new Set(),claims:new Set(),interpretationSets:new Set(),interpretationPositions:new Set(),sites:new Set(),siteContexts:new Set(),
+    taxa:new Set(),taxonNames:new Set(),media:new Set(),sources:new Set(),publications:new Set(),institutions:new Set(),collections:new Set(),materialEntities:new Set(),occurrences:new Set(),evidence:new Set(),specimens:new Set(),claims:new Set(),interpretationSets:new Set(),interpretationPositions:new Set(),sites:new Set(),siteContexts:new Set(),migrationCorridors:new Set(),
   }
   const register=(bucket:Bucket,id:string,path:string)=>{
     if(!id.trim()) issue(issues,'error','EMPTY_ID',path,`${bucket} id is empty.`)
@@ -109,6 +109,7 @@ const validateIdentifiers=(issues:ValidationIssue[],bucket:string,id:string,iden
   for(const item of contentCatalog.claims) register('claims',String(item.id),'claims')
   for(const item of contentCatalog.interpretationSets) register('interpretationSets',String(item.id),'interpretationSets')
   for(const item of contentCatalog.interpretationPositions) register('interpretationPositions',String(item.id),'interpretationPositions')
+  for(const item of contentCatalog.migrationCorridors) register('migrationCorridors',String(item.id),'migrationCorridors')
 
   for(const taxon of contentCatalog.taxa){
     const id=String(taxon.id)
@@ -424,6 +425,19 @@ const validateIdentifiers=(issues:ValidationIssue[],bucket:string,id:string,iden
     validateSourceLinks(issues,'relationshipHypothesisPositions',id,position.sourceIds,position.sourceLinks,true)
   }
 
+  for(const corridor of contentCatalog.migrationCorridors){
+    const id=String(corridor.id)
+    if(!has('taxa',String(corridor.taxonId))) issue(issues,'error','BROKEN_CORRIDOR_TAXON',`migrationCorridors.${id}.taxonId`,`Taxon ${String(corridor.taxonId)} is missing.`)
+    if(!corridor.label.trim() || !corridor.originLabel.trim() || !corridor.destinationLabel.trim()) issue(issues,'error','INCOMPLETE_CORRIDOR_LABELS',`migrationCorridors.${id}`,'Corridor labels must not be empty.')
+    if(!corridor.coordinates.length || corridor.coordinates.some(([lon,lat])=>typeof lon!=='number'||typeof lat!=='number'||lon<-180||lon>180||lat<-90||lat>90)) issue(issues,'error','INVALID_CORRIDOR_COORDINATES',`migrationCorridors.${id}.coordinates`,'Corridor coordinates must be valid [lon, lat] tuples within bounds.')
+    if(corridor.temporalWindow.startMa<corridor.temporalWindow.endMa || corridor.temporalWindow.startMa>TIME_DOMAIN.oldestMa || corridor.temporalWindow.endMa<TIME_DOMAIN.youngestMa) issue(issues,'error','INVALID_CORRIDOR_TEMPORAL_WINDOW',`migrationCorridors.${id}.temporalWindow`,'Corridor temporal window is outside valid time bounds or inverted.')
+    if(!corridor.spatialLimitationNote.trim()) issue(issues,'error','MISSING_CORRIDOR_LIMITATION_NOTE',`migrationCorridors.${id}.spatialLimitationNote`,'Corridors must disclose spatial and schematic limitations.')
+    for(const claimId of corridor.claimIds) if(!has('claims',String(claimId))) issue(issues,'error','BROKEN_CORRIDOR_CLAIM',`migrationCorridors.${id}.claimIds`,`Claim ${String(claimId)} is missing.`)
+    for(const evidenceId of corridor.evidenceIds) if(!has('evidence',String(evidenceId))) issue(issues,'error','BROKEN_CORRIDOR_EVIDENCE',`migrationCorridors.${id}.evidenceIds`,`Evidence ${String(evidenceId)} is missing.`)
+    for(const sourceId of corridor.sourceIds) if(!has('sources',String(sourceId))) issue(issues,'error','BROKEN_CORRIDOR_SOURCE',`migrationCorridors.${id}.sourceIds`,`Source ${String(sourceId)} is missing.`)
+    validateSourceLinks(issues,'migrationCorridors',id,corridor.sourceIds,corridor.sourceLinks,true)
+  }
+
   const referencedSourceIds=new Set<string>()
   for(const taxon of contentCatalog.taxa) taxon.sourceIds.forEach(id=>referencedSourceIds.add(String(id)))
   for(const name of contentCatalog.taxonNames) name.sourceIds.forEach(id=>referencedSourceIds.add(String(id)))
@@ -439,11 +453,12 @@ const validateIdentifiers=(issues:ValidationIssue[],bucket:string,id:string,iden
   for(const position of contentCatalog.interpretationPositions) position.sourceIds.forEach(id=>referencedSourceIds.add(String(id)))
   for(const set of contentCatalog.relationshipHypothesisSets) set.sourceIds.forEach(id=>referencedSourceIds.add(String(id)))
   for(const position of contentCatalog.relationshipHypothesisPositions) position.sourceIds.forEach(id=>referencedSourceIds.add(String(id)))
+  for(const corridor of contentCatalog.migrationCorridors) corridor.sourceIds.forEach(id=>referencedSourceIds.add(String(id)))
   for(const media of contentCatalog.media) media.sourceLinks.forEach(link=>referencedSourceIds.add(String(link.sourceId)))
   foundationalSourceIds.forEach(id=>referencedSourceIds.add(String(id)))
   for(const source of contentCatalog.sources) if(!referencedSourceIds.has(String(source.id))) issue(issues,'warning','ORPHAN_SOURCE',`sources.${String(source.id)}`,'Source is currently not referenced by a canonical content record.')
 
-  const summary={taxa:contentCatalog.taxa.length,taxonNames:contentCatalog.taxonNames.length,media:contentCatalog.media.length,sources:contentCatalog.sources.length,publications:contentCatalog.publications.length,institutions:contentCatalog.institutions.length,collections:contentCatalog.collections.length,materialEntities:contentCatalog.materialEntities.length,occurrences:contentCatalog.occurrences.length,evidence:contentCatalog.evidence.length,specimens:contentCatalog.specimens.length,claims:contentCatalog.claims.length,interpretationSets:contentCatalog.interpretationSets.length,interpretationPositions:contentCatalog.interpretationPositions.length,relationshipHypothesisSets:contentCatalog.relationshipHypothesisSets.length,relationshipHypothesisPositions:contentCatalog.relationshipHypothesisPositions.length,uncertaintyAssessments:contentCatalog.claims.reduce((sum,claim)=>sum+claim.uncertaintyProfile.length,0),sites:contentCatalog.sites.length,siteContexts:contentCatalog.siteContexts.length,siteViews:contentCatalog.siteViews.length,relationships:contentCatalog.relationships.length}
+  const summary={taxa:contentCatalog.taxa.length,taxonNames:contentCatalog.taxonNames.length,media:contentCatalog.media.length,sources:contentCatalog.sources.length,publications:contentCatalog.publications.length,institutions:contentCatalog.institutions.length,collections:contentCatalog.collections.length,materialEntities:contentCatalog.materialEntities.length,occurrences:contentCatalog.occurrences.length,evidence:contentCatalog.evidence.length,specimens:contentCatalog.specimens.length,claims:contentCatalog.claims.length,interpretationSets:contentCatalog.interpretationSets.length,interpretationPositions:contentCatalog.interpretationPositions.length,relationshipHypothesisSets:contentCatalog.relationshipHypothesisSets.length,relationshipHypothesisPositions:contentCatalog.relationshipHypothesisPositions.length,uncertaintyAssessments:contentCatalog.claims.reduce((sum,claim)=>sum+claim.uncertaintyProfile.length,0),sites:contentCatalog.sites.length,siteContexts:contentCatalog.siteContexts.length,siteViews:contentCatalog.siteViews.length,relationships:contentCatalog.relationships.length,migrationCorridors:contentCatalog.migrationCorridors.length}
   const errors=issues.filter(i=>i.severity==='error').length
   const warnings=issues.filter(i=>i.severity==='warning').length
   return {ok:errors===0,errors,warnings,issues,summary}

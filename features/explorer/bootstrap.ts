@@ -4,10 +4,10 @@ import {catalogRuntimeMetadata,createCatalogFingerprint} from '../../infrastruct
 import {buildResearchIndexes} from '../../domain/research-indexes'
 import {buildResearchGraph} from '../../domain/research-graph'
 import {buildAdjacencyIndex,provenanceChainForClaim} from '../../domain/graph-traversal'
-import type {ContentCatalog,EvidenceRecord,MediaAsset,ProvenanceClaim,RelationshipRecord,SourceRecord,TaxonRecord,EvidenceSite,PublicationRecord,InstitutionRecord,CollectionRecord,MaterialEntityRecord,TaxonNameRecord,CanonicalSiteContextRecord,InterpretationSetRecord,InterpretationPositionRecord,RelationshipHypothesisSetRecord,RelationshipHypothesisPositionRecord} from '../../domain/contracts'
+import type {ContentCatalog,EvidenceRecord,MediaAsset,ProvenanceClaim,RelationshipRecord,SourceRecord,TaxonRecord,EvidenceSite,PublicationRecord,InstitutionRecord,CollectionRecord,MaterialEntityRecord,TaxonNameRecord,CanonicalSiteContextRecord,InterpretationSetRecord,InterpretationPositionRecord,RelationshipHypothesisSetRecord,RelationshipHypothesisPositionRecord,MigrationCorridorRecord} from '../../domain/contracts'
 import type {ResearchIndexes} from '../../domain/research-indexes'
 import type {ExplorerMedia,ExplorerSpecies,ExplorerSpecimen,ExplorerOccurrence} from './types'
-import {asClaimId,asEvidenceId,asMediaAssetId,asSiteId,asSourceId,asSpecimenId,asTaxonId,asOccurrenceId,asMaterialEntityId,asInterpretationSetId} from '../../domain/ids'
+import {asClaimId,asEvidenceId,asMediaAssetId,asSiteId,asSourceId,asSpecimenId,asTaxonId,asOccurrenceId,asMaterialEntityId,asInterpretationSetId,asMigrationCorridorId} from '../../domain/ids'
 import {deepFreeze} from '../../domain/immutability'
 import {resolveTreeIconId} from '../../domain/media-slots'
 import {featured} from '../../content/featured'
@@ -28,6 +28,7 @@ export type ExplorerBootstrapIndexes={
   evidenceById:Readonly<Record<string,number>>
   claimsById:Readonly<Record<string,number>>
   specimensById:Readonly<Record<string,number>>
+  migrationCorridorsById:Readonly<Record<string,number>>
   claimsByTaxonId:Readonly<Record<string,readonly number[]>>
   evidenceByTaxonId:Readonly<Record<string,readonly number[]>>
   specimensByTaxonId:Readonly<Record<string,readonly number[]>>
@@ -78,6 +79,7 @@ export type ExplorerBootstrap={
   claims:readonly ProvenanceClaim[]
   specimens:readonly ExplorerSpecimen[]
   occurrences:readonly ExplorerOccurrence[]
+  migrationCorridors:readonly MigrationCorridorRecord[]
   sources:readonly SourceRecord[]
   publications:readonly PublicationRecord[]
   institutions:readonly InstitutionRecord[]
@@ -170,6 +172,7 @@ function buildIndexes(
   specimens:readonly ExplorerSpecimen[],
   interpretationSets:readonly InterpretationSetRecord[],
   interpretationPositions:readonly InterpretationPositionRecord[],
+  migrationCorridors:readonly MigrationCorridorRecord[],
 ):ExplorerBootstrapIndexes{
   const speciesById:Record<string,number>={}
   const mediaById:Record<string,number>={}
@@ -185,6 +188,7 @@ function buildIndexes(
   const evidenceById:Record<string,number>={}
   const claimsById:Record<string,number>={}
   const specimensById:Record<string,number>={}
+  const migrationCorridorsById:Record<string,number>={}
   const claimsByTaxonId:Record<string,number[]>={}
   const evidenceByTaxonId:Record<string,number[]>={}
   const specimensByTaxonId:Record<string,number[]>={}
@@ -207,6 +211,7 @@ function buildIndexes(
   evidence.forEach((item,index)=>{evidenceById[String(item.id)]=index; const key=String(item.taxonId);(evidenceByTaxonId[key]??=[]).push(index)})
   claims.forEach((item,index)=>{claimsById[String(item.id)]=index; const key=String(item.taxonId);(claimsByTaxonId[key]??=[]).push(index)})
   specimens.forEach((item,index)=>{specimensById[String(item.id)]=index; const key=item.taxonId;(specimensByTaxonId[key]??=[]).push(index)})
+  migrationCorridors.forEach((item,index)=>{migrationCorridorsById[String(item.id)]=index})
   interpretationSets.forEach((item,index)=>{const key=String(item.claimId);(interpretationSetsByClaimId[key]??=[]).push(index)})
   interpretationPositions.forEach((item,index)=>{const key=String(item.setId);(interpretationPositionsBySetId[key]??=[]).push(index)})
 
@@ -228,6 +233,7 @@ function buildIndexes(
     evidenceById:freezeIndex(evidenceById),
     claimsById:freezeIndex(claimsById),
     specimensById:freezeIndex(specimensById),
+    migrationCorridorsById:freezeIndex(migrationCorridorsById),
     claimsByTaxonId:freezeMulti(claimsByTaxonId),
     evidenceByTaxonId:freezeMulti(evidenceByTaxonId),
     specimensByTaxonId:freezeMulti(specimensByTaxonId),
@@ -275,6 +281,15 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
     siteId:String(asSiteId(String(record.siteId))),
     specimenId:record.specimenId?String(asSpecimenId(String(record.specimenId))):undefined,
     sourceIds:record.sourceIds.map(id=>String(asSourceId(String(id)))),
+  }))
+  const migrationCorridors:MigrationCorridorRecord[]=contentCatalog.migrationCorridors.map(record=>({
+    ...record,
+    id:asMigrationCorridorId(String(record.id)),
+    taxonId:asTaxonId(String(record.taxonId)),
+    claimIds:record.claimIds.map(id=>asClaimId(String(id))),
+    evidenceIds:record.evidenceIds.map(id=>asEvidenceId(String(id))),
+    sourceIds:record.sourceIds.map(id=>asSourceId(String(id))),
+    sourceLinks:record.sourceLinks.map(link=>({...link,sourceId:asSourceId(String(link.sourceId))})),
   }))
   const relationships=contentCatalog.relationships.map(item=>({...item,from:asTaxonId(String(item.from)),to:asTaxonId(String(item.to)),sourceIds:item.sourceIds.map(id=>asSourceId(String(id)))}))
   const sites=contentCatalog.siteViews.map(item=>({...item,id:asSiteId(String(item.id)),sourceIds:item.sourceIds.map(id=>asSourceId(String(id))),relatedTaxonIds:item.relatedTaxonIds.map(id=>asTaxonId(String(id)))}))
@@ -325,6 +340,7 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
     claims,
     specimens,
     occurrences,
+    migrationCorridors,
     sources,
     publications,
     institutions,
@@ -338,7 +354,7 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
     siteContexts:contentCatalog.siteContexts,
     researchIndexes:isBase?baseResearchIndexes:buildResearchIndexes(contentCatalog),
     copy,
-    indexes:buildIndexes(species,media,sources,publications,institutions,collections,contentCatalog.materialEntities,contentCatalog.taxonNames,contentCatalog.siteContexts,occurrences,sites,claims,evidence,specimens,interpretationSets,interpretationPositions),
+    indexes:buildIndexes(species,media,sources,publications,institutions,collections,contentCatalog.materialEntities,contentCatalog.taxonNames,contentCatalog.siteContexts,occurrences,sites,claims,evidence,specimens,interpretationSets,interpretationPositions,migrationCorridors),
     provenanceChains,
   }
   return deepFreeze(normalized)

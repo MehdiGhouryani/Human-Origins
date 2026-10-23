@@ -1,4 +1,4 @@
-import type {ClaimId,EvidenceId,MediaAssetId,PublicationId,InstitutionId,OccurrenceId,SiteId,SourceId,SpecimenId,TaxonId,RelationshipId,MaterialEntityId,InterpretationSetId,InterpretationPositionId,RelationshipHypothesisSetId,RelationshipHypothesisPositionId,MediaSlotId} from './ids'
+import type {ClaimId,EvidenceId,MediaAssetId,PublicationId,InstitutionId,OccurrenceId,SiteId,SourceId,SpecimenId,TaxonId,RelationshipId,MaterialEntityId,InterpretationSetId,InterpretationPositionId,RelationshipHypothesisSetId,RelationshipHypothesisPositionId,MediaSlotId,MigrationCorridorId} from './ids'
 import type {TimeInterval} from './time'
 import type {CollectionRecord,ExternalIdentifier,InstitutionRecord,MaterialContext,MaterialType,OccurrenceBasis,OccurrenceRecord,OccurrenceStatus,PublicationRecord,PublicationType,ResearchModelMetadata,TaxonomicIdentity,TaxonomicStatus,TaxonRank,MaterialEntityRecord,SiteContextRecord,SiteRecord,TaxonNameRecord,ContributorRecord,LocationPrecisionLike} from './research-model'
 
@@ -213,6 +213,32 @@ export type ProvenanceClaim={
   interpretationSetIds:readonly InterpretationSetId[]
 }
 
+export type MigrationGeometryKind='schematic-corridor'
+export type MigrationSpatialScale='hypothesis-scale'|'continent-scale'
+export type MigrationCorridorTemporalWindow={
+  startMa:number
+  endMa:number
+  label:string
+  note:string
+}
+export type MigrationCorridorRecord={
+  id:MigrationCorridorId
+  taxonId:TaxonId
+  label:string
+  originLabel:string
+  destinationLabel:string
+  coordinates:readonly (readonly [number,number])[]
+  temporalWindow:MigrationCorridorTemporalWindow
+  geometryKind:MigrationGeometryKind
+  spatialScale:MigrationSpatialScale
+  spatialLimitationNote:string
+  claimIds:readonly ClaimId[]
+  evidenceIds:readonly EvidenceId[]
+  sourceIds:readonly SourceId[]
+  sourceLinks:readonly SourceLink[]
+  note?:string
+}
+
 export type CatalogMetadata=ResearchModelMetadata & {purpose:'curated-research-interface'}
 
 export type ContentCatalog={
@@ -236,6 +262,7 @@ export type ContentCatalog={
   relationshipHypothesisPositions:readonly RelationshipHypothesisPositionRecord[]
   sites:readonly CanonicalSiteRecord[]
   siteContexts:readonly CanonicalSiteContextRecord[]
+  migrationCorridors:readonly MigrationCorridorRecord[]
   /** Explorer-ready projections; presentation-only, never a source of truth. */
   siteViews:readonly EvidenceSite[]
 }

@@ -13,6 +13,7 @@ import {collectionRecords} from './collections'
 import {occurrenceRecords} from './occurrences'
 import {interpretationSets,interpretationPositions} from './interpretations'
 import {relationshipHypothesisSets,relationshipHypothesisPositions} from './relationship-hypotheses'
+import {migrationCorridorRecords} from './migration-corridors'
 import type {ContentCatalog,MediaAsset,TaxonRecord,CanonicalSiteRecord,CanonicalSiteContextRecord,MaterialEntityRecord,TaxonNameRecord,EvidenceSite,MediaRole} from '../domain/contracts'
 import type {TaxonId,SiteId} from '../domain/ids'
 import {deepFreeze} from '../domain/immutability'
@@ -46,6 +47,7 @@ export const contentCatalog:ContentCatalog=deepFreeze({
   relationshipHypothesisPositions,
   sites:siteRecords,
   siteContexts:siteContextRecords,
+  migrationCorridors:migrationCorridorRecords,
   siteViews,
 })
 
@@ -65,6 +67,7 @@ export const claimsById=Object.freeze(Object.fromEntries(provenanceClaims.map(it
 export const sitesById=Object.freeze(Object.fromEntries(siteRecords.map(item=>[String(item.id),item]))) as Record<string,CanonicalSiteRecord>
 export const siteContextsById=Object.freeze(Object.fromEntries(siteContextRecords.map(item=>[String(item.id),item]))) as Record<string,CanonicalSiteContextRecord>
 export const siteViewsById=Object.freeze(Object.fromEntries(siteViews.map(item=>[String(item.id),item]))) as Record<string,EvidenceSite>
+export {migrationCorridorsById} from './migration-corridors'
 
 export const getTaxonRecord=(id:TaxonId)=>taxaById[String(id)]
 export const getDefaultMedia=(taxon:TaxonRecord)=>mediaById[String(taxon.defaultMediaId)]
@@ -85,3 +88,4 @@ export * from './specimens'
 export * from './provenance'
 export * from './interpretations'
 export * from './foundation'
+export * from './migration-corridors'

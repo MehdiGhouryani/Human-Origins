@@ -1,3 +1,5 @@
+import {migrationCorridorRecords} from '../content/migration-corridors'
+
 export type Route={
   id:string
   label:string
@@ -35,12 +37,28 @@ export const continents:[string,[number,number][]][]=[
   ['Greenland',[[-73,59],[-45,60],[-20,70],[-27,82],[-50,83],[-67,74]]],
 ]
 
-export const routes:Route[]=[
-  {id:'out-of-africa',label:'Africa → Arabia → Eurasia',color:'#e8bd70',points:[[36,2],[48,25],[35,32],[35,39],[8,48]],from:'East Africa',to:'Western Europe',startKa:60,endKa:5,certainty:'broad',sourceId:'si-dispersal-summary'},
-  {id:'eastern-route',label:'Africa → South Asia → Sahul',color:'#59c4b6',points:[[36,2],[48,20],[78,18],[105,12],[134,-25]],from:'East Africa',to:'Sahul / Australia',startKa:55,endKa:5,certainty:'possible',sourceId:'si-dispersal-summary'},
-  {id:'central-asia',label:'Levant → Central Asia → Altai',color:'#9b82e9',points:[[35,32],[50,38],[67,43],[87,51]],from:'Levant',to:'Altai / Siberia',startKa:50,endKa:5,certainty:'broad',sourceId:'si-dispersal-summary'},
-  {id:'americas',label:'Northeast Asia → Americas',color:'#65a8e8',points:[[87,51],[140,52],[170,55],[-165,55],[-130,50],[-105,40],[-65,-15]],from:'Siberia',to:'South America',startKa:25,endKa:5,certainty:'possible',sourceId:'si-dispersal-summary'},
-]
+export const routeStyles:Record<string,{color:string;certainty:'broad'|'possible'}>={
+  'out-of-africa':{color:'#e8bd70',certainty:'broad'},
+  'eastern-route':{color:'#59c4b6',certainty:'possible'},
+  'central-asia':{color:'#9b82e9',certainty:'broad'},
+  'americas':{color:'#65a8e8',certainty:'possible'},
+}
+
+export const routes:Route[]=migrationCorridorRecords.map(corridor=>{
+  const style=routeStyles[String(corridor.id)]??{color:'#e8bd70',certainty:'broad'}
+  return {
+    id:String(corridor.id),
+    label:corridor.label,
+    color:style.color,
+    points:[...corridor.coordinates] as [number,number][],
+    from:corridor.originLabel,
+    to:corridor.destinationLabel,
+    startKa:Math.round(corridor.temporalWindow.startMa*1000),
+    endKa:Math.round(corridor.temporalWindow.endMa*1000),
+    certainty:style.certainty,
+    sourceId:corridor.sourceIds[0]?String(corridor.sourceIds[0]):undefined,
+  }
+})
 
 export const stories:Story[]=[
   {id:'deep-africa',title:'Africa · deep-time context',subtitle:'8 Ma → 315 ka · African human-origins context',fromKa:8000,toKa:315,focus:[20,5],route:'',note:'This chapter provides geographic context across deep time. It does not claim that a single migration route applies to all early hominins.'},

@@ -1,7 +1,7 @@
 {
   "release": "0.33.0",
   "schemaVersion": "4.2.0",
-  "fingerprint": "be141b6d4f5f0f04248dc61ce26e4497",
+  "fingerprint": "8cdca367c10e423a6ec4aacdaf4bb017",
   "counts": {
     "taxa": 18,
     "taxonNames": 18,
@@ -21,6 +21,7 @@
     "relationships": 20,
     "interpretationSets": 2,
     "interpretationPositions": 4,
-    "uncertaintyAssessments": 16
+    "uncertaintyAssessments": 16,
+    "migrationCorridors": 4
   }
 }

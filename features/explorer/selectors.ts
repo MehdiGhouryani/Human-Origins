@@ -1,4 +1,4 @@
-import type {EvidenceRecord,MediaRole,ProvenanceClaim,RelationshipRecord,SearchResult,SourceRecord,EvidenceSite,PublicationRecord,InstitutionRecord,InterpretationSetRecord,InterpretationPositionRecord,RelationshipHypothesisSetRecord,RelationshipHypothesisPositionRecord} from '../../domain/contracts'
+import type {EvidenceRecord,MediaRole,ProvenanceClaim,RelationshipRecord,SearchResult,SourceRecord,EvidenceSite,PublicationRecord,InstitutionRecord,InterpretationSetRecord,InterpretationPositionRecord,RelationshipHypothesisSetRecord,RelationshipHypothesisPositionRecord,MigrationCorridorRecord} from '../../domain/contracts'
 import type {ExplorerOccurrence} from './types'
 import type {ClaimProvenanceSummary,ExplorerBootstrap} from './bootstrap'
 import type {ExplorerMedia,ExplorerSpecies,ExplorerSpecimen} from './types'
@@ -13,6 +13,11 @@ export const getExplorerSpeciesById=(bootstrap:ExplorerBootstrap,id:string):Expl
 export const getExplorerSpeciesList=(bootstrap:ExplorerBootstrap):readonly ExplorerSpecies[]=>bootstrap.species
 export const getExplorerRelationships=(bootstrap:ExplorerBootstrap):readonly RelationshipRecord[]=>bootstrap.relationships
 export const getExplorerEvidenceSites=(bootstrap:ExplorerBootstrap):readonly EvidenceSite[]=>bootstrap.sites
+export const getExplorerMigrationCorridors=(bootstrap:ExplorerBootstrap):readonly MigrationCorridorRecord[]=>bootstrap.migrationCorridors
+export const getExplorerMigrationCorridorById=(bootstrap:ExplorerBootstrap,id:string):MigrationCorridorRecord|undefined=>{
+  const position=indices(bootstrap).migrationCorridorsById[id]
+  return position===undefined?undefined:bootstrap.migrationCorridors[position]
+}
 export const getExplorerMediaById=(bootstrap:ExplorerBootstrap,id:string):ExplorerMedia|undefined=>{
   const position=indices(bootstrap).mediaById[id]
   return position===undefined?undefined:bootstrap.media[position]

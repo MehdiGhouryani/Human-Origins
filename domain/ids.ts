@@ -20,6 +20,7 @@ export type InterpretationSetId=EntityId<'interpretation-set'>
 export type InterpretationPositionId=EntityId<'interpretation-position'>
 export type RelationshipHypothesisSetId=EntityId<'relationship-hypothesis-set'>
 export type RelationshipHypothesisPositionId=EntityId<'relationship-hypothesis-position'>
+export type MigrationCorridorId=EntityId<'migration-corridor'>
 
 const ID_PATTERN=/^[a-z0-9]+(?:[-:][a-z0-9]+)*$/
 
@@ -48,6 +49,7 @@ export const asInterpretationSetId=(value:string)=>{assertId(value,'interpretati
 export const asInterpretationPositionId=(value:string)=>{assertId(value,'interpretation-position');return value.trim() as InterpretationPositionId}
 export const asRelationshipHypothesisSetId=(value:string)=>{assertId(value,'relationship-hypothesis-set');return value.trim() as RelationshipHypothesisSetId}
 export const asRelationshipHypothesisPositionId=(value:string)=>{assertId(value,'relationship-hypothesis-position');return value.trim() as RelationshipHypothesisPositionId}
+export const asMigrationCorridorId=(value:string)=>{assertId(value,'migration-corridor');return value.trim() as MigrationCorridorId}
 
 export const isEntityId=(value:unknown):value is string=>typeof value==='string' && ID_PATTERN.test(value.trim()) && value.trim().length<=120
 
