@@ -11,6 +11,8 @@ export type DrawBaseOptions={
   /** Device pixel ratio the canvas backing store was sized with. */
   dpr:number
   land:GeoPermissibleObjects|null
+  /** Deep-ocean polygons. When given, the sea is drawn in two tones so the continental shelf shows. */
+  shelf?:GeoPermissibleObjects|null
   palette:Palette
 }
 
@@ -22,7 +24,7 @@ const sphere={type:'Sphere'} as const
  * (markers, corridors) can be placed with exactly the same mapping. Pure with respect to its inputs.
  */
 export function drawBase(ctx:CanvasRenderingContext2D,options:DrawBaseOptions):GeoProjection{
-  const {kind,camera,size,insets,dpr,land,palette}=options
+  const {kind,camera,size,insets,dpr,land,shelf,palette}=options
   const projection=makeProjection(kind,camera,size,insets)
   const path=geoPath(projection,ctx)
   ctx.setTransform(dpr,0,0,dpr,0,0)
@@ -30,15 +32,30 @@ export function drawBase(ctx:CanvasRenderingContext2D,options:DrawBaseOptions):G
 
   const [cx,cy]=projection.translate()
   const radius=projection.scale()
-  ctx.beginPath()
-  path(sphere)
+  let deepFill:string|CanvasGradient=palette.oceanCenter
   if(kind==='globe'){
     const ocean=ctx.createRadialGradient(cx-radius*.3,cy-radius*.34,radius*.05,cx,cy,radius)
     ocean.addColorStop(0,palette.oceanCenter)
     ocean.addColorStop(1,palette.oceanEdge)
-    ctx.fillStyle=ocean
-  }else ctx.fillStyle=palette.oceanCenter
+    deepFill=ocean
+  }
+  ctx.beginPath()
+  path(sphere)
+  // With the shelf layer the whole sea starts in the shallow tone and the deep ocean is painted over it.
+  ctx.fillStyle=shelf?palette.shelf:deepFill
   ctx.fill()
+  if(shelf){
+    ctx.beginPath()
+    path(shelf)
+    ctx.fillStyle=deepFill
+    ctx.fill()
+    ctx.strokeStyle=palette.shelfEdge
+    ctx.globalAlpha=.7
+    ctx.lineWidth=.8
+    ctx.lineJoin='round'
+    ctx.stroke()
+    ctx.globalAlpha=1
+  }
 
   ctx.beginPath()
   path(graticule)

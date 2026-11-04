@@ -95,6 +95,9 @@ body:has(.migration-view.atlas) .hero{display:none}
 .atlas-field legend{padding:0;margin-bottom:6px;font:600 11px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .atlas-check{display:flex;align-items:center;gap:8px;padding:6px 0;color:var(--ink);cursor:pointer;font-size:13.5px}
 .atlas-check input{accent-color:var(--gold);width:16px;height:16px;margin:0}
+.atlas-legend{display:flex;align-items:flex-start;gap:8px;color:var(--muted);font-size:12px;line-height:1.4;margin-top:8px}
+.atlas-legend .atlas-swatch{margin-top:2px}
+.atlas-swatch{flex:none;width:16px;height:12px;border-radius:3px;background:#0c2f33;border:1px solid #3a8d8c}
 .atlas-hint{color:var(--muted);font-size:12px;margin:6px 0 0}
 .atlas-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:3px;border:1px solid var(--glass-line);border-radius:12px}
 .atlas-seg button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;border:0;border-radius:9px;background:transparent;color:var(--soft);font:600 12.5px/1 var(--font-ui);cursor:pointer}

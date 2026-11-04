@@ -5,13 +5,14 @@ import type {EvidenceKind} from '../../domain/contracts'
 
 type Common={onClose?:()=>void}
 
-export function SceneCard({index,count,title,subtitle,note,onFocus,following}:{index:number;count:number;title:string;subtitle:string;note:string;onFocus:()=>void;following:boolean}){
+export function SceneCard({index,count,title,subtitle,note,onFocus,following,shelfNote}:{index:number;count:number;title:string;subtitle:string;note:string;onFocus:()=>void;following:boolean;shelfNote:boolean}){
   return <section className="atlas-card" aria-label={`Scene ${index+1} of ${count}`}>
     <div className="atlas-card-top"><span className="atlas-kicker">SCENE {index+1} / {count}</span>
       <button type="button" onClick={onFocus} className="atlas-chip" aria-pressed={following}><Focus size={13} aria-hidden="true"/> {following?'Following':'Focus scene'}</button></div>
     <h2>{title}</h2>
     <p className="atlas-sub">{subtitle}</p>
     <p>{note}</p>
+    {shelfNote&&<p className="atlas-legend"><span className="atlas-swatch" aria-hidden="true"/> Pale sea: continental shelf (seabed under 200 m today). Lower sea levels exposed much of it; this is not a past shoreline.</p>}
   </section>
 }
 

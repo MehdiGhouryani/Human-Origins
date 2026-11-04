@@ -17,6 +17,8 @@ type LayersProps={
   excludedCount:number
   projection:ProjectionKind
   onProjection:(kind:ProjectionKind)=>void
+  shelfOn:boolean
+  onToggleShelf:()=>void
   species?:{value:string;options:{id:string;label:string}[];onChange:(id:string)=>void}
   onClose:()=>void
 }
@@ -43,6 +45,10 @@ export function LayersPanel(props:LayersProps){
         ?'Every documented site from deep time down to this moment. Earlier evidence stays visible, so this is a trail, not a snapshot of where a species lived.'
         :`Sites whose documented dating interval or uncertainty overlaps the window ${windowLabel}. Sites with qualitative or open-ended dating are left out to avoid false precision${excludedCount>0?` (${excludedCount} excluded)`:''}.`}</p>
     </fieldset>
+    <fieldset className="atlas-field"><legend>Sea</legend>
+      <label className="atlas-check"><input type="checkbox" checked={props.shelfOn} onChange={props.onToggleShelf}/> <span className="atlas-swatch" aria-hidden="true"/> <span>Continental shelf (seabed shallower than 200 m today)</span></label>
+      <p className="atlas-hint">Today&apos;s seabed, not a past shoreline. At glacial maxima sea level was far lower, so large parts of the shelf were dry land at times.</p>
+    </fieldset>
     <fieldset className="atlas-field"><legend>Map</legend>
       <div className="atlas-seg" role="radiogroup" aria-label="Map projection">
         <button type="button" role="radio" aria-checked={projection==='globe'} onClick={()=>props.onProjection('globe')} className={projection==='globe'?'on':''}>Globe</button>
@@ -65,11 +71,12 @@ export function AboutPanel({onClose}:{onClose:()=>void}){
   return <Panel title="About this map" onClose={onClose}>
     <div className="atlas-about">
       <p><Info size={13} aria-hidden="true"/> <b>Coastlines are present-day.</b> Sea level and ice cover changed through this period, so past shorelines, land bridges and shelves were different. This map does not reconstruct them.</p>
+      <p><b>The pale sea is the continental shelf.</b> It shows where today&apos;s seabed is shallower than 200 m. At glacial maxima sea level stood far lower than now, so much of it was dry land at times (the Sunda and Sahul shelves, Beringia, the North Sea). The map does not draw the shoreline of a particular moment.</p>
       <p><b>Corridors are generalized.</b> They show broad regions of movement for Homo sapiens, not one route or a dated journey. How far a corridor is drawn shows progress through the scene.</p>
       <p><b>Evidence markers are documented sites.</b> Shape and colour show the kind of evidence. Regional context entries are placed at an approximate location.</p>
       <p><b>The story timeline is its own scale.</b> Each scene has the same width, so the dispersal can be followed. The global timeline in other views is non-linear.</p>
       <p><b>Controls.</b> Drag to rotate, pinch or Ctrl/⌘ + scroll to zoom, arrow keys to rotate, + and − to zoom, 0 to reset.</p>
-      <p className="atlas-hint">Each species sits at its first appearance in the fossil record; branches elsewhere are contextual or possible relationships, not guaranteed direct ancestry. Land data: Natural Earth (public domain).</p>
+      <p className="atlas-hint">Each species sits at its first appearance in the fossil record; branches elsewhere are contextual or possible relationships, not guaranteed direct ancestry. Land and shelf data: Natural Earth (public domain).</p>
     </div>
   </Panel>
 }

@@ -2,3 +2,8 @@ land-110m.json and land-50m.json
 Source: Natural Earth 4.1.0 land polygons (public domain, https://www.naturalearthdata.com/about/terms-of-use/),
 redistributed as TopoJSON by the world-atlas package 2.0.2 (ISC licence).
 These are PRESENT-DAY coastlines. Past shorelines differ; the atlas says so wherever they are shown.
+
+shelf-edge-110m.json and shelf-edge-50m.json
+Source: Natural Earth 10m bathymetry, layer ne_10m_bathymetry_K_200 (public domain), simplified with tools/geo/build-shelf.mjs.
+The polygons are ocean DEEPER than 200 m today; the continental shelf is what lies between them and the present coastline.
+These are today's depths, not a reconstruction of any past shoreline.

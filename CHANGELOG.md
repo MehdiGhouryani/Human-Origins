@@ -15,8 +15,9 @@
 - The `time` URL parameter keeps two decimals in Migration (0.1 slider units is about 1.5 ka near the present); other modes are unchanged.
 - The previous Migration view logged a React hydration mismatch (#418) on load in a real browser; the new one loads without console errors (checked in Chromium). The cause in the old view was not isolated.
 - Accessibility: axe-core reports no violations in eight atlas states (WCAG 2.0 to 2.2 A/AA); the page keeps an `h1` while the hero is hidden; the brand link's accessible name contains its visible text.
-- Added dependency `topojson-client` (and its types).
-- Known follow-ups: past shorelines, sea level and climate layers (need licensed data, see the research notes); more scenes and sites (editorial work); the old `.globe-*` rules in `globals.css` are now unused.
+- Continental shelf layer (on by default, switchable): Natural Earth bathymetry (public domain) shows the seabed shallower than 200 m today, which makes the Sunda and Sahul shelves, Beringia and the North Sea visible. Labelled everywhere as today's seabed, not a past shoreline; no sea-level reconstruction is drawn. The simplified files agree with the source on about 98.7% (coarse) and 99.5% (detailed) of 3,878 sea sample points on a 3 degree grid (`tools/geo/build-shelf.mjs`).
+- Added dependencies `topojson-client` (runtime) and `topojson-server`, `topojson-simplify` (build tool only), plus types.
+- Known follow-ups: past shorelines at a given moment, sea-level curve and climate layers (they need a global elevation grid and a curve that this environment could not download; ETOPO 2022 is CC0 and Spratt & Lisiecki 2016 is CC BY 3.0); more scenes and sites (editorial work); the old `.globe-*` rules in `globals.css` are now unused.
 
 ### Assets and metadata
 - Cormorant Garamond and Inter are self-hosted through `next/font/local` (SIL OFL, licences in `app/fonts`). The tokens named them before, but nothing loaded them, so visitors saw system fallbacks.

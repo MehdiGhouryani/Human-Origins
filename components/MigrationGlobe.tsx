@@ -9,6 +9,7 @@ import {maToKa,formatAgeMa,getExploratoryTemporalWindow,evaluateSiteWindowOverla
 import {routes,globePalette} from '../presentation/migrationScene'
 import {SCENE_COUNT,advanceFraction,fractionToKa,kaToFraction,sceneIndexAtKa,sceneStartFraction,scenes} from '../presentation/migrationTimeline'
 import {loadLand} from '../presentation/globe/land'
+import {loadShelf} from '../presentation/globe/shelf'
 import {clusterPins,type Pin} from '../presentation/globe/cluster'
 import {sliceRoute,smoothRoute,type LonLat} from '../presentation/globe/routes'
 import {ZOOM_MAX,cameraFor,landDetailFor,makeProjection,onVisibleHemisphere,type Insets,type ProjectionKind,type Size} from '../presentation/globe/view'
@@ -68,6 +69,9 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
   const [cardPreference,setCardPreference]=useState<boolean|null>(null)
   const [land110,setLand110]=useState<GeoPermissibleObjects|null>(null)
   const [land50,setLand50]=useState<GeoPermissibleObjects|null>(null)
+  const [shelfOn,setShelfOn]=useState(true)
+  const [shelf110,setShelf110]=useState<GeoPermissibleObjects|null>(null)
+  const [shelf50,setShelf50]=useState<GeoPermissibleObjects|null>(null)
   const [internalTemporalMode,setInternalTemporalMode]=useState<TemporalMode>(propTemporalMode??'trail')
   const reducedMotion=usePrefersReducedMotion()
   const temporalMode=propTemporalMode??internalTemporalMode
@@ -112,7 +116,23 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
     return ()=>window.clearTimeout(timer)
   },[camera])
   const settled=settledCamera===camera
-  const land=landDetailFor(camera.zoom,settled,Boolean(land50))==='50m'?land50:land110
+  const detail=landDetailFor(camera.zoom,settled,Boolean(land50))
+  const land=detail==='50m'?land50:land110
+  // The shelf layer is fetched only while it is switched on (about 66 KB gzipped); the detailed one once the person zooms in.
+  const wantsFineShelf=shelfOn&&camera.zoom>=1.6
+  useEffect(()=>{
+    if(!shelfOn) return
+    let cancelled=false
+    loadShelf('110m').then(data=>{if(!cancelled) setShelf110(data)}).catch(()=>undefined)
+    return ()=>{cancelled=true}
+  },[shelfOn])
+  useEffect(()=>{
+    if(!wantsFineShelf) return
+    let cancelled=false
+    loadShelf('50m').then(data=>{if(!cancelled) setShelf50(data)}).catch(()=>undefined)
+    return ()=>{cancelled=true}
+  },[wantsFineShelf])
+  const shelf=shelfOn?(detail==='50m'&&shelf50?shelf50:shelf110):null
 
   // ---- time: local to the story, mirrored to the shared URL state
   const lastEmitted=useRef<number|null>(null)
@@ -314,7 +334,7 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
       const source=activeRoute.sourceId?getExplorerSourceById(bootstrap,activeRoute.sourceId):undefined
       return <RouteCard label={activeRoute.label} color={activeRoute.color} percent={Math.round(routeProgress(activeRoute.startKa,activeRoute.endKa)*100)} window={`${activeRoute.startKa}–${activeRoute.endKa} ka`} sourceTitle={source?.title} sourceUrl={source?.url} onClose={()=>setSelection(null)}/>
     }
-    return <SceneCard index={sceneIndex} count={SCENE_COUNT} title={scene.title} subtitle={scene.subtitle} note={scene.note} following={follow} onFocus={()=>{setFollow(true);setFocusToken(token=>token+1)}}/>
+    return <SceneCard index={sceneIndex} count={SCENE_COUNT} title={scene.title} subtitle={scene.subtitle} note={scene.note} following={follow} shelfNote={shelfOn} onFocus={()=>{setFollow(true);setFocusToken(token=>token+1)}}/>
   })()
   const cardTitle=selection?.type==='site'?siteById.get(selection.id)?.name:selection?.type==='route'?activeRoute?.label:scene.title
 
@@ -327,7 +347,7 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
     <h1 className="sr-only">Human migration atlas: where the evidence places our species through time</h1>
     <div ref={stageRef} className={stageClass} tabIndex={0} data-zoom={camera.zoom.toFixed(2)} data-lon={(-camera.rot[0]).toFixed(1)} data-lat={(-camera.rot[1]).toFixed(1)} role="group" aria-roledescription="interactive map" aria-label="Human migration map. Arrow keys rotate, plus and minus zoom, 0 resets." onClick={onStageClick} onDoubleClick={()=>zoomBy(1.6)} {...handlers}>
       {ready&&<>
-        <GlobeCanvas kind={projectionKind} camera={camera} size={size} insets={insets} land={land} palette={globePalette}/>
+        <GlobeCanvas kind={projectionKind} camera={camera} size={size} insets={insets} land={land} shelf={shelf} palette={globePalette}/>
         <svg className="globe-map atlas-overlay" viewBox={`0 0 ${size.width} ${size.height}`} role="group" aria-labelledby="migration-globe-title migration-globe-desc">
           <title id="migration-globe-title">Human migration map</title>
           <desc id="migration-globe-desc">Documented evidence sites and generalized Homo sapiens dispersal corridors on a {projectionKind==='globe'?'rotatable globe':'flat world map'}. Every site is also listed in the Sites panel.</desc>
@@ -380,7 +400,7 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
       </div>
 
       {panel&&<div className="atlas-panel-slot" data-no-drag>
-        {panel==='layers'&&<LayersPanel kindsOn={kindsOn} onToggleKind={toggleKind} routesOn={routesOn} routesAvailable={routesAvailable} onToggleRoutes={()=>setRoutesOn(value=>!value)} temporalMode={temporalMode} onTemporalMode={setTemporalMode} windowLabel={temporalWindow.label} excludedCount={excludedCount} projection={projectionKind} onProjection={setProjectionKind} species={compact?{value:selected,options:speciesOptions,onChange:onSelectSpecies}:undefined} onClose={()=>setPanel(null)}/>}
+        {panel==='layers'&&<LayersPanel kindsOn={kindsOn} onToggleKind={toggleKind} routesOn={routesOn} routesAvailable={routesAvailable} onToggleRoutes={()=>setRoutesOn(value=>!value)} temporalMode={temporalMode} onTemporalMode={setTemporalMode} windowLabel={temporalWindow.label} excludedCount={excludedCount} projection={projectionKind} onProjection={setProjectionKind} shelfOn={shelfOn} onToggleShelf={()=>setShelfOn(value=>!value)} species={compact?{value:selected,options:speciesOptions,onChange:onSelectSpecies}:undefined} onClose={()=>setPanel(null)}/>}
         {panel==='sites'&&<SitesPanel items={siteItems} onPick={id=>{selectSite(id);flyToSite(id,Math.max(camera.zoom,2.4))}} onClose={()=>setPanel(null)}/>}
         {panel==='about'&&<AboutPanel onClose={()=>setPanel(null)}/>}
       </div>}

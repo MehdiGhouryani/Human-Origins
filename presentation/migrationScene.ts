@@ -81,4 +81,7 @@ export const globePalette={
   outline:'#5d8f87',
   routeCasing:'#030a0c',
   graticule:'#2f6460',
+  /** Sea over the continental shelf (seabed shallower than 200 m today), drawn under the deep-ocean polygons. */
+  shelf:'#0c2f33',
+  shelfEdge:'#3a8d8c',
 } as const
