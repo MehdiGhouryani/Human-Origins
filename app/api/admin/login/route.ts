@@ -2,7 +2,7 @@ import 'server-only'
 import {NextResponse} from 'next/server'
 import {cookies} from 'next/headers'
 import {verifyPassword,createSession,pruneExpiredSessions,isAdminLoginConfigured,SESSION_COOKIE} from '../../../../infrastructure/cms/auth'
-import {adminLoginLimiter,clientKey} from '../../../../infrastructure/cms/rateLimit'
+import {adminLoginLimiter,adminLoginTarpit,clientKey} from '../../../../infrastructure/cms/rateLimit'
 
 export async function POST(request:Request){
   if(!isAdminLoginConfigured()) return NextResponse.json({error:'Admin login is disabled: set CMS_ADMIN_PASSWORD on the server.'},{status:503})
@@ -12,7 +12,11 @@ export async function POST(request:Request){
   if(!gate.allowed) return NextResponse.json({error:`Too many failed attempts. Try again in ${Math.ceil(gate.retryAfterSeconds/60)} minute(s).`},{status:429,headers:{'Retry-After':String(gate.retryAfterSeconds)}})
   const body=await request.json().catch(()=>null) as {password?:unknown}|null
   if(typeof body?.password!=='string' || !body.password) return NextResponse.json({error:'Password is required.'},{status:400})
+  // Process-wide brake, independent of TRUST_PROXY: under sustained failures every attempt is slowed (never blocked).
+  const tarpit=await adminLoginTarpit.enter()
+  if(!tarpit.ok) return NextResponse.json({error:'Login is temporarily slowed after repeated failed attempts. Try again in a few seconds.'},{status:429,headers:{'Retry-After':String(tarpit.retryAfterSeconds)}})
   if(!verifyPassword(body.password)){
+    adminLoginTarpit.recordFailure()
     // Never let an unauthenticated visitor lock out all administrators globally.
     if(enforcePerClient) adminLoginLimiter.recordFailure(key)
     return NextResponse.json({error:'Incorrect password.'},{status:401})
