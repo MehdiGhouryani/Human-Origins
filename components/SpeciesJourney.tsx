@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import {motion} from 'motion/react'
 import {ChevronRight, CircleDot, Dna, Globe2, MapPin, Sparkles, type LucideIcon} from 'lucide-react'
 import type {ExplorerSpecies as Species} from '../features/explorer/types'
@@ -54,6 +55,6 @@ export default function SpeciesJourney({species,bootstrap}:{species:Species;boot
  return <section className="journey-view">
    <div className="journey-head"><div><div className="view-kicker">SPECIES JOURNEY · {species.group.toUpperCase()}</div><h3>{species.short} <em>across time</em></h3><p>One species, multiple evidence layers. Follow the record without turning uncertainty into a single definitive path.</p></div><div className="journey-status"><span className="live-dot"/>SELECTED<br/><b>{species.date}</b></div></div>
    <div className="journey-rail">{chapters.map((c,i)=>{const I=c.icon;return <motion.article key={c.id} className={`journey-card ${i===active?'current':''}`} whileHover={{y:-3}}><div className="journey-index">0{i+1}</div><div className="journey-icon"><I size={15}/></div><small>{c.kicker}</small><strong>{c.title}</strong><p>{texts[c.id]}</p><span className="journey-arrow"><ChevronRight size={14}/></span></motion.article>})}</div>
-   <div className="journey-footer"><div><span>Evidence footprint</span><b>{species.evidence.join(' · ')}</b></div><div><span>Record</span><b>{species.sourceIds.length} linked source{species.sourceIds.length===1?'':'s'}</b></div><a href={`/?species=${species.id}`}>Back to atlas context <ChevronRight size={14}/></a></div>
+   <div className="journey-footer"><div><span>Evidence footprint</span><b>{species.evidence.join(' · ')}</b></div><div><span>Record</span><b>{species.sourceIds.length} linked source{species.sourceIds.length===1?'':'s'}</b></div><Link href={`/?species=${species.id}`}>Back to atlas context <ChevronRight size={14}/></Link></div>
  </section>
 }

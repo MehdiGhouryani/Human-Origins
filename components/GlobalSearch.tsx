@@ -1,5 +1,6 @@
 'use client'
 import {useEffect,useId,useMemo,useRef,useState,useSyncExternalStore} from 'react'
+import Link from 'next/link'
 import {ExternalLink,Search,X} from 'lucide-react'
 import {MAX_QUERY_LENGTH,SEARCH_KIND_SINGULAR,type SearchGroup} from '../features/search/targets'
 
@@ -106,7 +107,7 @@ export default function GlobalSearch(){
           </a>})}
         </div>)}
       </div>}
-      {flat.length>0&&<a className="gs-all" href={`/?${new URLSearchParams({q:query,mode:'tree'}).toString()}`}>See all results on a page</a>}
+      {flat.length>0&&<Link className="gs-all" href={`/?${new URLSearchParams({q:query,mode:'tree'}).toString()}`}>See all results on a page</Link>}
     </div>}
   </div>
 }
