@@ -1,4 +1,5 @@
 import MediaImage from '../MediaImage'
+import type {ReactNode} from 'react'
 import {evidenceClassLabel,SLOT_GROUP_LABEL,SLOT_GROUP_ORDER} from '../../domain/media-slots'
 import {resolveMediaSrc} from '../../presentation/mediaDelivery'
 import {slotsInGroup,type SlotState} from '../../features/explorer/slots'
@@ -65,9 +66,42 @@ export function SlotHero({states,adminPreview}:{states:readonly SlotState[];admi
   return <div className="sp-hero" id="hero-image"><Cell state={state} adminPreview={adminPreview} sizes="(max-width: 1024px) 100vw, 900px"/></div>
 }
 
+/** Images placed inside a narrative section (habitat, behaviour, specimen reconstruction), at reading width. */
+export function SceneFigures({states,adminPreview}:{states:readonly SlotState[];adminPreview:boolean}){
+  if(!states.length) return null
+  return <div className="sp-scenes">{states.map(state=><div key={String(state.slot.id)} className={`sp-scene sp-scene-${state.slot.series}`}><Cell state={state} adminPreview={adminPreview} sizes="(max-width: 900px) 100vw, 760px"/></div>)}</div>
+}
+
+/**
+ * The wide scene image behind the page header (slot S03). It renders only when live; an empty hero keeps its
+ * neutral frame lower on the page, so the header never looks broken.
+ */
+export function HeroBanner({state}:{state:SlotState|undefined}){
+  if(!state||state.visibility!=='show'||!state.media) return null
+  const {media,slot}=state
+  return <figure className="dossier-banner" data-slot={String(slot.id)}>
+    <MediaImage src={resolveMediaSrc(media,'detail',1600)} alt={media.alt} sizes="100vw" priority className="dossier-banner-image"/>
+    <figcaption className="dossier-banner-caption">
+      <b className={`sp-class sp-class-${media.evidenceClass??'x'}`}>{labelOf(media)}</b>
+      <span>{media.credit}</span>
+      {media.evidenceClass==='D'&&media.assumptions&&<details className="sp-assumptions">
+        <summary>Assumptions</summary>
+        <p>{media.assumptions}</p>
+        {media.generator&&<p className="sp-figure-meta">Made with {media.generator.name}{media.generator.version?` ${media.generator.version}`:''}, {media.generator.date}.{media.review?` Reviewed by ${media.review.reviewer}, ${media.review.date}.`:''}</p>}
+      </details>}
+    </figcaption>
+  </figure>
+}
+
+/** Groups that still have something to show once inline images and the header banner are taken out. */
+function galleryGroups(states:readonly SlotState[],exclude:ReadonlySet<string>){
+  return SLOT_GROUP_ORDER.map(group=>({group,items:slotsInGroup(states,group).filter(state=>!exclude.has(String(state.slot.id)))})).filter(entry=>entry.items.length>0)
+}
+export const galleryHasContent=(states:readonly SlotState[],extras:readonly ExplorerMedia[],exclude:ReadonlySet<string>)=>galleryGroups(states,exclude).length>0||extras.length>0
+
 /** Images grouped by what they show; hidden slots render nothing. Legacy images without a slot follow as “More images”. */
-export default function SlotGallery({states,extras,adminPreview}:{states:readonly SlotState[];extras:readonly ExplorerMedia[];adminPreview:boolean}){
-  const groups=SLOT_GROUP_ORDER.map(group=>({group,items:slotsInGroup(states,group)})).filter(entry=>entry.items.length>0)
+export default function SlotGallery({states,extras,adminPreview,exclude=new Set<string>()}:{states:readonly SlotState[];extras:readonly ExplorerMedia[];adminPreview:boolean;exclude?:ReadonlySet<string>}){
+  const groups=galleryGroups(states,exclude)
   if(!groups.length&&!extras.length) return null
   return <section className="sp-section sp-gallery" id="images" aria-labelledby="gallery-h">
     <h2 id="gallery-h">Images</h2>
@@ -84,3 +118,5 @@ export default function SlotGallery({states,extras,adminPreview}:{states:readonl
     </div>}
   </section>
 }
+
+export type {ReactNode}

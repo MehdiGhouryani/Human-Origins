@@ -1,3 +1,4 @@
+import {Fragment,type ReactNode} from 'react'
 import {SECTION_TITLES,type PageBlock,type PageSection} from '../../domain/species-page'
 import type {ReferenceNumbering} from '../../domain/species-page-render'
 import {citationKey} from '../../domain/species-page-render'
@@ -18,10 +19,10 @@ function Block({block,sectionId,index,numbering}:{block:PageBlock;sectionId:stri
 }
 
 /** The eight narrative sections; each is an accordion on phones and open on wide screens. */
-export default function NarrativeSections({sections,numbering}:{sections:readonly PageSection[];numbering:ReferenceNumbering}){
+export default function NarrativeSections({sections,numbering,figures}:{sections:readonly PageSection[];numbering:ReferenceNumbering;/** Images that belong beside a section's text, keyed by section id. They follow its first block. */figures?:Partial<Record<string,ReactNode>>}){
   return <>{sections.map((section,sectionIndex)=><section key={section.id} className="sp-section" aria-labelledby={`${section.id}-h`}>
     <ResponsiveDetails id={section.id} keepOpenOnMobile={sectionIndex===0} summary={<h2 id={`${section.id}-h`}>{SECTION_TITLES[section.id]}</h2>}>
-      <div className="sp-prose">{section.blocks.map((block,index)=><Block key={index} block={block} sectionId={section.id} index={index} numbering={numbering}/>)}</div>
+      <div className="sp-prose">{section.blocks.map((block,index)=><Fragment key={index}><Block block={block} sectionId={section.id} index={index} numbering={numbering}/>{index===0&&figures?.[section.id]}</Fragment>)}{section.blocks.length===0&&figures?.[section.id]}</div>
     </ResponsiveDetails>
   </section>)}</>
 }

@@ -8,6 +8,12 @@
 - Sitemap: `lastmod` comes from each species page's `reviewedOn` date instead of "now", and `/about` is listed.
 - Admin login: a process-wide tarpit slows every attempt after 10 recent failures (250 ms doubling to 5 s, at most 8 delayed attempts in flight, never a lock-out). Before, `adminLoginGlobalLimiter` was exported but unused, so with the default `TRUST_PROXY=0` failed logins were unlimited. `docs/ARCHITECTURE.md` now says what is enforced where.
 
+### Species images (in progress)
+- Hand-off importer for the image package: creates CMS drafts only, with checksum verification, status-aware filtering, catalogued source URLs and an explicit generator record. Nothing is approved or published by the tool.
+- Scene images sit beside their section; a live wide image becomes the species header banner (responsive, caption with class, credit and assumptions).
+- Real reconstructions appear in the profile preview at full frame.
+- Nothing is public yet: every reconstruction waits for a named human review.
+
 ### Migration atlas (map-first rebuild)
 - Migration is now a full-width map stage. The 9-polygon sketch is replaced by real present-day Natural Earth coastlines drawn on a canvas (110m, with 50m when zoomed in), so islands, seas and all 27 registered sites sit where they belong. Corridors are generalized bands with a dark casing; evidence kinds differ by shape and colour; nearby sites cluster.
 - The story has its own timeline: 6 scenes with equal width and a 7 s dwell, Play/Pause, speed, scene dots and camera that follows the scene (until you move it). The global slider gave the whole 60-5 ka dispersal under 4% of the track and Play crossed it in about half a second.

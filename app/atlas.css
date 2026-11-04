@@ -436,3 +436,6 @@ small{font-size:11px}
   .rel-table td a{display:inline-flex;align-items:center;min-height:44px}
   .kbd-hint{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 }
+
+/* Real reconstructions in the profile preview: fill the frame and keep the face, instead of the letter-boxed placeholder plate. */
+.species-visual img.is-real{object-fit:cover;object-position:50% 14%;filter:none}

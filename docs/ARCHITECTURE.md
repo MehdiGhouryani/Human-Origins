@@ -127,3 +127,12 @@ Accessibility is checked ad hoc with axe-core (WCAG A/AA) — not yet a CI gate.
 ## 10. Known technical debt
 
 Tracked in [`HUMAN-ORIGINS-FIX-PLAN.md`](./HUMAN-ORIGINS-FIX-PLAN.md) where it is covered: e2e coverage (phase 0) · bootstrap payload (phases 0 and 7) · URL state (phase 1) · CSS tokens and hard-coded colours (phase 7). Not yet in the fix plan: login rate limit is per process (in-memory) · thin CMS e2e (no upload→publish scenario, no axe gate) · dev-only `npm audit` findings in the `eslint-config-next` chain (no patched `braces` release exists; production dependencies report 0).
+
+
+## Species images: import, placement and review
+
+* **Hand-off import** (`tools/images/import-handoff.ts`, pure helpers in `tools/images/handoff.ts`). Reads a hand-off package (HANDOFF.md, REFERENCE.md, the image files) and creates **drafts** in the CMS through the same code the admin upload uses. It never approves a review and never publishes. Status words in the hand-off are honoured: a suspended, forbidden, missing or alternate image is never imported as a slot. It needs an explicit `--generator-name` and `--generator-date`: the hand-off does not record which tool made the images, and the importer does not guess. Every SHA-256 is checked against the hand-off table before anything is written.
+* **Provenance.** The audit requires a `sourceUrl` on any row that still needs review (`REVIEW_MEDIA_WITHOUT_SOURCE`). The importer takes that URL from the taxon's own catalogued source (`content/sources`), never from a string in the script; `tests/import-linkage.test.ts` checks every taxon has one.
+* **Review gate.** A class-D reconstruction goes live only after a named reviewer records an approval (`SLOT_D_UNREVIEWED`). Until then the public site shows nothing for that slot. A sandbox test that used a stand-in reviewer was discarded; it must never be the basis for publishing.
+* **Placement.** Scene images (habitat S10, behaviour S11, specimen X1) sit beside the section they illustrate (`features/explorer/slotPlacement.ts`, sections chosen by a fixed preference order, falling back to the next section a page has). The wide scene image S03 becomes the header banner when it is live (`dossier-hero.has-banner`), with its class, credit and assumptions in a caption. A portrait is the default picture only for slot S02; X1 specimen reconstructions never replace it.
+* **Editor preview.** A signed-in editor sees empty frames in the place where each image will appear. The public site never shows an unapproved frame.

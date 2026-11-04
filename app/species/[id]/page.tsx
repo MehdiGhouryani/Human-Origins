@@ -35,7 +35,8 @@ import {MEDIA_SLOTS} from '../../../content/media-slots.generated'
 import {resolveSlots} from '../../../features/explorer/slots'
 import {getExplorerMediaForTaxon} from '../../../features/explorer/selectors'
 import {hasValidSession} from '../../../infrastructure/cms/requireSession'
-import SlotGallery,{SlotHero} from '../../../components/species/SlotGallery'
+import SlotGallery,{HeroBanner,SceneFigures,SlotHero,galleryHasContent} from '../../../components/species/SlotGallery'
+import {placeSceneSlots} from '../../../features/explorer/slotPlacement'
 
 // Same contract as the atlas: CMS content can change at any time, so render per request.
 export const dynamic='force-dynamic'
@@ -64,16 +65,19 @@ export async function generateMetadata({params}:Params):Promise<Metadata>{
   const {id}=await params
   const {dossier}=loadDossier(id)
   if(!dossier) return {title:'Species not found · Human Origins'}
-  const {species,portrait}=dossier
+  const {species,portrait,gallery}=dossier
+  const hero=gallery.find(media=>media.slotId===`${species.id}.S03`)
   const page=getSpeciesPage(String(species.id))
   const description=page?page.lead.text.replace(/\*/g,''):species.description
   const url=absoluteUrl(`/species/${species.id}`)
-  const image=portrait?resolveMediaSrc(portrait,'card',1200):undefined
+  // The wide scene image makes a better social card than a tall portrait; both exist only once a reviewer approved them.
+  const cardSource=hero??portrait
+  const image=cardSource?resolveMediaSrc(cardSource,'card',1200):undefined
   return {
     title:`${species.name} (${species.date}) · Human Origins`,
     description,
     alternates:{canonical:url},
-    openGraph:{type:'article',title:species.name,description,url,images:image?[{url:image,alt:portrait?.alt}]:undefined},
+    openGraph:{type:'article',title:species.name,description,url,images:image?[{url:image,alt:cardSource?.alt}]:undefined},
     twitter:{card:image?'summary_large_image':'summary',title:species.name,description,images:image?[image]:undefined},
   }
 }
@@ -104,11 +108,19 @@ export default async function SpeciesPage({params}:Params){
   const adminPreview=await hasValidSession()
   const slotStates=resolveSlots({slots:MEDIA_SLOTS,media:getExplorerMediaForTaxon(bootstrap,String(species.id)),taxonId:String(species.id),adminPreview,builtIns:{avatar:dossier.treeIcon,portrait}})
   const looseImages=gallery.filter(media=>!media.slotId)
+  // Image-led layout: a live scene image becomes the header banner; habitat, behaviour and specimen pictures sit
+  // beside the section that explains them. Without live images the page looks exactly as before.
+  const heroState=slotStates.find(state=>state.slot.series==='S03')
+  const heroLive=heroState?.visibility==='show'&&Boolean(heroState.media)
+  const placement=placeSceneSlots({taxonId:String(species.id),states:slotStates,sectionIds:content?content.sections.map(section=>section.id):[],adminPreview})
+  const figures=Object.fromEntries([...placement.bySection].map(([sectionId,list])=>[sectionId,<SceneFigures key={sectionId} states={list} adminPreview={adminPreview}/>]))
+  const galleryExclude=new Set([...placement.placedIds,...(heroLive&&heroState?[String(heroState.slot.id)]:[])])
+  const showGallery=galleryHasContent(slotStates,looseImages,galleryExclude)
   const numbering=content?numberReferences(content):undefined
   const navItems:NavItem[]=content?[
     {id:'at-a-glance',label:'At a glance'},
     ...content.sections.map(section=>({id:section.id,label:SECTION_TITLES[section.id]})),
-    {id:'debated',label:'Debated'},{id:'unknown',label:'Unknown'},{id:'images',label:'Images'},{id:'sources',label:'Sources'},
+    {id:'debated',label:'Debated'},{id:'unknown',label:'Unknown'},...(showGallery?[{id:'images',label:'Images'}]:[]),{id:'sources',label:'Sources'},
   ]:[]
 
   return <main className="dossier species-page" style={{'--dossier-accent':color} as CSSProperties}>
@@ -117,7 +129,8 @@ export default async function SpeciesPage({params}:Params){
       <Link href="/">Atlas</Link><span aria-hidden="true">/</span><Link href="/species">Species</Link><span aria-hidden="true">/</span><span aria-current="page">{species.short}</span>
     </nav>
 
-    <header className="dossier-hero">
+    <header className={heroLive?'dossier-hero has-banner':'dossier-hero'}>
+      {heroLive&&<HeroBanner state={heroState}/>}
       <figure className="dossier-portrait">
         {portrait?<MediaImage src={resolveMediaSrc(portrait,'detail',1200)} alt={portrait.alt} priority sizes="(max-width: 900px) 100vw, 420px" className="dossier-portrait-image"/>:<div className="media-image-fallback" aria-hidden="true"><span>✦</span></div>}
         {portrait&&<figcaption><span><ImageIcon size={11}/> {mediaLabel(portrait)}</span><span>{portrait.credit}</span>{portrait.sourceUrl&&<a href={portrait.sourceUrl} target="_blank" rel="noreferrer">Source <ExternalLink size={10}/></a>}</figcaption>}
@@ -145,25 +158,11 @@ export default async function SpeciesPage({params}:Params){
 
     {isThinRecord&&!content&&<aside className="dossier-incomplete" role="note"><CircleDashed size={16}/><div><strong>This is an incomplete record.</strong><p>We publish only what registered sources support. Sections below stay empty instead of being filled with unsourced text.</p></div></aside>}
 
-    <section className="dossier-signal-card" aria-labelledby="record-signal-h">
-      <div className="dossier-signal-intro">
-        <span className="view-kicker">RECORD SIGNAL</span>
-        <h2 id="record-signal-h">What this page actually represents</h2>
-        <p>These are catalogued records connected to <strong>{species.short}</strong>, not estimates of how much science exists about it. An empty count means this atlas has not represented that record yet.</p>
-      </div>
-      <dl className="dossier-signal-grid">
-        <div><dt>Registered sources</dt><dd>{sources.length}</dd></div>
-        <div><dt>Evidence records</dt><dd>{evidence.length}</dd></div>
-        <div><dt>Specimens</dt><dd>{specimens.length}</dd></div>
-        <div><dt>Sites</dt><dd>{sites.length}</dd></div>
-      </dl>
-    </section>
-
     <div className={content?'sp-layout':'sp-layout sp-layout-plain'}>
     {content&&<SectionNav items={navItems}/>}
     <div className="sp-main">
-    <SlotHero states={slotStates} adminPreview={adminPreview}/>
-    {content&&numbering&&<SpeciesNarrative page={content} numbering={numbering}/>}
+    {!heroLive&&<SlotHero states={slotStates} adminPreview={adminPreview}/>}
+    {content&&numbering&&<SpeciesNarrative page={content} numbering={numbering} figures={figures}/>}
     <div className="dossier-grid">
       {!content&&<section className="dossier-card" aria-labelledby="facts-h">
         <h2 id="facts-h">Key facts</h2>
@@ -198,7 +197,7 @@ export default async function SpeciesPage({params}:Params){
       </section>
     </div>
 
-    <SlotGallery states={slotStates} extras={looseImages} adminPreview={adminPreview}/>
+    <SlotGallery states={slotStates} extras={looseImages} adminPreview={adminPreview} exclude={galleryExclude}/>
 
     <section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-evidence-h">
       <ResponsiveDetails id="panel-evidence" summary={<h2 id="panel-evidence-h">Evidence and relationships</h2>}>
@@ -218,6 +217,20 @@ export default async function SpeciesPage({params}:Params){
         <SourceIntelligence bootstrap={bootstrap} species={species}/>
       </ResponsiveDetails>
     </section>}
+
+    <section className="dossier-signal-card" aria-labelledby="record-signal-h">
+      <div className="dossier-signal-intro">
+        <span className="view-kicker">RECORD SIGNAL</span>
+        <h2 id="record-signal-h">What this page actually represents</h2>
+        <p>These are catalogued records connected to <strong>{species.short}</strong>, not estimates of how much science exists about it. An empty count means this atlas has not represented that record yet.</p>
+      </div>
+      <dl className="dossier-signal-grid">
+        <div><dt>Registered sources</dt><dd>{sources.length}</dd></div>
+        <div><dt>Evidence records</dt><dd>{evidence.length}</dd></div>
+        <div><dt>Specimens</dt><dd>{specimens.length}</dd></div>
+        <div><dt>Sites</dt><dd>{sites.length}</dd></div>
+      </dl>
+    </section>
 
     <section className="dossier-section dossier-completeness" aria-labelledby="complete-h">
       <h2 id="complete-h">Record completeness</h2>

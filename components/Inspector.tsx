@@ -1,6 +1,7 @@
 'use client'
 import {useEffect,useMemo,useState} from 'react'
 import Link from 'next/link'
+import {evidenceClassLabel} from '../domain/media-slots'
 import {Bookmark,ChevronRight,ExternalLink,Image as ImageIcon,X,ArrowRight,MapPin,GitBranch} from 'lucide-react'
 import {motion} from 'motion/react'
 import MediaImage from './MediaImage'
@@ -96,9 +97,9 @@ export default function Inspector({bootstrap,species,bookmarked,onToggleBookmark
     {saveMessage.startsWith('Could not')&&<p className="inspector-warning" role="alert">{saveMessage}</p>}
     <motion.div key={species.id} className="inspector-content" initial={{opacity:0}} animate={{opacity:1}} transition={{duration:.18}}>
       <figure className="species-visual">
-        <MediaImage src={resolveMediaSrc(m,'detail',1024)} alt={m.alt} loading="eager" priority sizes="(max-width: 820px) 100vw, 455px" className="species-media-image" fallbackText={taxonInitials(species.short)}/>
+        <MediaImage src={resolveMediaSrc(m,'detail',1024)} alt={m.alt} loading="eager" priority sizes="(max-width: 820px) 100vw, 455px" className={m.placeholder?'species-media-image':'species-media-image is-real'} fallbackText={taxonInitials(species.short)}/>
         <div className="species-visual-scrim"/>
-        <figcaption><span className="media-kind"><ImageIcon size={12}/>{mediaLabels[m.kind]}</span><span>{m.rightsStatus==='clear'?(m.license??'Rights clear'):m.rightsStatus==='institutional-terms'?'Institutional terms':m.rightsStatus==='review-required'?'Rights review required':'Rights metadata not stated'}</span></figcaption>
+        <figcaption><span className="media-kind"><ImageIcon size={12}/>{m.evidenceClass?evidenceClassLabel(m.evidenceClass):mediaLabels[m.kind]}</span><span>{m.rightsStatus==='clear'?(m.license??'Rights clear'):m.rightsStatus==='institutional-terms'?'Institutional terms':m.rightsStatus==='review-required'?'Rights review required':'Rights metadata not stated'}</span></figcaption>
       </figure>
       <div className="inspector-body">
         <div className="pill-row"><span className={`pill ${inferred?'pill-inferred':''}`}>{taxonStatusLabel(species)}</span><span className="pill">{species.group}</span></div>
