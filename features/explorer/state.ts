@@ -68,7 +68,9 @@ export function writeExplorerSearch(state:ExplorerState):string{
   const params=new URLSearchParams()
   params.set('species',state.selectedId)
   params.set('mode',state.mode)
-  params.set('time',Math.round(state.time*10)/10+'')
+  // The story scrubber needs finer steps than the global slider: near the present 0.1 slider units is about 1.5 ka.
+  const timeUnit=state.mode==='migration'?100:10
+  params.set('time',Math.round(state.time*timeUnit)/timeUnit+'')
   if(state.mode==='compare') params.set('cmp',state.compare.join(','))
   if(state.mode==='migration'&&state.temporalMode==='window') params.set('tmode','window')
   if(state.focusSite) params.set('site',state.focusSite)

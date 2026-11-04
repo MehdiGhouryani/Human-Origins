@@ -1,211 +1,396 @@
 'use client'
-import {useEffect,useMemo,useRef,useState} from 'react'
-import {geoDistance,geoGraticule,geoOrthographic,geoPath, type GeoProjection, type GeoPermissibleObjects} from 'd3-geo'
-import {ExternalLink,Info,MapPin,Minus,Plus,RotateCcw,Layers3,Play,Pause,Focus,X,CalendarRange,History} from 'lucide-react'
+import {useCallback,useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react'
+import {geoPath,type GeoPermissibleObjects} from 'd3-geo'
+import {Info,Layers3,List,Map as FlatMapIcon,Globe2,Minus,Plus,RotateCcw,ChevronUp} from 'lucide-react'
 import {getExplorerEvidenceSites,getExplorerSourceById,getExplorerSpeciesById} from '../features/explorer/selectors'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {EvidenceKind} from '../domain/contracts'
 import {maToKa,formatAgeMa,getExploratoryTemporalWindow,evaluateSiteWindowOverlap,type TemporalMode} from '../domain/time'
-import {continents, routes, stories, type Route, globePalette} from '../presentation/migrationScene'
+import {routes,globePalette} from '../presentation/migrationScene'
+import {SCENE_COUNT,advanceFraction,fractionToKa,kaToFraction,sceneIndexAtKa,sceneStartFraction,scenes} from '../presentation/migrationTimeline'
+import {loadLand} from '../presentation/globe/land'
+import {clusterPins,type Pin} from '../presentation/globe/cluster'
+import {sliceRoute,smoothRoute,type LonLat} from '../presentation/globe/routes'
+import {ZOOM_MAX,cameraFor,landDetailFor,makeProjection,onVisibleHemisphere,type Insets,type ProjectionKind,type Size} from '../presentation/globe/view'
+import GlobeCanvas from './migration/GlobeCanvas'
+import AtlasDock from './migration/AtlasDock'
+import {RouteCard,SceneCard,SiteCard} from './migration/AtlasCard'
+import {AboutPanel,LayersPanel,SitesPanel,type SiteListItem} from './migration/AtlasPanels'
+import {KIND_META,KIND_ORDER,shapePath} from './migration/kinds'
+import {useCamera} from './migration/useCamera'
 
-function interp(a:number,b:number,t:number){let d=b-a;if(d>180)d-=360;if(d<-180)d+=360;return a+d*t}
-/** True when [lon,lat] lies on the visible hemisphere of an orthographic projection rotated by `rot`. */
-function isOnFrontHemisphere(rot:readonly [number,number],lonLat:readonly [number,number]):boolean{
-  return geoDistance([-rot[0],-rot[1]],[lonLat[0],lonLat[1]])<=Math.PI/2
+type PanelId='layers'|'sites'|'about'
+type Selection={type:'site'|'route';id:string}
+export type SpeciesOption={id:string;label:string}
+type Props={
+  bootstrap:ExplorerBootstrap
+  /** Age of the map's moment, in Ma. */
+  time:number
+  selected:string
+  speciesOptions:SpeciesOption[]
+  onSelectSpecies:(id:string)=>void
+  onTimeChange:(ageMa:number)=>void
+  focusSite?:string|null
+  onFocused?:()=>void
+  temporalMode?:TemporalMode
+  onTemporalModeChange?:(mode:TemporalMode)=>void
 }
-/**
- * Projects a corridor into an SVG path. A bare orthographic projection also returns coordinates for points behind
- * the globe, so hidden samples are dropped and the line is broken there instead of being drawn through the Earth.
- */
-function projectRoute(route:Route,projection:GeoProjection,rot:readonly [number,number]):string{
-  const samples:[number,number][]=[]
-  for(let i=0;i<route.points.length-1;i++){const [aLon,aLat]=route.points[i],[bLon,bLat]=route.points[i+1];for(let s=0;s<30;s++){const t=s/30;samples.push([interp(aLon,bLon,t),aLat+(bLat-aLat)*t])}}
-  samples.push(route.points[route.points.length-1] as [number,number])
-  let d='',penDown=false
-  for(const sample of samples){
-    const p=isOnFrontHemisphere(rot,sample)?projection(sample):null
-    if(!p){penDown=false;continue}
-    d+=(penDown?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)
-    penDown=true
-  }
-  return d
+
+const SPEEDS=[1,1.5,2,.5]
+const COMPACT_BELOW=640
+/** Zoom 1 shows the whole world on the flat map, so scenes need a larger factor than on the globe. */
+const FLAT_ZOOM_FACTOR=1.7
+const smoothedRoutes=new Map(routes.map(route=>[route.id,smoothRoute(route.points as LonLat[])]))
+const lineString=(coordinates:LonLat[]):GeoPermissibleObjects=>({type:'LineString',coordinates})
+
+const REDUCED_MOTION='(prefers-reduced-motion: reduce)'
+function usePrefersReducedMotion(){
+  return useSyncExternalStore(
+    notify=>{const query=window.matchMedia(REDUCED_MOTION);query.addEventListener('change',notify);return ()=>query.removeEventListener('change',notify)},
+    ()=>window.matchMedia(REDUCED_MOTION).matches,
+    ()=>false,
+  )
 }
-const kindLabel:Record<EvidenceKind,string>={fossil:'Fossil',archaeology:'Archaeology',genetics:'Genetics',dating:'Dating'}
-const storyFor=(time:number)=>stories.find(s=>time<=s.fromKa&&time>=s.toKa)||stories[stories.length-1]
 
-type Props={bootstrap:ExplorerBootstrap;time:number;selected:string;focusSite?:string|null;onFocused?:()=>void;temporalMode?:TemporalMode;onTemporalModeChange?:(mode:TemporalMode)=>void}
-export default function MigrationGlobe({bootstrap,time,selected,focusSite,onFocused,temporalMode:propTemporalMode,onTemporalModeChange}:Props){
- const [rot,setRot]=useState<[number,number]>([-20,-8]); const [scale,setScale]=useState(205); const [drag,setDrag]=useState<{x:number;y:number;rot:[number,number]}|null>(null); const [active,setActive]=useState('out-of-africa'); const [filter,setFilter]=useState<'all'|EvidenceKind>('all'); const [site,setSite]=useState<string|null>(null); const [selectionType,setSelectionType]=useState<'site'|'route'|'none'>('route'); const [cinematic,setCinematic]=useState(false); const [appliedCinematicKey,setAppliedCinematicKey]=useState<string|null>(null)
- const [internalTemporalMode,setInternalTemporalMode]=useState<TemporalMode>(propTemporalMode??'trail')
- const activeTemporalMode=propTemporalMode??internalTemporalMode
- const handleSetTemporalMode=(mode:TemporalMode)=>{setInternalTemporalMode(mode);onTemporalModeChange?.(mode)}
+export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,onSelectSpecies,onTimeChange,focusSite,onFocused,temporalMode:propTemporalMode,onTemporalModeChange}:Props){
+  const stageRef=useRef<HTMLDivElement>(null)
+  const [size,setSize]=useState<Size>({width:0,height:0})
+  const [projectionKind,setProjectionKind]=useState<ProjectionKind>('globe')
+  const [ka,setKa]=useState(()=>maToKa(time))
+  const [playing,setPlaying]=useState(false)
+  const [speedIndex,setSpeedIndex]=useState(0)
+  const [follow,setFollow]=useState(true)
+  const [focusToken,setFocusToken]=useState(0)
+  const [panel,setPanel]=useState<PanelId|null>(null)
+  const [kindsOn,setKindsOn]=useState<Set<EvidenceKind>>(()=>new Set(KIND_ORDER))
+  const [routesOn,setRoutesOn]=useState(true)
+  const [selection,setSelection]=useState<Selection|null>(null)
+  const [cardPreference,setCardPreference]=useState<boolean|null>(null)
+  const [land110,setLand110]=useState<GeoPermissibleObjects|null>(null)
+  const [land50,setLand50]=useState<GeoPermissibleObjects|null>(null)
+  const [internalTemporalMode,setInternalTemporalMode]=useState<TemporalMode>(propTemporalMode??'trail')
+  const reducedMotion=usePrefersReducedMotion()
+  const temporalMode=propTemporalMode??internalTemporalMode
+  const setTemporalMode=(mode:TemporalMode)=>{setInternalTemporalMode(mode);onTemporalModeChange?.(mode)}
 
- const evidenceSites=getExplorerEvidenceSites(bootstrap); const timeKa=maToKa(time)
- const story=storyFor(timeKa)
- const temporalWindow=useMemo(()=>getExploratoryTemporalWindow(time),[time])
- const siteContextMap=useMemo(()=>new Map(bootstrap.siteContexts.map(sc=>[String(sc.siteId),sc])),[bootstrap.siteContexts])
+  // ---- size and layout
+  useEffect(()=>{
+    const node=stageRef.current
+    if(!node||typeof ResizeObserver==='undefined') return
+    const observer=new ResizeObserver(([entry])=>{
+      const {width,height}=entry.contentRect
+      setSize(previous=>Math.abs(previous.width-width)<.5&&Math.abs(previous.height-height)<.5?previous:{width,height})
+    })
+    observer.observe(node)
+    return ()=>observer.disconnect()
+  },[])
+  const compact=size.width>0&&size.width<COMPACT_BELOW
+  // Phones start with the details folded away; whatever the person chooses afterwards wins.
+  const cardOpen=cardPreference??!compact
+  const insets=useMemo<Insets>(()=>compact?{top:62,bottom:150}:{top:68,bottom:96},[compact])
 
- const siteEvaluations=useMemo(()=>{
-  const map=new Map<string,ReturnType<typeof evaluateSiteWindowOverlap>>()
-  for(const s of evidenceSites){
-   const context=siteContextMap.get(String(s.id))
-   map.set(String(s.id),evaluateSiteWindowOverlap(s.ageKa,context?.timeInterval,temporalWindow,s.id===focusSite))
-  }
-  return map
- },[evidenceSites,siteContextMap,temporalWindow,focusSite])
+  // ---- camera
+  const resetRef=useRef<()=>void>(()=>undefined)
+  const {camera,flyTo,zoomBy,handlers,dragging,wasDrag}=useCamera({stageRef,kind:projectionKind,size,insets,reducedMotion,onUserMove:()=>setFollow(false),onReset:()=>resetRef.current()})
+  const projection=useMemo(()=>makeProjection(projectionKind,camera,size,insets),[projectionKind,camera,size,insets])
+  const [settledCamera,setSettledCamera]=useState<typeof camera|null>(null)
 
- const visibleEvidence=useMemo(()=>{
-  return evidenceSites
-   .filter(s=>filter==='all'||s.kind===filter)
-   .filter(s=>{
-    if(activeTemporalMode==='trail'){
-     return s.ageKa>=timeKa||s.id===focusSite
+  // ---- coastline data (110m immediately, 50m when idle and affordable)
+  useEffect(()=>{
+    let cancelled=false
+    loadLand('110m').then(land=>{if(!cancelled) setLand110(land)}).catch(()=>undefined)
+    const connection=(navigator as Navigator&{connection?:{saveData?:boolean;effectiveType?:string}}).connection
+    const lean=Boolean(connection?.saveData)||/(^|-)2g$/.test(connection?.effectiveType??'')
+    const idleWindow=window as Window&{requestIdleCallback?:(callback:()=>void)=>number}
+    const idle=(callback:()=>void)=>(idleWindow.requestIdleCallback?idleWindow.requestIdleCallback(callback):window.setTimeout(callback,1200))
+    if(!lean) idle(()=>{loadLand('50m').then(land=>{if(!cancelled) setLand50(land)}).catch(()=>undefined)})
+    return ()=>{cancelled=true}
+  },[])
+  // "Settled" = the camera has not changed for a moment. While it moves, the light coastline keeps frames cheap.
+  useEffect(()=>{
+    const timer=window.setTimeout(()=>setSettledCamera(camera),160)
+    return ()=>window.clearTimeout(timer)
+  },[camera])
+  const settled=settledCamera===camera
+  const land=landDetailFor(camera.zoom,settled,Boolean(land50))==='50m'?land50:land110
+
+  // ---- time: local to the story, mirrored to the shared URL state
+  const lastEmitted=useRef<number|null>(null)
+  const emitTimer=useRef<number|null>(null)
+  const emit=useCallback((nextKa:number)=>{
+    const ageMa=nextKa/1000
+    lastEmitted.current=ageMa
+    onTimeChange(ageMa)
+  },[onTimeChange])
+  const emitSoon=useCallback((nextKa:number)=>{
+    if(emitTimer.current!==null) window.clearTimeout(emitTimer.current)
+    emitTimer.current=window.setTimeout(()=>{emitTimer.current=null;emit(nextKa)},180)
+  },[emit])
+  useEffect(()=>()=>{if(emitTimer.current!==null) window.clearTimeout(emitTimer.current)},[])
+  // The `time` prop comes back to us after every emit. That echo is ignored once; any other value (browser Back/Forward,
+  // a typed URL, another view) is an outside change and moves the story. Clearing the marker is what lets a later
+  // Forward to the very same moment still be recognised as outside.
+  useEffect(()=>{
+    const echo=lastEmitted.current!==null&&Math.abs(time-lastEmitted.current)<1e-7
+    lastEmitted.current=null
+    if(echo) return
+    setKa(maToKa(time))
+  },[time])
+
+  const fraction=kaToFraction(ka)
+  const fractionRef=useRef(fraction)
+  useEffect(()=>{fractionRef.current=fraction},[fraction])
+  const sceneIndex=sceneIndexAtKa(ka)
+  const scene=scenes[sceneIndex]
+  const speed=SPEEDS[speedIndex]
+
+  useEffect(()=>{
+    if(!playing) return
+    let raf=0
+    let last=performance.now()
+    let lastEmit=last
+    const tick=(now:number)=>{
+      const step=advanceFraction(fractionRef.current,Math.min(100,now-last),speed)
+      last=now
+      fractionRef.current=step.fraction
+      const nextKa=fractionToKa(step.fraction)
+      setKa(nextKa)
+      if(step.ended){setPlaying(false);emit(nextKa);return}
+      if(now-lastEmit>250){lastEmit=now;emit(nextKa)}
+      raf=requestAnimationFrame(tick)
     }
-    return siteEvaluations.get(String(s.id))?.matches??false
-   })
- },[evidenceSites,filter,activeTemporalMode,timeKa,focusSite,siteEvaluations])
+    raf=requestAnimationFrame(tick)
+    return ()=>cancelAnimationFrame(raf)
+  },[playing,speed,emit])
 
- const qualitativeExcludedCount=useMemo(()=>{
-  if(activeTemporalMode!=='window') return 0
-  let count=0
-  for(const s of evidenceSites){
-   if(filter!=='all'&&s.kind!==filter) continue
-   const evaluation=siteEvaluations.get(String(s.id))
-   if(evaluation?.isQualitativeOrUnbounded&&s.id!==focusSite){
-    count++
-   }
+  const seek=useCallback((nextFraction:number)=>{
+    const nextKa=fractionToKa(nextFraction)
+    fractionRef.current=nextFraction
+    setKa(nextKa)
+    emitSoon(nextKa)
+  },[emitSoon])
+  const jumpToScene=useCallback((index:number)=>{
+    // A scene boundary belongs to the older scene, so land just inside the requested one.
+    const target=Math.min(.999999,sceneStartFraction(index)+(index>0?.002/SCENE_COUNT:0))
+    const nextKa=fractionToKa(target)
+    fractionRef.current=target
+    setKa(nextKa);emit(nextKa)
+    setFollow(true);setFocusToken(token=>token+1)
+  },[emit])
+  const togglePlay=()=>{
+    if(playing){setPlaying(false);emit(fractionToKa(fractionRef.current));return}
+    if(fractionRef.current>=.9999){fractionRef.current=0;setKa(fractionToKa(0))}
+    setFollow(true);setFocusToken(token=>token+1)
+    setPlaying(true)
   }
-  return count
- },[activeTemporalMode,evidenceSites,filter,siteEvaluations,focusSite])
 
- const projection=useMemo(()=>geoOrthographic().translate([420,270]).scale(scale).rotate(rot),[rot,scale]); const path=useMemo(()=>geoPath(projection),[projection]); const graticule=useMemo(()=>geoGraticule().step([20,20])(),[])
- const continentPaths=useMemo(()=>continents.map(([name,coords])=>({name,d:path({type:'Feature',properties:null,geometry:{type:'Polygon',coordinates:[[...coords,coords[0]]]}} as GeoPermissibleObjects)??''})),[path])
- const graticulePath=useMemo(()=>path(graticule)??'',[path,graticule])
- // Corridors are Homo sapiens dispersals: they are drawn only when H. sapiens is the selected taxon (BUG-74).
- const visibleRoutes=useMemo(()=>selected==='sapiens'?routes.filter(r=>timeKa<=r.startKa&&timeKa>=r.endKa):[],[timeKa,selected])
- const routePaths=useMemo(()=>new Map(visibleRoutes.map(r=>[r.id,projectRoute(r,projection,rot)])),[visibleRoutes,projection,rot]); const activeRoute=visibleRoutes.find(r=>r.id===active)??visibleRoutes[0]
- const routeProgress=(r:Route)=>Math.max(0,Math.min(1,(r.startKa-timeKa)/Math.max(1,r.startKa-r.endKa)))
- // Corridors are Homo sapiens dispersals; other taxa get an explicit note instead of a misleading highlight.
- const selectedIsSapiens=selected==='sapiens'
- const pointAlong=(r:Route,t:number):[number,number]=>{const lens=r.points.map((p,i)=>i?Math.hypot(p[0]-r.points[i-1][0],p[1]-r.points[i-1][1]):0);const total=lens.reduce((a,b)=>a+b,0);let target=t*total;for(let i=1;i<r.points.length;i++){if(target<=lens[i]){const u=target/lens[i];return [interp(r.points[i-1][0],r.points[i][0],u),r.points[i-1][1]+(r.points[i][1]-r.points[i-1][1])*u]}target-=lens[i]}return r.points[r.points.length-1]}
- const cinematicKey=cinematic?story.id:null
- if(cinematicKey!==appliedCinematicKey){
-  setAppliedCinematicKey(cinematicKey)
-  if(cinematicKey!==null){
-   setActive(story.route)
-   const [lon,lat]=story.focus
-   setRot([Math.max(-180,Math.min(180,-lon)),Math.max(-80,Math.min(80,-lat))])
-  }
- }
- const [appliedFocusSite,setAppliedFocusSite]=useState<string|null>(null)
- if(focusSite!==appliedFocusSite){
-  setAppliedFocusSite(focusSite??null)
-  if(focusSite){
-   const target=evidenceSites.find(s=>s.id===focusSite)
-   if(target){
-    setSite(target.id)
-    setSelectionType('site')
-    setRot([Math.max(-180,Math.min(180,-target.lon)),Math.max(-80,Math.min(80,-target.lat))])
-    setScale(240)
-   }
-  }
- }
- useEffect(()=>{
-  if(focusSite){
-   onFocused?.()
-  }
- },[focusSite,onFocused])
- // React registers wheel listeners as passive, so preventDefault() there cannot stop the page from scrolling while zooming.
- const wrapRef=useRef<HTMLDivElement>(null)
- useEffect(()=>{
-  const node=wrapRef.current
-  if(!node)return
-  const onWheel=(e:globalThis.WheelEvent)=>{if(!(e.ctrlKey||e.metaKey))return;e.preventDefault();setScale(s=>Math.max(155,Math.min(275,s+(e.deltaY<0?12:-12))))}
-  node.addEventListener('wheel',onWheel,{passive:false})
-  return ()=>node.removeEventListener('wheel',onWheel)
- },[])
- // Drag rotation: pointermove can fire 120+ times/s on phones; apply at most one rotation per frame.
- const dragFrame=useRef<number|null>(null)
- const pendingRot=useRef<[number,number]|null>(null)
- useEffect(()=>()=>{if(dragFrame.current!==null) cancelAnimationFrame(dragFrame.current)},[])
- const queueRotation=(next:[number,number])=>{
-  pendingRot.current=next
-  if(dragFrame.current!==null) return
-  dragFrame.current=requestAnimationFrame(()=>{dragFrame.current=null;if(pendingRot.current) setRot(pendingRot.current)})
- }
- // Evidence markers are drawn in viewBox units; on a 350px-wide phone globe they shrink to ~2px.
- // Keep them (and their tap area) at a constant on-screen size.
- const [markerScale,setMarkerScale]=useState(1)
- // Phones: crop the 840×540 canvas to the globe itself so the Earth fills the width instead of ~40% of it.
- const [compact,setCompact]=useState(false)
- useEffect(()=>{
-  const svg=wrapRef.current?.querySelector('svg.globe-map')
-  if(!svg||typeof ResizeObserver==='undefined') return
-  const observer=new ResizeObserver(([entry])=>{const width=entry.contentRect.width;if(width<=0) return;const isCompact=width<640;setCompact(isCompact);setMarkerScale(isCompact?Math.max(1,Math.min(2.4,500/width*1.25)):1)})
-  observer.observe(svg)
-  return ()=>observer.disconnect()
- },[])
- const reset=()=>{setRot([-20,-8]);setScale(205)}
- const focusStory=()=>{setRot([-story.focus[0],Math.max(-80,Math.min(80,-story.focus[1]))]);setActive(story.route)}
+  // ---- scene camera
+  const lastKey=useRef<string|null>(null)
+  useEffect(()=>{
+    if(size.width<=0) return
+    const key=`${sceneIndex}:${focusToken}:${projectionKind}`
+    const first=lastKey.current===null
+    if(lastKey.current===key) return
+    lastKey.current=key
+    if(!first&&!follow) return
+    const target=scenes[sceneIndex]
+    flyTo(cameraFor(target.focus[0],target.focus[1],target.zoom*(projectionKind==='flat'?FLAT_ZOOM_FACTOR:1)),first?0:1200)
+  },[sceneIndex,focusToken,projectionKind,follow,size.width,flyTo])
+  const resetView=useCallback(()=>{
+    setFollow(true);setFocusToken(token=>token+1)
+    const target=scenes[sceneIndexAtKa(fractionToKa(fractionRef.current))]
+    flyTo(cameraFor(target.focus[0],target.focus[1],target.zoom*(projectionKind==='flat'?FLAT_ZOOM_FACTOR:1)),700)
+  },[flyTo,projectionKind])
+  useEffect(()=>{resetRef.current=resetView},[resetView])
 
- return <div ref={wrapRef} className={`globe-wrap ${cinematic?'cinematic':''}`}>
-  <div className="migration-context-bar">
-   <div className="temporal-mode-header">
-    <div className="temporal-mode-switcher" role="radiogroup" aria-label="Temporal interpretation mode">
-     <button type="button" role="radio" aria-checked={activeTemporalMode==='trail'} className={`mode-toggle-btn ${activeTemporalMode==='trail'?'active':''}`} onClick={()=>handleSetTemporalMode('trail')}><History size={13} aria-hidden="true"/> <span>Historical evidence trail</span></button>
-     <button type="button" role="radio" aria-checked={activeTemporalMode==='window'} className={`mode-toggle-btn ${activeTemporalMode==='window'?'active':''}`} onClick={()=>handleSetTemporalMode('window')}><CalendarRange size={13} aria-hidden="true"/> <span>Evidence near this time</span></button>
+  // ---- evidence
+  const evidenceSites=getExplorerEvidenceSites(bootstrap)
+  const timeMa=ka/1000
+  const temporalWindow=useMemo(()=>getExploratoryTemporalWindow(timeMa),[timeMa])
+  const siteContextMap=useMemo(()=>new Map(bootstrap.siteContexts.map(context=>[String(context.siteId),context])),[bootstrap.siteContexts])
+  const selectedSiteId=selection?.type==='site'?selection.id:null
+  const siteEvaluations=useMemo(()=>{
+    const map=new Map<string,ReturnType<typeof evaluateSiteWindowOverlap>>()
+    for(const site of evidenceSites) map.set(String(site.id),evaluateSiteWindowOverlap(site.ageKa,siteContextMap.get(String(site.id))?.timeInterval,temporalWindow,String(site.id)===selectedSiteId))
+    return map
+  },[evidenceSites,siteContextMap,temporalWindow,selectedSiteId])
+  const visibleEvidence=useMemo(()=>evidenceSites
+    .filter(site=>kindsOn.has(site.kind))
+    .filter(site=>String(site.id)===selectedSiteId||(temporalMode==='trail'?site.ageKa>=ka:siteEvaluations.get(String(site.id))?.matches??false)),
+  [evidenceSites,kindsOn,selectedSiteId,temporalMode,ka,siteEvaluations])
+  const excludedCount=useMemo(()=>temporalMode!=='window'?0:evidenceSites.filter(site=>kindsOn.has(site.kind)&&siteEvaluations.get(String(site.id))?.isQualitativeOrUnbounded&&String(site.id)!==selectedSiteId).length,[temporalMode,evidenceSites,kindsOn,siteEvaluations,selectedSiteId])
+  const highlightExists=useMemo(()=>evidenceSites.some(site=>site.relatedTaxonIds.some(id=>String(id)===selected)),[evidenceSites,selected])
+
+  // ---- corridors (Homo sapiens only, BUG-74)
+  const routesAvailable=selected==='sapiens'
+  const visibleRoutes=useMemo(()=>routesAvailable&&routesOn?routes.filter(route=>ka<=route.startKa&&ka>=route.endKa):[],[routesAvailable,routesOn,ka])
+  const activeRoute=visibleRoutes.find(route=>route.id===scene.route)??visibleRoutes[0]
+  const routeProgress=(startKa:number,endKa:number)=>Math.max(0,Math.min(1,(startKa-ka)/Math.max(1,startKa-endKa)))
+  const routeShapes=useMemo(()=>{
+    const generator=geoPath(projection)
+    return visibleRoutes.map(route=>{
+      const full=smoothedRoutes.get(route.id)??[]
+      const progress=routeProgress(route.startKa,route.endKa)
+      const head=sliceRoute(full,progress)
+      return {route,progress,ghost:generator(lineString(full))??'',drawn:head.length>1?generator(lineString(head))??'':''}
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[projection,visibleRoutes,ka])
+
+  // ---- markers, clustered in screen space
+  const pins=useMemo(()=>{
+    const out:(Pin&{lon:number;lat:number})[]=[]
+    for(const site of visibleEvidence){
+      if(projectionKind==='globe'&&!onVisibleHemisphere(camera,site.lon,site.lat)) continue
+      const point=projection([site.lon,site.lat])
+      if(!point) continue
+      out.push({id:String(site.id),x:point[0],y:point[1],lon:site.lon,lat:site.lat,sticky:String(site.id)===selectedSiteId})
+    }
+    return out
+  },[visibleEvidence,projection,projectionKind,camera,selectedSiteId])
+  const clusters=useMemo(()=>clusterPins(pins,compact?26:22),[pins,compact])
+  const siteById=useMemo(()=>new Map(evidenceSites.map(site=>[String(site.id),site])),[evidenceSites])
+  const pulseKa=Math.max(2,(scene.fromKa-scene.toKa)*.04)
+
+  // ---- selection helpers
+  const selectSite=useCallback((id:string)=>{setSelection({type:'site',id});setCardPreference(true);setPanel(null)},[])
+  const flyToSite=useCallback((id:string,zoom=3.2)=>{
+    const site=evidenceSites.find(item=>String(item.id)===id)
+    if(!site) return
+    setFollow(false)
+    flyTo(cameraFor(site.lon,site.lat,Math.min(ZOOM_MAX,zoom)),900)
+  },[evidenceSites,flyTo])
+  // A focus request from outside (e.g. "Map range" in the profile). Applied on the next frame, once the stage has a size.
+  const stageReady=size.width>0
+  useEffect(()=>{
+    if(!focusSite||!stageReady) return
+    const frame=requestAnimationFrame(()=>{
+      const site=evidenceSites.find(item=>String(item.id)===focusSite)
+      if(site){selectSite(String(site.id));flyToSite(String(site.id))}
+      onFocused?.()
+    })
+    return ()=>cancelAnimationFrame(frame)
+  },[focusSite,stageReady,evidenceSites,selectSite,flyToSite,onFocused])
+  const onStageClick=(event:React.MouseEvent<HTMLDivElement>)=>{
+    if(wasDrag()) return
+    if((event.target as Element).closest('[data-no-drag],.evidence-marker,.migration-route')) return
+    setSelection(null);setPanel(null)
+  }
+  const onClusterClick=(cluster:{x:number;y:number}|undefined)=>{
+    if(!cluster||wasDrag()) return
+    const lonLat=projection.invert?.([cluster.x,cluster.y])
+    if(!lonLat) return
+    setFollow(false)
+    flyTo(cameraFor(lonLat[0],lonLat[1],Math.min(ZOOM_MAX,camera.zoom*2.4)),700)
+  }
+
+  // ---- panels
+  const togglePanel=(id:PanelId)=>setPanel(current=>current===id?null:id)
+  useEffect(()=>{
+    if(!panel) return
+    const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape') setPanel(null)}
+    window.addEventListener('keydown',onKey)
+    return ()=>window.removeEventListener('keydown',onKey)
+  },[panel])
+  const toggleKind=(kind:EvidenceKind)=>setKindsOn(previous=>{const next=new Set(previous);if(next.has(kind)) next.delete(kind);else next.add(kind);return next})
+  const siteItems:SiteListItem[]=useMemo(()=>[...visibleEvidence].sort((a,b)=>b.ageKa-a.ageKa).map(site=>({id:String(site.id),name:site.name,ageLabel:site.ageLabel,kind:site.kind,selected:String(site.id)===selectedSiteId})),[visibleEvidence,selectedSiteId])
+
+  // ---- detail card
+  const card=(()=>{
+    if(selection?.type==='site'){
+      const site=siteById.get(selection.id)
+      if(site){
+        const source=getExplorerSourceById(bootstrap,String(site.sourceIds[0]??''))
+        const taxa=site.relatedTaxonIds.map(id=>getExplorerSpeciesById(bootstrap,String(id))?.short).filter(Boolean).join(' · ')||'Multi-taxon context'
+        const context=siteContextMap.get(String(site.id))
+        const evaluation=siteEvaluations.get(String(site.id))
+        const dating=context?.timeInterval?.estimateKind==='interval'?`Documented age interval: ${context.timeInterval.label}`
+          :context?.timeInterval?.uncertaintyMa?`Measured age with uncertainty: ${site.ageLabel} (±${Math.round(context.timeInterval.uncertaintyMa*1000)} ka)`
+          :evaluation?.isQualitativeOrUnbounded?`Qualitative / open-ended dating: ${site.ageLabel}`:`Point estimate: ${site.ageLabel}`
+        return <SiteCard kind={site.kind} kindLabel={KIND_META[site.kind].label} name={site.name} meta={`${site.ageLabel} · ${taxa} · ${site.locationPrecision==='regional'?'regional context':'site context'}`} note={site.note} dating={dating} sourceTitle={source?.title} sourceUrl={source?.url} onClose={()=>setSelection(null)}/>
+      }
+    }
+    if(selection?.type==='route'&&activeRoute){
+      const source=activeRoute.sourceId?getExplorerSourceById(bootstrap,activeRoute.sourceId):undefined
+      return <RouteCard label={activeRoute.label} color={activeRoute.color} percent={Math.round(routeProgress(activeRoute.startKa,activeRoute.endKa)*100)} window={`${activeRoute.startKa}–${activeRoute.endKa} ka`} sourceTitle={source?.title} sourceUrl={source?.url} onClose={()=>setSelection(null)}/>
+    }
+    return <SceneCard index={sceneIndex} count={SCENE_COUNT} title={scene.title} subtitle={scene.subtitle} note={scene.note} following={follow} onFocus={()=>{setFollow(true);setFocusToken(token=>token+1)}}/>
+  })()
+  const cardTitle=selection?.type==='site'?siteById.get(selection.id)?.name:selection?.type==='route'?activeRoute?.label:scene.title
+
+  const ready=size.width>0&&size.height>0
+  const stageClass=`atlas-stage${compact?' compact':''}${dragging?' dragging':''}${camera.zoom>1.3?' exploring':''}${playing?' playing':''}`
+  const readout=formatAgeMa(timeMa)
+
+  return <div className="migration-view atlas" data-projection={projectionKind}>
+    {/* The page hero (and its h1) is hidden in this view, so the map names itself. */}
+    <h1 className="sr-only">Human migration atlas: where the evidence places our species through time</h1>
+    <div ref={stageRef} className={stageClass} tabIndex={0} data-zoom={camera.zoom.toFixed(2)} data-lon={(-camera.rot[0]).toFixed(1)} data-lat={(-camera.rot[1]).toFixed(1)} role="group" aria-roledescription="interactive map" aria-label="Human migration map. Arrow keys rotate, plus and minus zoom, 0 resets." onClick={onStageClick} onDoubleClick={()=>zoomBy(1.6)} {...handlers}>
+      {ready&&<>
+        <GlobeCanvas kind={projectionKind} camera={camera} size={size} insets={insets} land={land} palette={globePalette}/>
+        <svg className="globe-map atlas-overlay" viewBox={`0 0 ${size.width} ${size.height}`} role="group" aria-labelledby="migration-globe-title migration-globe-desc">
+          <title id="migration-globe-title">Human migration map</title>
+          <desc id="migration-globe-desc">Documented evidence sites and generalized Homo sapiens dispersal corridors on a {projectionKind==='globe'?'rotatable globe':'flat world map'}. Every site is also listed in the Sites panel.</desc>
+          {routeShapes.map(({route,ghost,drawn})=>{
+            const isActive=activeRoute?.id===route.id
+            return <g key={route.id} className="migration-route" data-no-drag role="button" tabIndex={0} aria-label={`Corridor: ${route.label}`} aria-pressed={selection?.type==='route'&&isActive} onClick={()=>{setSelection({type:'route',id:route.id});setCardPreference(true)}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();setSelection({type:'route',id:route.id});setCardPreference(true)}}}>
+              <path d={ghost} className="route-hit" fill="none" stroke="transparent" strokeWidth={22}/>
+              <path d={ghost} fill="none" stroke={route.color} strokeOpacity={.2} strokeWidth={isActive?16:11} strokeLinecap="round" strokeLinejoin="round"/>
+              <path d={ghost} fill="none" stroke={route.color} strokeOpacity={.3} strokeWidth={1.4} strokeDasharray="2 6" strokeLinecap="round"/>
+              {drawn&&<><path d={drawn} fill="none" stroke={globePalette.routeCasing} strokeOpacity={.8} strokeWidth={(isActive?4:2.6)+3} strokeLinecap="round" strokeLinejoin="round"/>
+              <path d={drawn} fill="none" stroke={route.color} strokeWidth={isActive?4:2.6} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={route.certainty==='possible'?'2 7':undefined}/></>}
+            </g>
+          })}
+          {clusters.map(cluster=>{
+            if(cluster.ids.length>1) return <g key={cluster.id} className="evidence-cluster" data-no-drag role="button" tabIndex={0} transform={`translate(${cluster.x.toFixed(1)} ${cluster.y.toFixed(1)})`} aria-label={`${cluster.ids.length} evidence sites close together. Activate to zoom in.`} onClick={()=>onClusterClick(cluster)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onClusterClick(cluster)}}}>
+              <circle r={15} className="hit" fill="transparent"/><circle r={11} fill="#0b1b1d" stroke="#d9e4df" strokeWidth={1.6}/><text textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={700} fill="#eee8dc">{cluster.ids.length}</text>
+            </g>
+            const site=siteById.get(cluster.ids[0])
+            if(!site) return null
+            const meta=KIND_META[site.kind]
+            const isSelected=String(site.id)===selectedSiteId
+            const dim=highlightExists&&!site.relatedTaxonIds.some(id=>String(id)===selected)&&!isSelected
+            const fresh=playing&&temporalMode==='trail'&&site.ageKa-ka<=pulseKa
+            return <g key={cluster.id} className={`evidence-marker${isSelected?' selected':''}${dim?' dim':''}${fresh?' fresh':''}`} data-no-drag role="button" tabIndex={0} transform={`translate(${cluster.x.toFixed(1)} ${cluster.y.toFixed(1)})`} aria-label={`${meta.label}: ${site.name}, ${site.ageLabel}`} aria-pressed={isSelected} onClick={()=>{if(!wasDrag()) selectSite(String(site.id))}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectSite(String(site.id))}}}>
+              <circle r={16} className="hit" fill="transparent"/>
+              {isSelected&&<circle r={14} fill="none" stroke="#eee8dc" strokeWidth={1.5}/>}
+              {fresh&&<circle className="pulse" r={9} fill="none" stroke={meta.color} strokeWidth={2}/>}
+              <path d={shapePath(meta.shape,6.5)} fill={meta.color} stroke="#031013" strokeWidth={2} paintOrder="stroke"/>
+            </g>
+          })}
+        </svg>
+      </>}
+
+      <div className="atlas-top" data-no-drag>
+        <div className="atlas-scene-chip"><span className="atlas-kicker">SCENE {sceneIndex+1} / {SCENE_COUNT}</span><strong>{scene.title}</strong></div>
+        {!compact&&<label className="atlas-species"><span>Species</span>
+          <select value={selected} onChange={event=>onSelectSpecies(event.target.value)} aria-label="Highlight species">{speciesOptions.map(option=><option key={option.id} value={option.id}>{option.label}</option>)}</select></label>}
+        <div className="atlas-tools" role="toolbar" aria-label="Map panels">
+          <button type="button" onClick={()=>togglePanel('layers')} className={`atlas-icon-btn${panel==='layers'?' on':''}`} aria-label="Layers" aria-expanded={panel==='layers'}><Layers3 size={18} aria-hidden="true"/></button>
+          <button type="button" onClick={()=>togglePanel('sites')} className={`atlas-icon-btn${panel==='sites'?' on':''}`} aria-label="Sites list" aria-expanded={panel==='sites'}><List size={18} aria-hidden="true"/></button>
+          <button type="button" onClick={()=>togglePanel('about')} className={`atlas-icon-btn${panel==='about'?' on':''}`} aria-label="About this map" aria-expanded={panel==='about'}><Info size={18} aria-hidden="true"/></button>
+        </div>
+      </div>
+
+      <div className="atlas-zoom" data-no-drag role="group" aria-label="Map view">
+        <button type="button" onClick={()=>zoomBy(1.5)} className="atlas-icon-btn" aria-label="Zoom in"><Plus size={18} aria-hidden="true"/></button>
+        <button type="button" onClick={()=>zoomBy(1/1.5)} className="atlas-icon-btn" aria-label="Zoom out"><Minus size={18} aria-hidden="true"/></button>
+        <button type="button" onClick={resetView} className="atlas-icon-btn" aria-label="Reset view"><RotateCcw size={17} aria-hidden="true"/></button>
+        <button type="button" onClick={()=>setProjectionKind(kind=>kind==='globe'?'flat':'globe')} className="atlas-icon-btn" aria-label={projectionKind==='globe'?'Switch to flat map':'Switch to globe'}>{projectionKind==='globe'?<FlatMapIcon size={17} aria-hidden="true"/>:<Globe2 size={17} aria-hidden="true"/>}</button>
+      </div>
+
+      {panel&&<div className="atlas-panel-slot" data-no-drag>
+        {panel==='layers'&&<LayersPanel kindsOn={kindsOn} onToggleKind={toggleKind} routesOn={routesOn} routesAvailable={routesAvailable} onToggleRoutes={()=>setRoutesOn(value=>!value)} temporalMode={temporalMode} onTemporalMode={setTemporalMode} windowLabel={temporalWindow.label} excludedCount={excludedCount} projection={projectionKind} onProjection={setProjectionKind} species={compact?{value:selected,options:speciesOptions,onChange:onSelectSpecies}:undefined} onClose={()=>setPanel(null)}/>}
+        {panel==='sites'&&<SitesPanel items={siteItems} onPick={id=>{selectSite(id);flyToSite(id,Math.max(camera.zoom,2.4))}} onClose={()=>setPanel(null)}/>}
+        {panel==='about'&&<AboutPanel onClose={()=>setPanel(null)}/>}
+      </div>}
+
+      <div className="atlas-bottom" data-no-drag>
+        {compact&&!cardOpen?<button type="button" onClick={()=>setCardPreference(true)} className="atlas-card-collapsed" aria-expanded="false"><span>{cardTitle}</span><ChevronUp size={16} aria-hidden="true"/></button>
+          :<div className="atlas-card-wrap">{compact&&<button type="button" onClick={()=>setCardPreference(false)} className="atlas-card-fold" aria-label="Collapse details">Hide</button>}{card}</div>}
+        <AtlasDock fraction={fraction} sceneIndex={sceneIndex} playing={playing} speed={speed} readout={readout} onPlay={togglePlay} onSeek={seek} onScene={jumpToScene} onSpeed={()=>setSpeedIndex(index=>(index+1)%SPEEDS.length)}/>
+      </div>
     </div>
-    <div className="timelapse-badge"><span className="live-dot" aria-hidden="true"/> {activeTemporalMode==='trail'?(<>Cumulative trail · <b>{formatAgeMa(time)}</b> ({visibleEvidence.length} sites)</>):(<>Window [<b>{temporalWindow.label}</b>] ({visibleEvidence.length} sites)</>)}</div>
-   </div>
-   {activeTemporalMode==='trail'?(
-    <p className="trail-explanation" role="note"><strong>Mode A (Historical evidence trail):</strong> Cumulative view showing all documented sites from deep time down to {formatAgeMa(time)}. Earlier evidence remains visible as the timeline advances toward the present. This is not an instantaneous species-distribution map.</p>
-   ):(
-    <div className="window-explanation" role="note">
-     <p className="trail-explanation"><strong>Mode B (Evidence near this time):</strong> Shows sites whose documented dating interval or measurement uncertainty intersects the exploratory window of {temporalWindow.clippedAtPresent || temporalWindow.clippedAtOldestLimit ? `[${formatAgeMa(temporalWindow.olderMa)} – ${formatAgeMa(temporalWindow.youngerMa)}] (${temporalWindow.clippedAtPresent ? 'clipped at present / 0 Ma timeline boundary' : 'clipped at 8 Ma timeline limit'}, nominal ±${temporalWindow.halfWidthKa} ka)` : `±${temporalWindow.halfWidthKa} ka (${temporalWindow.label})`}. Point estimates without published error margins are matched by central date.</p>
-     {qualitativeExcludedCount>0&&<div className="unbounded-exclusion-note"><Info size={12} aria-hidden="true"/> <span>{qualitativeExcludedCount} site{qualitativeExcludedCount>1?'s':''} with qualitative or open-ended dating (e.g. Levant &lsquo;~100 ka+&rsquo;, Eurasia regional context, Global synthesis) are excluded from the window query to prevent false precision.</span></div>}
-    </div>
-   )}
+    <p className="sr-only" aria-live="polite">{`Scene ${sceneIndex+1} of ${SCENE_COUNT}: ${scene.title}. ${visibleEvidence.length} evidence sites shown.`}</p>
   </div>
-
-  <div className="cinematic-bar">
-   <button type="button" className={cinematic?'on':''} aria-pressed={cinematic} onClick={()=>setCinematic(v=>!v)}>{cinematic?<Pause size={13} aria-hidden="true"/>:<Play size={13} aria-hidden="true"/>} {cinematic?'Cinematic mode on':'Cinematic story'}</button>
-   <button type="button" onClick={focusStory}><Focus size={13} aria-hidden="true"/> Focus chapter</button>
-   <div className="story-copy"><b>{story.title}</b><span>{story.subtitle} · {story.note}</span></div>
-   <div className="story-progress" aria-hidden="true"><i style={{width:`${Math.max(4,Math.min(100,((stories.findIndex(s=>s.id===story.id)+1)/stories.length)*100))}%`}}/></div>
-   <div className="story-counter">CH {stories.findIndex(s=>s.id===story.id)+1}/{stories.length}</div>
-  </div>
-
-  <div className="map-toolbar" role="toolbar" aria-label="Evidence layers">
-   <div className="map-filter-label"><Layers3 size={13} aria-hidden="true"/> Evidence layers</div>
-   {(['all','fossil','archaeology','genetics','dating'] as const).map(k=><button type="button" key={k} aria-pressed={filter===k} className={filter===k?'on':''} onClick={()=>setFilter(k)}>{k==='all'?'All':kindLabel[k]}</button>)}
-  </div>
-
-  <div className="globe-stage">
-   <svg className={`globe-map ${compact?'compact':''}`} viewBox={compact?'170 20 500 500':'0 0 840 540'} role="group" aria-labelledby="migration-globe-title migration-globe-desc" onPointerMove={e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;queueRotation([drag.rot[0]+dx*.35,Math.max(-80,Math.min(80,drag.rot[1]-dy*.22))])}} onPointerDown={e=>{if(e.button!==0)return;if((e.target as Element).closest('.evidence-marker,.migration-route'))return;e.currentTarget.setPointerCapture(e.pointerId);setDrag({x:e.clientX,y:e.clientY,rot})}} onPointerUp={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);setDrag(null)}} onPointerCancel={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);setDrag(null)}}>
-    <title id="migration-globe-title">Interactive evidence globe</title><desc id="migration-globe-desc">Drag to rotate the globe, use the controls to zoom, and select evidence sites or migration corridors. Corridors are generalized population-level context, not individual travel paths.</desc>
-    <defs><radialGradient id="ocean-v9"><stop offset="0" stopColor={globePalette.oceanCenter}/><stop offset="1" stopColor={globePalette.oceanEdge}/></radialGradient><filter id="glow-v9"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><radialGradient id="pulse-v9"><stop offset="0" stopColor="#fff4bd" stopOpacity=".9"/><stop offset="1" stopColor="#e8bd70" stopOpacity="0"/></radialGradient></defs>
-    <circle cx="420" cy="270" r={scale} fill="url(#ocean-v9)" stroke={globePalette.outline} strokeWidth="1.2"/> <path d={graticulePath} fill="none" stroke="#285052" strokeWidth=".45" opacity=".5"/>
-    {continentPaths.map(({name,d})=><path key={name} d={d} fill={globePalette.land} stroke={globePalette.coast} strokeWidth=".8"/>)}
-    {visibleRoutes.map(r=>{const progress=routeProgress(r);const d=routePaths.get(r.id)??'';const frontLonLat=pointAlong(r,progress);const isActive=r.id===active;const isSelected=selected==='sapiens'&&r.id===activeRoute?.id;const front=isOnFrontHemisphere(rot,frontLonLat)?projection(frontLonLat):null;return <g key={r.id} tabIndex={0} role="button" aria-pressed={isActive} aria-label={`Select corridor ${r.label}`} onClick={e=>{e.stopPropagation();setActive(r.id);setSelectionType('route')}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setActive(r.id);setSelectionType('route')}}} opacity={isActive||isSelected?1:.18} className="migration-route"><path d={d} fill="none" stroke={globePalette.routeCasing} strokeOpacity=".75" strokeLinecap="round" strokeWidth={(isActive||isSelected?3.5:1.6)+3.2}/><path d={d} fill="none" stroke={r.color} strokeWidth={isActive||isSelected?3.5:1.6} strokeDasharray={r.certainty==='possible'?'3 7':'6 5'} filter={isActive||isSelected?'url(#glow-v9)':undefined}/>{front&&<><circle cx={front[0]} cy={front[1]} r="15" fill="url(#pulse-v9)" opacity=".5"/><circle cx={front[0]} cy={front[1]} r="4.5" fill={r.color} stroke="#fff1bd" strokeWidth="1.4" filter="url(#glow-v9)"/></>}</g>})}
-    {visibleEvidence.map(s=>{const q=isOnFrontHemisphere(rot,[s.lon,s.lat])?projection([s.lon,s.lat]):null;if(!q)return null;const activeSite=site===s.id&&selectionType==='site';const glyph=s.kind==='fossil'?'F':s.kind==='archaeology'?'A':s.kind==='genetics'?'G':'D';return <g key={s.id} transform={`translate(${q[0]},${q[1]}) scale(${markerScale})`} opacity={activeSite?1:.9} onClick={e=>{e.stopPropagation();setSite(s.id);setSelectionType('site')}} tabIndex={0} role="button" aria-label={`Open ${s.name} evidence`} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSite(s.id);setSelectionType('site')}}} className="evidence-marker"><circle className="marker-hit" r={11} fill="transparent"/><circle r={activeSite?8:5} fill={activeSite?'#f2cf8b':'#0b1b1d'} stroke={activeSite?'#fff2c7':'#d5b36f'} strokeWidth="1.2"/><text textAnchor="middle" dominantBaseline="central" fontSize="6" fontWeight="800" fill={activeSite?'#071315':'#d9e4df'}>{glyph}</text><title>{s.name} · {s.ageLabel}</title></g>})}
-   </svg>
-   {visibleEvidence.length===0&&<div className="globe-empty-state" role="status"><strong>No evidence sites intersect this window ({temporalWindow.label})</strong><p>The research catalog has no documented sites overlapping this temporal window. Switch to <em>Historical evidence trail</em> to view cumulative earlier evidence, or move the time scrubber below.</p></div>}
-   <div className="globe-controls" role="group" aria-label="Globe navigation controls"><button type="button" onClick={()=>setScale(s=>Math.min(275,s+18))} aria-label="Zoom in"><Plus size={14} aria-hidden="true"/></button><button type="button" onClick={()=>setScale(s=>Math.max(155,s-18))} aria-label="Zoom out"><Minus size={14} aria-hidden="true"/></button><button type="button" onClick={reset} aria-label="Reset globe view"><RotateCcw size={14} aria-hidden="true"/></button></div>
-   <div className="globe-caption"><div><span className="live-dot" aria-hidden="true"/> RESEARCH MAP · {visibleEvidence.filter(s=>isOnFrontHemisphere(rot,[s.lon,s.lat])).length} SITES IN FRAME</div><strong>Drag to rotate · Ctrl + wheel to zoom</strong></div>
-  </div>
-
-  {visibleRoutes.length>0&&<div className="route-cards-section">
-   <div className="route-cards-label">Documented Homo sapiens corridors ({visibleRoutes.length})</div>
-   <div className="route-cards" role="region" aria-label="Dispersal corridors">{visibleRoutes.map(r=><button type="button" key={r.id} aria-pressed={r.id===active&&(selectionType==='route'||!site)} onClick={()=>{setActive(r.id);setCinematic(false);setSelectionType('route')}} className={`route-card ${r.id===active?'active':''}`}><i style={{background:r.color}} aria-hidden="true"/><div><b>{r.label}</b><small>{r.from} → {r.to} · {r.certainty} · {r.startKa}–{r.endKa} ka</small></div><MapPin size={13} aria-hidden="true"/></button>)}</div>
-  </div>}
-
-  <div className="migration-details-area">
-   {site&&selectionType==='site'&&(()=>{const s=evidenceSites.find(x=>String(x.id)===site);if(!s)return null;const source=getExplorerSourceById(bootstrap,String(s.sourceIds[0]??''));const taxa=s.relatedTaxonIds.map(id=>getExplorerSpeciesById(bootstrap,String(id))?.short).filter(Boolean).join(' · ')||'Multi-taxon context';const siteCtx=siteContextMap.get(String(s.id));const siteEval=siteEvaluations.get(String(s.id));return <div className="site-detail" role="region" aria-label={`Site details: ${s.name}`}><div className="site-detail-top"><span className="detail-kind-pill">{kindLabel[s.kind]}</span><button type="button" className="detail-close-btn" onClick={()=>{setSite(null);setSelectionType(activeRoute&&selectedIsSapiens?'route':'none')}} aria-label="Close site details"><X size={15} aria-hidden="true"/></button></div><strong>{s.name}</strong><small>{s.ageLabel} · {taxa} · {s.locationPrecision==='regional'?'regional context':'site context'}</small><p>{s.note}</p><div className="site-temporal-badge">{siteCtx?.timeInterval?.estimateKind==='interval'?`Documented age interval: ${siteCtx.timeInterval.label}`:siteCtx?.timeInterval?.uncertaintyMa?`Measured age with uncertainty: ${s.ageLabel} (±${Math.round(siteCtx.timeInterval.uncertaintyMa*1000)} ka)`:siteEval?.isQualitativeOrUnbounded?`Qualitative / open-ended dating: ${s.ageLabel}`:`Point estimate: ${s.ageLabel}`}{s.id===focusSite&&activeTemporalMode==='window'&&!siteEval?.matches&&' · Retained via focused-site exception'}</div>{source?<a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}</span> <ExternalLink size={11} aria-hidden="true"/></a>:<span className="site-source-missing">Source registry record unavailable.</span>}</div>})()}
-   {(!site||selectionType==='route')&&selectionType!=='none'&&activeRoute&&selectedIsSapiens&&<div className="route-detail" role="region" aria-label={`Corridor details: ${activeRoute.label}`}><div className="route-detail-top"><div className="route-progress-tag"><span style={{color:activeRoute.color}} aria-hidden="true">●</span> ACTIVE CORRIDOR · {Math.round(routeProgress(activeRoute)*100)}%</div><button type="button" className="detail-close-btn" onClick={()=>setSelectionType('none')} aria-label="Close corridor details"><X size={15} aria-hidden="true"/></button></div><strong>{activeRoute.label}</strong><p>Time window: <b>{activeRoute.startKa}–{activeRoute.endKa} ka</b>. The moving point is a narrative frontier marker, not a reconstructed individual journey.</p>{activeRoute.sourceId&&getExplorerSourceById(bootstrap,activeRoute.sourceId)?(()=>{const source=getExplorerSourceById(bootstrap,activeRoute.sourceId);return <a href={source?.url} target="_blank" rel="noreferrer"><span>Open migration evidence</span> <ExternalLink size={11} aria-hidden="true"/></a>})():<span className="site-source-missing">Source registry record unavailable.</span>}</div>}
-  </div>
-
-  <div className="map-info" role="note"><Info size={14} className="map-info-icon" aria-hidden="true"/><span>{selectedIsSapiens?'':'Corridors show Homo sapiens dispersals only. '}Play the global timeline to reveal evidence chronologically. Corridors are generalized; the moving point is a narrative frontier, not an individual journey.</span></div>
-
-  <div className="story-note"><strong>Chapter {stories.findIndex(s=>s.id===story.id)+1} · {story.title}</strong> — {story.note}</div>
- </div>
 }

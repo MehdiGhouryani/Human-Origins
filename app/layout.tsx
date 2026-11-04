@@ -1,5 +1,6 @@
 import './globals.css'
 import './atlas.css'
+import './migration-atlas.css'
 import type {Metadata,Viewport} from 'next'
 import type {ReactNode} from 'react'
 import localFont from 'next/font/local'

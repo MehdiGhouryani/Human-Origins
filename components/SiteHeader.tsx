@@ -70,9 +70,9 @@ function SiteHeaderContent(){
   },[open])
 
   return <header ref={headerRef} className={`topbar ${open?'menu-open':''}`} aria-label="Human Origins primary navigation">
-    <Link className="brand" href="/" aria-label="Human Origins home" onClick={close}>
+    <Link className="brand" href="/" aria-label="Human Origins Our story. A shared past. Home" onClick={close}>
       <span className="mark" aria-hidden="true">✦</span>
-      <span><strong>HUMAN ORIGINS</strong><small>OUR STORY. A SHARED PAST.</small></span>
+      <span><strong>HUMAN ORIGINS</strong>{' '}<small>OUR STORY. A SHARED PAST.</small></span>
     </Link>
     <nav aria-label="Modes">
       {navItems.map(item=><Link className={active===item.label?'active':''} href={hrefFor(item,params)} key={item.label} aria-current={active===item.label?'page':undefined}>{item.label}</Link>)}
@@ -93,9 +93,9 @@ function SiteHeaderContent(){
 
 export default function SiteHeader(){
   return <Suspense fallback={<header className="topbar" aria-label="Human Origins primary navigation">
-    <Link className="brand" href="/" aria-label="Human Origins home">
+    <Link className="brand" href="/" aria-label="Human Origins Our story. A shared past. Home">
       <span className="mark" aria-hidden="true">✦</span>
-      <span><strong>HUMAN ORIGINS</strong><small>OUR STORY. A SHARED PAST.</small></span>
+      <span><strong>HUMAN ORIGINS</strong>{' '}<small>OUR STORY. A SHARED PAST.</small></span>
     </Link>
     <nav aria-label="Modes">
       {navItems.map(item=><Link href={item.path} key={item.label}>{item.label}</Link>)}

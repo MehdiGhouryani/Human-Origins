@@ -60,6 +60,9 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
 
   const jumpToAge=useCallback((ageMa:number)=>setState(prev=>({...prev,time:ageMaToSlider(ageMa),playing:false})),[setState])
   const coexisting=taxaAliveAt(explorerSpecies,age)
+  // Migration is a map-first stage with its own story timeline: the species rail, global timebar and milestones stay out of its way.
+  const atlasMode=!state.journey&&state.mode==='migration'
+  const migrationSpecies=useMemo(()=>explorerSpecies.map(species=>({id:species.id,label:species.short})),[explorerSpecies])
   // Explorer views as tabs. Journey and Evidence live in the header; Compare is a view of the explorer (phase 5).
   const modeTabs=[
     {id:'tree',label:'Tree',icon:GitBranch,selected:!state.journey&&state.mode==='tree',select:()=>setMode('tree')},
@@ -96,18 +99,19 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
           {modeTabs.map((tab,index)=><button key={tab.id} ref={registerTab(index)} type="button" role="tab" id={`mode-tab-${tab.id}`} aria-selected={tab.selected} aria-controls="explorer-stage" tabIndex={tab.selected||(!anyTabSelected&&index===0)?0:-1} className={tab.selected?'selected':''} onClick={tab.select} onKeyDown={tabKey(index)}><tab.icon size={14}/> {tab.label}</button>)}
         </div>
 
-        <TaxonNavigator species={explorerSpecies} selectedId={state.selectedId} onSelect={handleSelectSpecies} savedIds={savedIds} graphIds={graphIds}/>
+        {!atlasMode&&<TaxonNavigator species={explorerSpecies} selectedId={state.selectedId} onSelect={handleSelectSpecies} savedIds={savedIds} graphIds={graphIds}/>}
 
         <div id="explorer-stage" className={`tree-shell ${!state.journey&&state.mode==='tree'?'is-tree':'is-panel'}`}>
           {!state.journey&&state.mode==='tree'&&<><div className="graph-region"><EvolutionGraph bootstrap={immutableBootstrap} selected={state.selectedId} setSelected={handleSelectSpecies} time={state.time} pinnedRelationId={pinnedRelationId} onPinRelation={setPinnedRelationId}/></div><FamilyView bootstrap={immutableBootstrap} taxonId={state.selectedId} onSelect={handleSelectSpecies}/></>}
           {!state.journey&&state.mode==='timeline'&&<div className="timeline-view"><div className="view-kicker">TEMPORAL LAYER</div><h3>Who was alive at <em>{formatAgeMa(age)}</em>?</h3><p>Each bar spans a taxon’s documented time range on the same deep-time scale as the tree. Highlighted rows were alive at the selected moment.</p><div className="timeline-scale" aria-hidden="true"><span/><div>{TIME_AXIS_ANCHORS_MA.map(anchor=><small key={anchor} style={{left:`${ageMaToFraction(anchor)*100}%`}}>{formatAxisAnchor(anchor)}</small>)}<i style={{left:`${ageMaToFraction(age)*100}%`}}/></div></div><div className="timeline-rows">{timelineSpecies.map(s=>{const active=age<=s.start&&age>=s.end;const left=ageMaToFraction(s.start)*100;const right=ageMaToFraction(s.end)*100;return <button type="button" key={s.id} className={active?'active':''} onClick={()=>handleSelectSpecies(s.id)} aria-label={`${s.name}, ${s.date}${active?', alive at the selected time':''}`}><span>{s.short}</span><i><b style={{left:`${left}%`,width:`${Math.max(.8,right-left)}%`}}/><em style={{left:`${ageMaToFraction(age)*100}%`}}/></i></button>})}</div></div>}
           {state.journey&&<SpeciesJourney species={current} bootstrap={immutableBootstrap}/>} 
           {!state.journey&&state.mode==='evidence'&&<div className="evidence-library-view"><div className="view-kicker">CLAIM LEDGER · {current.short}</div><h3>{getCopy(immutableBootstrap.copy,'evidence.heading')}</h3><p>{getCopy(immutableBootstrap.copy,'evidence.intro')}</p><div className="evidence-library-cards">{getExplorerClaimsForTaxon(immutableBootstrap,current.id).map(claim=><article className="evidence-claim-card" key={claim.id}><div className="evidence-claim-top"><span className={`claim-status ${claimStatusTone[claim.status]}`}>{claimStatusLabel[claim.status]}</span><small>{claim.scope}</small></div><strong>{claim.statement}</strong><div className="evidence-claim-sources">{claim.sourceIds.map(id=>{const source=getExplorerSourceById(immutableBootstrap,id); return source?<a key={source.id} href={source.url} target="_blank" rel="noreferrer"><span>{source.title}</span><ChevronRight size={13}/></a>:null})}</div></article>)}</div><div className="evidence-integrity"><b>Evidence rule</b><span>No source → no factual claim. Interpretive synthesis remains labeled, and missing specimen imagery stays missing instead of being replaced by a generic reconstruction.</span></div></div>}
-          {!state.journey&&state.mode==='migration'&&<div className="migration-view"><div className="view-kicker">SPATIAL LAYER · {formatAgeMa(age)}</div><h3>{getCopy(immutableBootstrap.copy,'migration.heading')}</h3><p>Rotate the Earth, inspect broad migration corridors, and move through time. The map separates generalized population movement from individual travel and flags uncertainty instead of drawing a false single route.</p><MigrationGlobe bootstrap={immutableBootstrap} time={age} selected={state.selectedId} focusSite={state.focusSite} onFocused={()=>setState(prev=>({...prev,focusSite:null}))} temporalMode={state.temporalMode ?? 'trail'} onTemporalModeChange={(mode)=>setState(prev=>({...prev,temporalMode:mode}))}/></div>}
+          {atlasMode&&<MigrationGlobe bootstrap={immutableBootstrap} time={age} selected={state.selectedId} speciesOptions={migrationSpecies} onSelectSpecies={handleSelectSpecies} onTimeChange={jumpToAge} focusSite={state.focusSite} onFocused={()=>setState(prev=>({...prev,focusSite:null}))} temporalMode={state.temporalMode ?? 'trail'} onTemporalModeChange={(mode)=>setState(prev=>({...prev,temporalMode:mode}))}/>}
         </div>
-        <div className="model-note">Scientific framing: each species sits at its first appearance in the fossil record; branches are contextual or possible relationships, not guaranteed direct ancestry. Migration lines are generalized population corridors.</div>
+        {!atlasMode&&<div className="model-note">Scientific framing: each species sits at its first appearance in the fossil record; branches are contextual or possible relationships, not guaranteed direct ancestry. Migration lines are generalized population corridors.</div>}
         {!state.journey&&state.mode==='tree'&&<RelationshipLegend present={presentRelations} clades={clades}/>}
         {!state.journey&&state.mode==='tree'&&<details className="rel-details"><summary>Relationship table: text version of the graph</summary><RelationshipTable bootstrap={immutableBootstrap} onShow={id=>{setPinnedRelationId(id);document.querySelector('.graph-region')?.scrollIntoView({block:'nearest'})}}/></details>}
+        {!atlasMode&&<>
         <div className="timebar">
           <button type="button" className="play" onClick={()=>setState(prev=>({...prev,playing:!prev.playing}))} aria-label={state.playing?'Pause time':'Play time'}>{state.playing?<Pause size={18}/>:<Play size={18}/>}</button>
           <div className="time-readout"><strong>{formatAgeMa(age)}</strong><small>{coexisting.length?`Coexisting: ${coexisting.map(s=>s.short).join(' · ')}`:'Deep-time control · nonlinear scale'}</small></div>
@@ -115,6 +119,7 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
           {(state.journey||state.mode!=='migration')&&<button type="button" className="world" onClick={()=>setMode('migration')}><Globe2 size={15}/> View World at This Time</button>}
         </div>
         <TimeMilestones species={explorerSpecies} selected={current} onJump={jumpToAge}/>
+        </>}
       </section>
 
       <Inspector bootstrap={immutableBootstrap} species={current} bookmarked={bookmarks.has(current.id)} onToggleBookmark={()=>bookmarks.toggle(current.id)} open={sheetOpen} onClose={closeSheet} onRevealSite={(id)=>setState(prev=>({...prev,focusSite:id,mode:'migration',journey:false}))}/>

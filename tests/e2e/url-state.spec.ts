@@ -82,49 +82,64 @@ test.describe('the URL is the source of explorer state',()=>{
   })
 
   test('browser Back and Forward restore temporal mode, species, and time correctly across history entries', async({page})=>{
-    // 1. Start at /?species=sapiens&mode=migration&time=40
-    await page.goto('/?species=sapiens&mode=migration&time=40')
+    // Migration has its own story timeline and species selector; temporal mode lives in the Layers panel.
+    const story=page.getByLabel('Story timeline')
+    const species=page.getByLabel('Highlight species')
+    const openLayers=async()=>{
+      if(!await page.getByRole('radio',{name:'Around this time'}).isVisible()) await page.getByRole('button',{name:'Layers'}).click()
+    }
+
+    // 1. Start at /?species=sapiens&mode=migration&time=96.4 (scene 4)
+    await page.goto('/?species=sapiens&mode=migration&time=96.4')
     await expect(page.locator('.migration-view')).toBeVisible()
-    const timeSlider=page.getByLabel('Time travel')
-    await expect(timeSlider).toHaveValue('40')
+    const initialStory=await story.inputValue()
+    await expect(species).toHaveValue('sapiens')
 
-    // 2. Select "Evidence near this time". The URL should contain tmode=window
-    await page.getByRole('radio',{name:'Evidence near this time'}).click()
+    // 2. Select "Around this time". The URL should contain tmode=window
+    await openLayers()
+    await page.getByRole('radio',{name:'Around this time'}).click()
     await expect(page).toHaveURL(/tmode=window/)
-    await expect(page.getByRole('radio',{name:'Evidence near this time'})).toHaveAttribute('aria-checked','true')
+    await expect(page.getByRole('radio',{name:'Around this time'})).toHaveAttribute('aria-checked','true')
+    await page.getByRole('button',{name:'Close Layers'}).click()
 
-    // 3. Change selected species to erectus, creating a history entry (pushState)
-    await page.locator('.taxon-chip[data-taxon="erectus"]').click()
+    // 3. Change the highlighted species to erectus, creating a history entry (pushState)
+    await species.selectOption('erectus')
     await expect(page).toHaveURL(/species=erectus/)
     await expect(page).toHaveURL(/tmode=window/)
 
-    // 4. On the erectus entry, change actual time control to a different value (60) using the real UI
-    await timeSlider.fill('60')
-    await expect(page).toHaveURL(/time=60/)
-    await expect(timeSlider).toHaveValue('60')
+    // 4. On the erectus entry, scrub the story timeline to a different moment
+    await story.fill('300')
+    await expect.poll(()=>new URL(page.url()).searchParams.get('time')).not.toBe('96.4')
+    const changedTime=new URL(page.url()).searchParams.get('time')
+    await expect(story).toHaveValue('300')
 
-    // 5. Switch back to "Historical evidence trail"
-    await page.getByRole('radio',{name:'Historical evidence trail'}).click()
+    // 5. Switch back to "Cumulative"
+    await openLayers()
+    await page.getByRole('radio',{name:'Cumulative'}).click()
     await expect(page).not.toHaveURL(/tmode=window/)
-    await expect(page).toHaveURL(/time=60/)
-    await expect(page.getByRole('radio',{name:'Historical evidence trail'})).toHaveAttribute('aria-checked','true')
+    await expect(page).toHaveURL(new RegExp(`time=${changedTime!.replace('.','\\.')}`))
+    await expect(page.getByRole('radio',{name:'Cumulative'})).toHaveAttribute('aria-checked','true')
+    await page.getByRole('button',{name:'Close Layers'}).click()
 
-    // 6. Press browser Back. Verify URL and UI restore sapiens, window mode, and original time 40
+    // 6. Press browser Back. Verify URL and UI restore sapiens, window mode, and the original moment
     await page.goBack()
     await expect(page).toHaveURL(/species=sapiens/)
     await expect(page).toHaveURL(/tmode=window/)
-    await expect(page).toHaveURL(/time=40/)
-    await expect(page.locator('.taxon-chip[data-taxon="sapiens"]')).toHaveAttribute('aria-current','true')
-    await expect(page.getByRole('radio',{name:'Evidence near this time'})).toHaveAttribute('aria-checked','true')
-    await expect(timeSlider).toHaveValue('40')
+    await expect(page).toHaveURL(/time=96\.4/)
+    await expect(species).toHaveValue('sapiens')
+    await expect(story).toHaveValue(initialStory)
+    await openLayers()
+    await expect(page.getByRole('radio',{name:'Around this time'})).toHaveAttribute('aria-checked','true')
+    await page.getByRole('button',{name:'Close Layers'}).click()
 
-    // 7. Press browser Forward. Verify URL and UI restore erectus, trail mode, and changed time 60
+    // 7. Press browser Forward. Verify URL and UI restore erectus, cumulative mode, and the changed moment
     await page.goForward()
     await expect(page).toHaveURL(/species=erectus/)
     await expect(page).not.toHaveURL(/tmode=window/)
-    await expect(page).toHaveURL(/time=60/)
-    await expect(page.locator('.taxon-chip[data-taxon="erectus"]')).toHaveAttribute('aria-current','true')
-    await expect(page.getByRole('radio',{name:'Historical evidence trail'})).toHaveAttribute('aria-checked','true')
-    await expect(timeSlider).toHaveValue('60')
+    await expect(page).toHaveURL(new RegExp(`time=${changedTime!.replace('.','\\.')}`))
+    await expect(species).toHaveValue('erectus')
+    await expect(story).toHaveValue('300')
+    await openLayers()
+    await expect(page.getByRole('radio',{name:'Cumulative'})).toHaveAttribute('aria-checked','true')
   })
 })

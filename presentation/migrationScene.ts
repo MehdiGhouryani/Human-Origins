@@ -80,4 +80,5 @@ export const globePalette={
   coast:'#9bd0c4',
   outline:'#5d8f87',
   routeCasing:'#030a0c',
+  graticule:'#2f6460',
 } as const

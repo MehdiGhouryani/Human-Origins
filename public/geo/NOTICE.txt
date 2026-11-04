@@ -1,0 +1,4 @@
+land-110m.json and land-50m.json
+Source: Natural Earth 4.1.0 land polygons (public domain, https://www.naturalearthdata.com/about/terms-of-use/),
+redistributed as TopoJSON by the world-atlas package 2.0.2 (ISC licence).
+These are PRESENT-DAY coastlines. Past shorelines differ; the atlas says so wherever they are shown.
