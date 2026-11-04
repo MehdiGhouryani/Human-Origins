@@ -9,10 +9,13 @@
 - Admin login: a process-wide tarpit slows every attempt after 10 recent failures (250 ms doubling to 5 s, at most 8 delayed attempts in flight, never a lock-out). Before, `adminLoginGlobalLimiter` was exported but unused, so with the default `TRUST_PROXY=0` failed logins were unlimited. `docs/ARCHITECTURE.md` now says what is enforced where.
 
 ### Species images (in progress)
+- Fixed: the species header could show a specimen reconstruction (sapiens showed the Jebel Irhoud 1 face). The designated default portrait now wins, and specimen slots never stand in for a species.
+- Fixed: visitor-facing labels no longer use data-model or QA wording ("dossier hero", "Record signal", "Source Intelligence", "CLAIM LEDGER", "Evidence rule", "Tree avatar distinct from the portrait").
+- Fixed: on phones and tablets the species portrait used a 16:9 or 3:2 frame and cut the face off; it keeps the 4:5 frame now.
 - Hand-off importer for the image package: creates CMS drafts only, with checksum verification, status-aware filtering, catalogued source URLs and an explicit generator record. Nothing is approved or published by the tool.
 - Scene images sit beside their section; a live wide image becomes the species header banner (responsive, caption with class, credit and assumptions).
 - Real reconstructions appear in the profile preview at full frame.
-- Nothing is public yet: every reconstruction waits for a named human review.
+- Nothing is public yet: every reconstruction waits for a named human review. Visitors see only one neutral "Image in preparation" frame, in the header position, where a species has no approved picture yet.
 
 ### Migration atlas (map-first rebuild)
 - Migration is now a full-width map stage. The 9-polygon sketch is replaced by real present-day Natural Earth coastlines drawn on a canvas (110m, with 50m when zoomed in), so islands, seas and all 27 registered sites sit where they belong. Corridors are generalized bands with a dark casing; evidence kinds differ by shape and colour; nearby sites cluster.

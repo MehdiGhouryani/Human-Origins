@@ -755,13 +755,14 @@
 }
 
 @media (max-width:900px) {
+  /* A portrait is a face: keep the 4:5 frame at every size (3:2 or 16:9 cut the face off). */
   .dossier-portrait {
     max-width: none;
-    aspect-ratio: 3/2;
-    width: 100%;
+    aspect-ratio: 4/5;
+    width: min(100%, 300px);
   }
   .dossier-portrait-image {
-    object-position: center 0%;
+    object-position: center 25%;
   }
   .dossier-hero-copy {
     justify-content: flex-start;
@@ -776,8 +777,8 @@
     align-items: start;
   }
   .dossier-portrait {
-    aspect-ratio: 3/2;
-    width: 100%;
+    aspect-ratio: 4/5;
+    width: min(100%, 300px);
   }
 }
 

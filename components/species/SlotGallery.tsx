@@ -9,12 +9,21 @@ const KIND_LABEL={'specimen-photo':'Specimen photograph','cast-photo':'Cast / mu
 const labelOf=(media:ExplorerMedia)=>media.evidenceClass?evidenceClassLabel(media.evidenceClass):KIND_LABEL[media.kind]
 /** The catalog title without the “Taxon:” prefix, for captions. */
 const plainTitle=(title:string)=>title.replace(/^[^:]+:\s*/,'')
+/**
+ * Wording a visitor reads. Internal slot-group names ("dossier hero") never reach the public page; a header slot is
+ * simply "Header image". Admin frames keep the internal title on purpose.
+ */
+export const publicSlotTitle=(slot:{title:string;series:string})=>{
+  if(slot.series==='S03') return 'Header image'
+  const text=plainTitle(slot.title)
+  return text.charAt(0).toUpperCase()+text.slice(1)
+}
 const ratioStyle=(state:SlotState)=>state.slot.width&&state.slot.height?{aspectRatio:`${state.slot.width} / ${state.slot.height}`}:{aspectRatio:'4 / 3'}
 
 /** One slot: a live image with its evidence caption, or a frame. */
 export function SlotFigure({state,sizes}:{state:SlotState;sizes:string}){
   const {slot,media,visibility}=state
-  const title=plainTitle(slot.title)
+  const title=publicSlotTitle(slot)
   if(visibility==='show'&&media){
     return <figure className={`sp-figure sp-figure-${slot.evidenceClass}`} data-slot={String(slot.id)}>
       <div className="sp-figure-frame" style={ratioStyle(state)}><MediaImage src={resolveMediaSrc(media,'card',slot.series==='S03'?1280:640)} alt={media.alt} sizes={sizes} className="dossier-gallery-image" priority={slot.series==='S03'}/></div>

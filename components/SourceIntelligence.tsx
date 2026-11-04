@@ -78,12 +78,12 @@ export default function SourceIntelligence({bootstrap,species}:{bootstrap:Explor
   const visibleSources=showAllSources?filtered:filtered.slice(0,SOURCE_PREVIEW)
   const evidenceCount=new Set(claims.flatMap(c=>c.evidenceIds)).size
 
-  return <section className="source-intelligence" aria-label={`Source intelligence for ${species.name}`}>
+  return <section className="source-intelligence" aria-label={`Sources for ${species.name}`}>
     <div className="source-intel-head"><div><span>SOURCES</span><h3>Trace the claim.</h3></div><b>{claims.length} claims · {records.length} linked sources</b></div>
     <p className="source-intel-intro">Each highlighted statement links through a claim → evidence → source chain. Interpretation is labeled separately from documented records.</p>
 
     {claims.length>0&&<div className="claim-ledger">
-      <div className="claim-ledger-head"><div><span>CLAIM LEDGER</span><h4>Why this statement?</h4></div><span className="claim-ledger-count"><ShieldCheck size={12}/> {evidenceCount} linked evidence records</span></div>
+      <div className="claim-ledger-head"><div><span>CLAIMS AND EVIDENCE</span><h4>Why this statement?</h4></div><span className="claim-ledger-count"><ShieldCheck size={12}/> {evidenceCount} linked evidence records</span></div>
       <div className="claim-list">{visibleClaims.map((claim,index)=><ClaimChain key={claim.id} bootstrap={bootstrap} claim={claim} open={index===0}/>)}</div>
       {claims.length>3&&<button type="button" className="claims-toggle" onClick={()=>setShowAllClaims(v=>!v)}>{showAllClaims?'Show fewer claims':`Show all ${claims.length} claims`}</button>}
     </div>}

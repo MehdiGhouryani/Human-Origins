@@ -42,10 +42,18 @@ export type SpeciesDossier={
 }
 
 const mediaIn=(media:readonly ExplorerMedia[],id:string):ExplorerMedia|undefined=>media.find(item=>String(item.id)===id)??media[0]
-const mediaByRole=(media:readonly ExplorerMedia[],role:'profile-portrait'|'tree-thumbnail',fallbackId:string):ExplorerMedia|undefined=>
-  media.find(item=>item.roles.includes(role)&&!item.placeholder) ??
-  media.find(item=>item.roles.includes(role)) ??
-  mediaIn(media,fallbackId)
+/** A specimen reconstruction (slot series X, e.g. one named fossil) must never stand in for the whole species' face. */
+const isSpecimenSlot=(item:ExplorerMedia)=>/^[a-z]+\.X\d/.test(String(item.slotId??''))
+const eligible=(item:ExplorerMedia,role:'profile-portrait'|'tree-thumbnail')=>item.roles.includes(role)&&!(role==='profile-portrait'&&isSpecimenSlot(item))
+/**
+ * Picks the picture that stands for a species. The designated default (the CMS "default portrait", passed as
+ * fallbackId) wins over any other media that carries the same role, which previously was ignored.
+ */
+export const mediaByRole=(media:readonly ExplorerMedia[],role:'profile-portrait'|'tree-thumbnail',fallbackId:string):ExplorerMedia|undefined=>
+  media.find(item=>String(item.id)===fallbackId&&eligible(item,role)&&!item.placeholder) ??
+  media.find(item=>eligible(item,role)&&!item.placeholder) ??
+  media.find(item=>eligible(item,role)) ??
+  mediaIn(role==='profile-portrait'?media.filter(item=>!isSpecimenSlot(item)):media,fallbackId)
 
 export function hasExplorerSpecies(bootstrap:ExplorerBootstrap,id:string):boolean{
   return bootstrap.indexes.speciesById[id]!==undefined
@@ -87,7 +95,7 @@ export function computeCompleteness(input:{
     {key:'source',label:'At least one registered source',met:species.sourceIds.length>0},
   ]
   const tier1:CompletenessCheck[]=[
-    {key:'distinct-avatar',label:'Tree avatar distinct from the portrait',met:species.treeIconId!==species.defaultMediaId},
+    {key:'distinct-avatar',label:'Its own picture in the tree view',met:species.treeIconId!==species.defaultMediaId},
     {key:'facts',label:'At least three key facts',met:species.facts.length>=3},
     {key:'claim-with-evidence',label:'At least one claim linked to evidence',met:backedClaims.some(claim=>claim.evidenceIds.length>0)},
   ]

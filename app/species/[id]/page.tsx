@@ -220,7 +220,7 @@ export default async function SpeciesPage({params}:Params){
 
     <section className="dossier-signal-card" aria-labelledby="record-signal-h">
       <div className="dossier-signal-intro">
-        <span className="view-kicker">RECORD SIGNAL</span>
+        <span className="view-kicker">ABOUT THIS RECORD</span>
         <h2 id="record-signal-h">What this page actually represents</h2>
         <p>These are catalogued records connected to <strong>{species.short}</strong>, not estimates of how much science exists about it. An empty count means this atlas has not represented that record yet.</p>
       </div>

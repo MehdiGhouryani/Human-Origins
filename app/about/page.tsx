@@ -21,7 +21,7 @@ export default function AboutPage(){
       <p>Each species sits at its first appearance in the fossil record. Branches are contextual or possible relationships, not guaranteed direct ancestry. The home tree shows the main path of 11 taxa; every species keeps its own page.</p>
       <h2>How to read the maps</h2>
       <p>Migration lines are generalized population corridors, not individual journeys. Temporal overlap never implies ancestry or contact.</p>
-      <h2>Evidence rule</h2>
+      <h2>How evidence is judged</h2>
       <p>No source, no factual claim. Interpretive synthesis is labelled as such, and missing specimen imagery stays missing instead of being replaced by a generic reconstruction.</p>
       <h2>Reconstructions</h2>
       <p>Images labelled as reconstructions are scientific reconstructions, not fossil photographs. Every source is linked from the Evidence view.</p>
