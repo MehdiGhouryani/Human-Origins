@@ -34,7 +34,9 @@ export const continents:[string,[number,number][]][]=[
   ['Australia',[[113,-11],[129,-10],[143,-14],[153,-23],[151,-35],[137,-39],[121,-34],[113,-25]]],
   ['North America',[[-168,55],[-150,67],[-130,70],[-110,67],[-94,60],[-82,50],[-76,42],[-90,30],[-105,25],[-118,29],[-130,38],[-145,45],[-160,48]]],
   ['South America',[[-81,10],[-72,6],[-62,7],[-51,2],[-43,-8],[-46,-21],[-52,-33],[-58,-46],[-67,-54],[-74,-45],[-77,-30],[-80,-14]]],
-  ['Greenland',[[-73,59],[-45,60],[-20,70],[-27,82],[-50,83],[-67,74]]],
+  // Rings must be clockwise for d3-geo. A counter-clockwise ring is read as 'the whole sphere except this shape'
+  // and floods the globe; tests/migration-scene-geometry.test.ts guards every ring.
+  ['Greenland',[[-73,59],[-67,74],[-50,83],[-27,82],[-20,70],[-45,60]]],
 ]
 
 export const routeStyles:Record<string,{color:string;certainty:'broad'|'possible'}>={
@@ -68,3 +70,14 @@ export const stories:Story[]=[
   {id:'sahul',title:'Sahul · the sea becomes part of the story',subtitle:'~45–25 ka · Southeast Asia → Sahul chapter window',fromKa:45,toKa:25,focus:[112,-4],route:'eastern-route',note:'Reaching Sahul required maritime crossings. The chapter window is a narrative segment, not a claim that the entire dispersal happened within this exact interval.'},
   {id:'americas',title:'The Americas · routes remain debated',subtitle:'~25–5 ka · Northeast Asia → the Americas',fromKa:25,toKa:5,focus:[-125,45],route:'americas',note:'The timing and pathways into the Americas are still debated; the corridor is intentionally shown as a hypothesis-scale visualization.'},
 ]
+
+
+/** Single source of truth for the globe's base colours. tests/migration-scene-geometry.test.ts enforces WCAG 1.4.11 (>= 3:1) between land, ocean and coast. */
+export const globePalette={
+  oceanCenter:'#06171a',
+  oceanEdge:'#030a0c',
+  land:'#37726a',
+  coast:'#9bd0c4',
+  outline:'#5d8f87',
+  routeCasing:'#030a0c',
+} as const
