@@ -17,3 +17,6 @@ Thumbs.db
 /playwright-report
 
 /backups
+
+# Google AI Studio scratch artifacts (media only; never source of truth)
+/.aistudio/
