@@ -87,17 +87,28 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
   // Factories keep arrow functions out of the JSX attributes; the UI contract audit reads button tags with a simple pattern.
   const registerTab=(index:number)=>(element:HTMLButtonElement|null)=>{tabRefs.current[index]=element}
   const tabKey=(index:number)=>(event:ReactKeyboardEvent<HTMLButtonElement>)=>onTabKey(event,index)
+  // The tab bar is rendered in the explorer and again above Compare, so changing between them remounts it. Put focus back on the selected tab, so keyboard users do not land on the page body.
+  const refocusAt=useRef(0)
+  const tabClick=(index:number)=>()=>{refocusAt.current=Date.now();modeTabs[index].select()}
+  const selectedTabIndex=modeTabs.findIndex(tab=>tab.selected)
+  useEffect(()=>{
+    if(selectedTabIndex<0||Date.now()-refocusAt.current>1500) return
+    refocusAt.current=0
+    tabRefs.current[selectedTabIndex]?.focus()
+  },[selectedTabIndex])
+  // One tab bar for every explorer view: Compare is never a dead end.
+  const modeTabBar=<div className="mode-tabs" role="tablist" aria-label="Explorer views">
+    {modeTabs.map((tab,index)=><button key={tab.id} ref={registerTab(index)} type="button" role="tab" id={`mode-tab-${tab.id}`} aria-selected={tab.selected} aria-controls="explorer-stage" tabIndex={tab.selected||(!anyTabSelected&&index===0)?0:-1} className={tab.selected?'selected':''} onClick={tabClick(index)} onKeyDown={tabKey(index)}><tab.icon size={14}/> {tab.label}</button>)}
+  </div>
 
   return <MotionConfig reducedMotion="user"><>
 
 
-    {!state.journey&&state.mode==='compare'?<div id="explorer-stage" className="compare-stage"><CompareMatrix bootstrap={immutableBootstrap} selectedIds={state.compare} onChange={setCompare}/></div>:<main className={`workspace with-inspector${sheetOpen?' sheet-open':''}`}>
+    {!state.journey&&state.mode==='compare'?<div className="compare-stage">{modeTabBar}<div id="explorer-stage"><CompareMatrix bootstrap={immutableBootstrap} selectedIds={state.compare} onChange={setCompare}/></div></div>:<main className={`workspace with-inspector${sheetOpen?' sheet-open':''}`}>
       <div className="sr-only" aria-live="polite" aria-atomic="true">Viewing {current?.name ?? 'species'} in {state.mode} mode.</div>
       <section className="tree-panel" aria-label="Human Origins explorer">
         {state.query&&<SearchResultsPanel bootstrap={immutableBootstrap} query={state.query} onClear={()=>setState(previous=>({...previous,query:''}))} onSelectTaxon={selectFromSearch}/>}
-        <div className="mode-tabs" role="tablist" aria-label="Explorer views">
-          {modeTabs.map((tab,index)=><button key={tab.id} ref={registerTab(index)} type="button" role="tab" id={`mode-tab-${tab.id}`} aria-selected={tab.selected} aria-controls="explorer-stage" tabIndex={tab.selected||(!anyTabSelected&&index===0)?0:-1} className={tab.selected?'selected':''} onClick={tab.select} onKeyDown={tabKey(index)}><tab.icon size={14}/> {tab.label}</button>)}
-        </div>
+        {modeTabBar}
 
         {!atlasMode&&<TaxonNavigator species={explorerSpecies} selectedId={state.selectedId} onSelect={handleSelectSpecies} savedIds={savedIds} graphIds={graphIds}/>}
 

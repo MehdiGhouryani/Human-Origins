@@ -56,7 +56,7 @@ Data flow: `content/` → `buildResearchIndexes` / `buildResearchGraph` → `bui
 
 ## 5. Explorer runtime
 
-Server builds the bootstrap once per request; the client only reads it. URL state (`species`, `mode`, `time`, `site`, `q`, `journey`) is decoded once after mount (SSR-safe) and written back throttled. Modes: Tree, Timeline, Migration, Journey, Evidence. Inspector tabs: Overview, Evidence (Evidence graph, competing relationship hypotheses, claim ledger with provenance trail), Specimens, Lifestyle, Genetics.
+Server builds the bootstrap once per request; the client only reads it. URL state (`species`, `mode`, `time`, `site`, `q`, `journey`) is decoded once after mount (SSR-safe) and written back throttled. Explorer views (one tab bar, also shown above Compare): Tree, Timeline, Migration, Compare. Journey and Evidence are header destinations that keep the selected species. Profile tabs: Overview, Evidence (evidence graph, competing relationship hypotheses, claim ledger with provenance trail), Lifestyle.
 
 **Migration atlas** (`components/MigrationGlobe.tsx` + `components/migration/` + `presentation/globe/`). Map-first stage; the page hero, species rail, global timebar and milestones are not rendered in this mode.
 * **Layers**: the base map (ocean, graticule, coastline) is drawn on a 2D canvas by the pure `drawBase`; markers and corridors are an SVG overlay that uses the *same* `makeProjection`, so both always align. Present-day Natural Earth land (public domain) is served from `public/geo` (`land-110m` at once, `land-50m` when idle and the connection is not data-saver or 2G; the detailed one is used only when zoomed in and the camera has settled).
@@ -74,11 +74,7 @@ Server-rendered per request from `getLiveContent()`. `features/explorer/dossier.
 
 Self-hosted admin for species images and site copy. Requires **Node ≥ 22.5** (`node:sqlite`).
 
-| Env var | Default | Purpose |
-|---|---|---|
-| `CMS_ADMIN_PASSWORD` | `change-me-now` (dev only; banner shown while unset) | Admin password — **set it in production** |
-| `CMS_DB_PATH` | `.cms-data/cms.sqlite` | Media metadata, copy, history, sessions |
-| `CMS_MEDIA_DIR` | `.cms-data/media` | Processed image files |
+Environment variables (`CMS_ADMIN_PASSWORD`, `SITE_URL`, `TRUST_PROXY`, `CMS_DB_PATH`, `CMS_MEDIA_DIR`) are listed once, with defaults, in the [`README`](../README.md#quick-start).
 
 * **Upload pipeline** (`infrastructure/cms/assets.ts`, sharp): real-image validation, ≤ 20 MB, ≤ 6000 px, EXIF stripped, WebP `thumbnail`/`card`/`detail` (never upscaled; only variants that exist are declared) → saved as **draft**.
 * **Publish gate**: publishing — or editing anything already live — dry-runs `validateCatalog` on the catalog *as it would become*. Failure → HTTP 422 with the audit codes; nothing is written.
@@ -93,7 +89,7 @@ Self-hosted admin for species images and site copy. Requires **Node ≥ 22.5** (
 * **Source roles**: institutional record, institutional synthesis, peer-reviewed paper, museum 3D record. Evidence is `documented` (a specific observation/specimen/result) or `interpreted` (a synthesis).
 * The Smithsonian Human Origins Program records (species/specimen pages and 3D Digitization objects) are the primary institutional sources; the UI links out instead of mirroring third-party meshes. URLs live in `content/sources.ts`.
 * **Publication metadata verified against publisher/PubMed records (V20):** Hublin et al. 2017 *Nature* 546:289 (10.1038/nature22336); Richter et al. 2017 *Nature* 546:293 (10.1038/nature22335); Hublin et al. 2018 correction *Nature* 558:E6 (10.1038/s41586-018-0166-3); Meyer et al. 2014 *Nature* 505:403 (10.1038/nature12788); Green et al. 2010 *Science* 328:710 (10.1126/science.1188021); Garcia et al. 2010 *Quaternary Geochronology* 5:443 (10.1016/j.quageo.2009.09.012). DOIs must be unique (`DUPLICATE_PUBLICATION_DOI`).
-* Site dating-method classifications: Jebel Irhoud (thermoluminescence, 315 ± 34 ka), White Sands (`multiple`), Sterkfontein (`multiple`, genuinely conflicting estimates) and Drimolen (`multiple`) were verified against published sources; the remaining sites use established textbook classifications and still need a source-level review (Tier 3 in the roadmap).
+* Site dating-method classifications: Jebel Irhoud (thermoluminescence, 315 ± 34 ka), White Sands (`multiple`), Sterkfontein (`multiple`, genuinely conflicting estimates) and Drimolen (`multiple`) were verified against published sources; the remaining sites use established textbook classifications and still need a source-level review.
 
 ## 8. Quality gates
 
@@ -108,6 +104,7 @@ Self-hosted admin for species images and site copy. Requires **Node ≥ 22.5** (
 | `audit:ui` | Every button has a type and a handler (a `type="submit"` is accepted only if the file wires `onSubmit`); no dead `#` links; interactive SVG titled |
 | `audit:media`, `validate:assets`, `validate:data` | Media quality, asset manifest, full referential/semantic validation of the catalog |
 | `audit:research-model`, `-indexes`, `semantic`, `provenance`, `uncertainty`, `graph`, `migration`, `graph-traversal` | Model invariants, indexes, provenance, uncertainty, graph safety, migration manifest, traversal (every claim reaches a source) |
+| `audit:species-pages` | Every authored species page against `validateSpeciesPage` (taxon id, publication references, content rules) |
 | `audit:reproducibility` | Live fingerprint equals the manifest |
 | `check` | syntax + lint + data + assets + `tsc --noEmit` |
 | `test` | Vitest (all unit tests; `npm test` prints the count) |
@@ -129,7 +126,7 @@ Accessibility is checked ad hoc with axe-core (WCAG A/AA) — not yet a CI gate.
 Tracked in [`HUMAN-ORIGINS-FIX-PLAN.md`](./HUMAN-ORIGINS-FIX-PLAN.md) where it is covered: e2e coverage (phase 0) · bootstrap payload (phases 0 and 7) · URL state (phase 1) · CSS tokens and hard-coded colours (phase 7). Not yet in the fix plan: login rate limit is per process (in-memory) · thin CMS e2e (no upload→publish scenario, no axe gate) · dev-only `npm audit` findings in the `eslint-config-next` chain (no patched `braces` release exists; production dependencies report 0).
 
 
-## Species images: import, placement and review
+## 11. Species images: import, placement and review
 
 * **Hand-off import** (`tools/images/import-handoff.ts`, pure helpers in `tools/images/handoff.ts`). Reads a hand-off package (HANDOFF.md, REFERENCE.md, the image files) and creates **drafts** in the CMS through the same code the admin upload uses. It never approves a review and never publishes. Status words in the hand-off are honoured: a suspended, forbidden, missing or alternate image is never imported as a slot. It needs an explicit `--generator-name` and `--generator-date`: the hand-off does not record which tool made the images, and the importer does not guess. Every SHA-256 is checked against the hand-off table before anything is written.
 * **Provenance.** The audit requires a `sourceUrl` on any row that still needs review (`REVIEW_MEDIA_WITHOUT_SOURCE`). The importer takes that URL from the taxon's own catalogued source (`content/sources`), never from a string in the script; `tests/import-linkage.test.ts` checks every taxon has one.

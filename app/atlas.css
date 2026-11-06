@@ -319,6 +319,11 @@ details[open] .rel-legend-preview{display:none}
 /* Touch targets: at least 44 by 44 pixels on the controls a reader taps (plan decision D-09, phase 3). */
 .mode-tabs{height:auto;min-height:44px;flex-wrap:wrap}
 .mode-tabs button{min-height:44px;min-width:44px}
+/* Phone: the four views share one row with the icon above the label, so no tab drops to a second line. */
+@media (max-width:639px){
+  .mode-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;flex-wrap:nowrap;overflow:visible;padding:0;-webkit-mask-image:none;mask-image:none}
+  .mode-tabs button{flex-direction:column;justify-content:center;gap:3px;min-height:52px;padding:6px 2px;font-size:12px}
+}
 .mobile-menu-toggle{min-width:44px;min-height:44px}
 .timebar .play{min-width:44px;min-height:44px}
 .timebar .world{min-height:44px}
@@ -415,6 +420,8 @@ small{font-size:11px}
 .compare-grid{grid-template-columns:var(--cmp-label,240px) repeat(var(--cmp-cols,3),minmax(200px,1fr))}
 .compare-scroll .compare-row-header-cell{position:sticky;left:0;z-index:1}
 .compare-card-header{z-index:0}
+/* The avatar image (next/image fill) is absolutely positioned: without a positioned circle it fills the whole header cell and hides the taxon name. */
+.compare-avatar{position:relative}
 @media (max-width:639px){
   .compare-stage{padding:12px 8px 40px}
   .compare-container{padding:16px 12px}
@@ -435,6 +442,11 @@ small{font-size:11px}
   .scrubber input[type=range]{min-height:44px}
   .rel-table td a{display:inline-flex;align-items:center;min-height:44px}
   .kbd-hint{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .compare-chip{min-height:44px}
+  .inspector-action-secondary{min-height:44px}
+  .inspector .inspector-top-actions .bookmark{width:44px;height:44px}
+  .family-view-summary{min-height:44px}
+  .time-scale-guide summary{min-height:44px}
 }
 
 /* Real reconstructions in the profile preview: fill the frame and keep the face, instead of the letter-boxed placeholder plate. */

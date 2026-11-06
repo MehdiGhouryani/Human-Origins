@@ -77,3 +77,31 @@ test('on a phone the first taxon sits beside the narrow labels and the chosen ch
   expect((chip?.x??999)+(chip?.width??999)).toBeLessThanOrEqual(390)
 })
 
+
+// UX pass: Compare is never a dead end, its portraits stay avatars, and its controls are touch-sized on a phone.
+test('compare keeps the explorer tab bar, one row on a phone, and leads back to the tree',async({page})=>{
+  await page.setViewportSize({width:360,height:800})
+  await page.goto('/?mode=compare&cmp=sapiens,neanderthal')
+  const tabs=page.getByRole('tablist',{name:'Explorer views'}).getByRole('tab')
+  await expect(tabs).toHaveCount(4)
+  await expect(page.getByRole('tab',{name:'Compare',exact:true})).toHaveAttribute('aria-selected','true')
+  const tops=await tabs.evaluateAll(els=>els.map(el=>Math.round(el.getBoundingClientRect().top)))
+  expect(new Set(tops).size).toBe(1)
+  const heights=await tabs.evaluateAll(els=>els.map(el=>el.getBoundingClientRect().height))
+  expect(Math.min(...heights)).toBeGreaterThanOrEqual(44)
+  await page.getByRole('tab',{name:'Tree',exact:true}).click()
+  await expect(page).not.toHaveURL(/mode=compare/)
+  await expect(page.getByRole('tab',{name:'Tree',exact:true})).toHaveAttribute('aria-selected','true')
+})
+
+test('compare portraits are avatars and the chips are touch-sized',async({page})=>{
+  await page.setViewportSize({width:390,height:844})
+  await page.goto('/?mode=compare&cmp=sapiens,neanderthal')
+  const avatar=page.locator('.compare-avatar-img').first()
+  await expect(avatar).toBeVisible()
+  const box=await avatar.boundingBox()
+  expect(box!.width).toBeLessThanOrEqual(80)
+  expect(box!.height).toBeLessThanOrEqual(80)
+  const small=await page.$$eval('.compare-chip',els=>els.filter(el=>el.getBoundingClientRect().height<44).length)
+  expect(small).toBe(0)
+})

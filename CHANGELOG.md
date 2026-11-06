@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Explorer UX
+- Compare shows the same Tree / Timeline / Migration / Compare tab bar as the explorer, so it is no longer a dead end; focus returns to the selected tab after a switch.
+- On phones the four view tabs share one row (icon above label) instead of wrapping Compare to a second line.
+- Compare portraits: the avatar image is contained in its 68 px circle (`position: relative`); before, it filled the whole header cell, appeared enlarged and blurred, and hid the taxon name.
+- Touch targets reach 44 px on touch widths for the Compare chips, the profile secondary actions, the bookmark button and the family-view and time-scale disclosures. `tests/e2e/compare.spec.ts` guards the tab bar, the avatar size and the chip height.
+
+### Species pages
+- Authored species pages now cover 9 of the 18 taxa: Sahelanthropus and Afarensis, plus Neanderthals, H. sapiens, H. erectus, H. heidelbergensis, H. habilis, A. africanus and A. anamensis. `npm run audit:species-pages` passes for all nine.
+
 ### Fixes
 - Migration globe: the Greenland ring was wound counter-clockwise, so d3-geo read it as "the whole sphere except Greenland" and flooded every continent and the ocean with land colour. The ring is reversed, the base colours live in `globePalette` and are tested for WCAG 1.4.11 contrast (>= 3:1), and routes get a dark casing so they stay readable over land and sea. `tests/migration-scene-geometry.test.ts` fails if any ring is inverted again.
 - In-app navigation: the Journey "Back to atlas context" link and the search "See all results" link are `next/link` again (no full page reload). `tests/no-internal-anchors.test.ts` guards public UI.

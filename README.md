@@ -68,16 +68,6 @@ If a step fails, send the exact command and the first error lines; the status of
 
 `npm run dev` accepts requests only from `localhost` and `127.0.0.1`. To open the dev server from a phone or another computer, list its hostname or IP in `ALLOWED_DEV_ORIGINS` (comma-separated, no port), for example `ALLOWED_DEV_ORIGINS=192.168.1.20 npm run dev`. Production is not affected.
 
-## Repository map
+## Architecture
 
-```
-domain/            contracts, time engine, research graph + traversal (pure)
-content/           canonical data (TypeScript) → one frozen catalog
-infrastructure/    repository, catalog validation, CMS (server-only)
-features/explorer/ server bootstrap + client-safe selectors/state
-presentation/      tree layout, palette, media delivery (display only)
-components/ app/   React UI, /admin, /api/admin, /cms-media
-scripts/ tests/    audits and tests (the quality gates)
-```
-
-Rules that never change: no source → no factual claim; uncertainty is qualitative (no confidence scores); reconstructions are never presented as fossil photographs; nothing is published without passing the audit.
+Layers, enforced boundaries and the rules that never change (no source → no factual claim; uncertainty is qualitative; reconstructions are never presented as fossil photographs; nothing is published without passing the audit) are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), sections 1 and 2.

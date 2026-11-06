@@ -76,12 +76,16 @@ test('a taxon search result selects the species on this page', async({page})=>{
   await expect(page).not.toHaveURL(/q=/)
 })
 
-test('corridors are drawn for Homo sapiens only', async({page})=>{
+test('corridors are drawn for Homo sapiens only',async({page})=>{
+  // The corridor caption was removed in the atlas rebuild. The rule that remains is the Layers panel: corridors are offered only for Homo sapiens.
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/?species=neanderthal&mode=migration')
   await expect(page.locator('.migration-view')).toBeVisible()
   await expect(page.locator('.migration-route')).toHaveCount(0)
+  await page.getByRole('button',{name:'Layers',exact:true}).click()
+  await expect(page.getByText('Select Homo sapiens to see corridors')).toBeVisible()
   await page.goto('/?species=sapiens&mode=migration')
   await expect(page.locator('.migration-view')).toBeVisible()
-  await expect(page.locator('.map-info')).not.toContainText('Corridors show Homo sapiens dispersals only')
+  await page.getByRole('button',{name:'Layers',exact:true}).click()
+  await expect(page.getByText('Select Homo sapiens to see corridors')).toHaveCount(0)
 })
