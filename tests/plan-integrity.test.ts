@@ -9,9 +9,9 @@ import {extname,join,relative} from 'node:path'
  */
 const root=process.cwd()
 const planRel='docs/HUMAN-ORIGINS-FIX-PLAN.md'
-const APPROVED_SHA256='ec7f8effabb0784cbdac732de36d38ce18c1b2afcd72c28cff5c6f3fbbf57d15'
+const APPROVED_SHA256='f7e4e88445482a0649954cb4ecd03deb5e3b1247a987a4634270a5c436bf2d85'
 const RETIRED_NAME='IMPLEMENTATION-PLAN'
-const PERSIAN_DIGITS=['۰','۱','۲','۳','۴','۵','۶','۷','۸']
+const PERSIAN_DIGITS=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','۱۰','۱۱','۱۲']
 const TEXT_EXTENSIONS=new Set(['.md','.ts','.tsx','.mts','.mjs','.js','.json','.csv','.yml','.yaml','.css'])
 const read=(rel:string)=>readFileSync(join(root,rel),'utf8')
 const plan=read(planRel)
@@ -43,7 +43,7 @@ describe('docs/HUMAN-ORIGINS-FIX-PLAN.md',()=>{
     expect(plan).toContain(`human-origins@${pkg.version}`)
   })
 
-  it('has phases 0 to 8, each with acceptance criteria',()=>{
+  it('has phases 0 to 12, each with acceptance criteria',()=>{
     PERSIAN_DIGITS.forEach((digit,phase)=>{
       expect(plan,`phase ${phase} heading`).toMatch(new RegExp(`^### فاز ${digit}:`,'m'))
     })
