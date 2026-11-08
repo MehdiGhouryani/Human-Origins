@@ -1,0 +1,349 @@
+{
+  "schema": "perf-baseline/1",
+  "createdAt": "2026-11-08T11:17:51.236Z",
+  "commit": "cb981db",
+  "base": "http://localhost:3100",
+  "runs": 5,
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "node": "v22.23.4"
+  },
+  "protocol": {
+    "mobile": "CPU x4 (Emulation.setCPUThrottlingRate), network Fast 4G (150 ms latency, 1.6 Mbps down, 0.75 Mbps up)",
+    "desktop": "no throttling; 1440x900",
+    "metrics": "TTFB = navigation responseStart; LCP, CLS, TBT (long tasks minus 50 ms), INP approximated by the slowest click event after one tab click; bytes = wire size by resource type",
+    "controls": "interactive elements inside the first viewport; controlsNonGraph excludes elements inside lineage or graph containers"
+  },
+  "scenarios": {
+    "home-mobile": {
+      "mobile": true,
+      "path": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "ttfb": 182,
+      "fcp": 1816,
+      "lcp": 3352,
+      "cls": 0,
+      "tbt": 1505,
+      "inp": 104,
+      "dom": 1085,
+      "controlsAboveFold": 31,
+      "controlsNonGraph": 27,
+      "requests": 38,
+      "bytes": {
+        "document": 81573,
+        "script": 244958,
+        "stylesheet": 23906,
+        "image": 212375,
+        "font": 121392,
+        "other": 0,
+        "total": 684204
+      },
+      "lcpRuns": [
+        3740,
+        3272,
+        3096,
+        3352,
+        4456
+      ],
+      "tbtRuns": [
+        2258,
+        1235,
+        1505,
+        1413,
+        2080
+      ]
+    },
+    "home-desktop": {
+      "mobile": false,
+      "path": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "ttfb": 107,
+      "fcp": 388,
+      "lcp": 604,
+      "cls": 0.0029,
+      "tbt": 140,
+      "inp": 40,
+      "dom": 1220,
+      "controlsAboveFold": 51,
+      "controlsNonGraph": 34,
+      "requests": 47,
+      "bytes": {
+        "document": 81573,
+        "script": 244958,
+        "stylesheet": 23906,
+        "image": 288667,
+        "font": 121392,
+        "other": 0,
+        "total": 760496
+      },
+      "lcpRuns": [
+        752,
+        544,
+        616,
+        508,
+        604
+      ],
+      "tbtRuns": [
+        397,
+        63,
+        140,
+        277,
+        98
+      ]
+    },
+    "species-mobile": {
+      "mobile": true,
+      "path": "/species/neanderthal",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "ttfb": 137,
+      "fcp": 1880,
+      "lcp": 2060,
+      "cls": 0,
+      "tbt": 452,
+      "inp": null,
+      "dom": 1061,
+      "controlsAboveFold": 5,
+      "controlsNonGraph": 5,
+      "requests": 23,
+      "bytes": {
+        "document": 94504,
+        "script": 169112,
+        "stylesheet": 30087,
+        "image": 17524,
+        "font": 121392,
+        "other": 5331,
+        "total": 437950
+      },
+      "lcpRuns": [
+        2088,
+        2060,
+        2056,
+        2024,
+        2100
+      ],
+      "tbtRuns": [
+        525,
+        452,
+        401,
+        469,
+        446
+      ]
+    },
+    "species-desktop": {
+      "mobile": false,
+      "path": "/species/neanderthal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "ttfb": 103,
+      "fcp": 328,
+      "lcp": 328,
+      "cls": 0,
+      "tbt": 12,
+      "inp": null,
+      "dom": 1061,
+      "controlsAboveFold": 19,
+      "controlsNonGraph": 19,
+      "requests": 23,
+      "bytes": {
+        "document": 94504,
+        "script": 169112,
+        "stylesheet": 30087,
+        "image": 17524,
+        "font": 121392,
+        "other": 8382,
+        "total": 441001
+      },
+      "lcpRuns": [
+        1184,
+        964,
+        320,
+        328,
+        312
+      ],
+      "tbtRuns": [
+        556,
+        41,
+        0,
+        2,
+        12
+      ]
+    },
+    "compare-mobile": {
+      "mobile": true,
+      "path": "/?mode=compare&cmp=sapiens,neanderthal",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "ttfb": 105,
+      "fcp": 1600,
+      "lcp": 2944,
+      "cls": 0,
+      "tbt": 441,
+      "inp": 376,
+      "dom": 316,
+      "controlsAboveFold": 26,
+      "controlsNonGraph": 26,
+      "requests": 23,
+      "bytes": {
+        "document": 70843,
+        "script": 233993,
+        "stylesheet": 23906,
+        "image": 53489,
+        "font": 121392,
+        "other": 2065,
+        "total": 505688
+      },
+      "lcpRuns": [
+        2924,
+        2948,
+        2728,
+        2984,
+        2944
+      ],
+      "tbtRuns": [
+        500,
+        415,
+        400,
+        467,
+        441
+      ]
+    },
+    "migration-mobile": {
+      "mobile": true,
+      "path": "/?mode=migration",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "ttfb": 92,
+      "fcp": 1744,
+      "lcp": 1744,
+      "cls": 0.0953,
+      "tbt": 710,
+      "inp": 288,
+      "dom": 337,
+      "controlsAboveFold": 32,
+      "controlsNonGraph": 32,
+      "requests": 25,
+      "bytes": {
+        "document": 72075,
+        "script": 260526,
+        "stylesheet": 23906,
+        "image": 17524,
+        "font": 121392,
+        "other": 79757,
+        "total": 575180
+      },
+      "lcpRuns": [
+        1812,
+        1588,
+        1744,
+        1844,
+        1712
+      ],
+      "tbtRuns": [
+        723,
+        613,
+        675,
+        887,
+        710
+      ]
+    },
+    "evidence-desktop": {
+      "mobile": false,
+      "path": "/?mode=evidence",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "ttfb": 71,
+      "fcp": 332,
+      "lcp": 404,
+      "cls": 0,
+      "tbt": 15,
+      "inp": 48,
+      "dom": 509,
+      "controlsAboveFold": 39,
+      "controlsNonGraph": 39,
+      "requests": 44,
+      "bytes": {
+        "document": 75761,
+        "script": 233993,
+        "stylesheet": 23906,
+        "image": 153611,
+        "font": 121392,
+        "other": 8486,
+        "total": 617157
+      },
+      "lcpRuns": [
+        452,
+        400,
+        500,
+        404,
+        388
+      ],
+      "tbtRuns": [
+        65,
+        13,
+        33,
+        6,
+        15
+      ]
+    },
+    "about-mobile": {
+      "mobile": true,
+      "path": "/about",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "ttfb": 23,
+      "fcp": 1292,
+      "lcp": 1292,
+      "cls": 0,
+      "tbt": 226,
+      "inp": null,
+      "dom": 94,
+      "controlsAboveFold": 3,
+      "controlsNonGraph": 3,
+      "requests": 16,
+      "bytes": {
+        "document": 6402,
+        "script": 152834,
+        "stylesheet": 23906,
+        "image": 0,
+        "font": 121392,
+        "other": 1044,
+        "total": 305578
+      },
+      "lcpRuns": [
+        1276,
+        1300,
+        1292,
+        1296,
+        1280
+      ],
+      "tbtRuns": [
+        226,
+        147,
+        237,
+        206,
+        268
+      ]
+    }
+  }
+}

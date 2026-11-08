@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Performance and accessibility (phase 7, in progress)
+- Measurement protocol: `npm run perf:baseline` (mobile: CPU x4 and a Fast 4G profile; desktop: unthrottled; medians of five runs). Baseline in `tests/perf/baseline.json`; the after-change run in `tests/perf/after-phase7.json`.
+- The client bootstrap no longer carries the audit-only publication fields (`note`, `verifiedOn`, `verification`): about 6 KB less HTML on the wire per page. Fields the UI reads (including `kind`) are unchanged.
+- Time milestones: accessible names contain the visible label (axe `label-content-name-mismatch`, nine nodes on Evidence).
+- Compare: the Genetics chip text now meets 4.5:1 (5.8:1 on its background; axe `color-contrast`, two nodes).
+- Not yet met: the mobile TBT budget (under 200 ms) and the payload budgets. Measured mobile TBT is between about 0.2 s and 1.5 s, and the run-to-run spread is larger than the changes so far.
+
 ### Explorer UX
 - Compare shows the same Tree / Timeline / Migration / Compare tab bar as the explorer, so it is no longer a dead end; focus returns to the selected tab after a switch.
 - On phones the four view tabs share one row (icon above label) instead of wrapping Compare to a second line.

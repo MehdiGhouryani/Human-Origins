@@ -250,7 +250,13 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
   const species=contentCatalog.taxa.map(taxon=>toExplorerSpecies(taxon,contentCatalog)).sort((a,b)=>b.start-a.start||a.end-b.end||a.id.localeCompare(b.id))
   const media:ExplorerMedia[]=contentCatalog.media.map(toExplorerMedia)
   const sources=contentCatalog.sources
-  const publications=contentCatalog.publications
+  // Client projection (phase 7.3): the audit-only fields are not read by any UI component and are not sent to the browser.
+  const CLIENT_PUBLICATION_OMIT=['note','verifiedOn','verification']
+  const publications:readonly PublicationRecord[]=contentCatalog.publications.map(item=>{
+    const copy:Record<string,unknown>={...item}
+    for(const key of CLIENT_PUBLICATION_OMIT) delete copy[key]
+    return copy as unknown as PublicationRecord
+  })
   const institutions=contentCatalog.institutions
   const collections=contentCatalog.collections
   const specimens:ExplorerSpecimen[]=contentCatalog.specimens.map(record=>{
