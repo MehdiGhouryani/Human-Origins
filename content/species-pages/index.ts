@@ -8,6 +8,8 @@ import {habilisPage} from './habilis'
 import {anamensisPage} from './anamensis'
 import {africanusPage} from './africanus'
 import {sahelanthropusPage} from './sahelanthropus'
+import {ardipithecusPage} from './ardipithecus'
+import {orrinPage} from './orrin'
 
 /**
  * Scientific text of the species pages. One file per taxon, added here as each page is written and
@@ -17,6 +19,8 @@ export const speciesPages:Readonly<Record<string,SpeciesPageContent>>={
   afarensis:afarensisPage,
   anamensis:anamensisPage,
   sahelanthropus:sahelanthropusPage,
+  ardipithecus:ardipithecusPage,
+  orrin:orrinPage,
   neanderthal:neanderthalPage,
   sapiens:sapiensPage,
   erectus:erectusPage,

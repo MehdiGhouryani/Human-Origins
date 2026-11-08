@@ -9,7 +9,7 @@
 - Touch targets reach 44 px on touch widths for the Compare chips, the profile secondary actions, the bookmark button and the family-view and time-scale disclosures. `tests/e2e/compare.spec.ts` guards the tab bar, the avatar size and the chip height.
 
 ### Species pages
-- Authored species pages now cover 9 of the 18 taxa: Sahelanthropus and Afarensis, plus Neanderthals, H. sapiens, H. erectus, H. heidelbergensis, H. habilis, A. africanus and A. anamensis. `npm run audit:species-pages` passes for all nine.
+- Authored species pages now cover the whole main path: 11 of the 18 taxa, including *Ardipithecus ramidus* and *Orrorin tugenensis*, with 16 newly verified publications (each record states how it was checked). `npm run audit:species-pages` passes for all eleven. The catalog runtime fingerprint was regenerated for the new content; the release number is unchanged.
 
 ### Fixes
 - Migration globe: the Greenland ring was wound counter-clockwise, so d3-geo read it as "the whole sphere except Greenland" and flooded every continent and the ocean with land colour. The ring is reversed, the base colours live in `globePalette` and are tested for WCAG 1.4.11 contrast (>= 3:1), and routes get a dark casing so they stay readable over land and sea. `tests/migration-scene-geometry.test.ts` fails if any ring is inverted again.

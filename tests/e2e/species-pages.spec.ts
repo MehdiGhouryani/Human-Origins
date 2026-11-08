@@ -31,7 +31,7 @@ for(const pilot of PILOTS){
 }
 
 test('taxon without a content file keeps the existing layout',async({page})=>{
-  await page.goto('/species/ardipithecus')
+  await page.goto('/species/floresiensis')
   await expect(page.getByRole('heading',{level:1})).toBeVisible()
   await expect(page.getByRole('navigation',{name:'On this page'})).toHaveCount(0)
 })
