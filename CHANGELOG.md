@@ -7,6 +7,9 @@
 - The client bootstrap no longer carries the audit-only publication fields (`note`, `verifiedOn`, `verification`): 5 to 6 KB less HTML on the wire on pages that carry explorer data. Fields the UI reads (including `kind`) are unchanged.
 - Time milestones: accessible names contain the visible label (axe `label-content-name-mismatch`, nine nodes on Evidence).
 - Compare: the Genetics chip text now meets 4.5:1 (5.8:1 on its background; axe `color-contrast`, two nodes).
+- Repeatable axe check outside the graph: `npm run test:a11y` (axe-core 4.14, now a development dependency). The lineage and evidence graph containers are excluded, as frozen by decision; the check covers about, compare, evidence, migration and species, and all five pass.
+- Species page: the 3D viewer button had 1.6:1 contrast because the `.dossier a` reset forced the body text colour; it keeps its dark text now (`.dossier .viewer-btn`). The specimen note is lightened to 7.0:1 (was 3.9:1). These are visible colour changes in the specimen archive.
+- The stylesheet split was reverted: Turbopack's CSS bundling changed the rule order, and `experimental.cssChunking: 'strict'` is supported only with webpack.
 - Not yet met: the mobile TBT budget (under 200 ms) and the payload budgets. Measured mobile TBT is between about 0.2 s and 1.5 s, and the run-to-run spread is larger than the changes so far.
 
 ### Explorer UX

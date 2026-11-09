@@ -2194,7 +2194,7 @@ body {
 .specimen-note {
   font-size:11px !important;
   line-height: 1.4 !important;
-  color: #667572 !important;
+  color: #8fa19d !important;
   margin: 10px 0 0 !important;
 }
 
@@ -2413,6 +2413,11 @@ body {
 
 .viewer-btn:hover {
   background: #ecd28f;
+}
+/* Phase 7.5: the dossier link reset (.dossier a, color: inherit !important) would otherwise give the button the light
+   body text on gold (1.6:1). This keeps the button's own dark text. */
+.dossier .viewer-btn {
+  color: #071214 !important;
 }
 
 .record-btn {
