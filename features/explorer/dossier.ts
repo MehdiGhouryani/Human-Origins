@@ -1,7 +1,7 @@
-import type {EvidenceRecord,EvidenceSite,ProvenanceClaim,RelationClass,RelationshipType,SourceRecord} from '../../domain/contracts'
+import type {EvidenceRecord,EvidenceSite,ProvenanceClaim,RelationClass,RelationshipType} from '../../domain/contracts'
 import type {DatingClass} from '../../domain/time'
 import {rangesOverlap} from '../../domain/time'
-import type {ExplorerBootstrap} from './bootstrap'
+import type {ExplorerBootstrap,ClientSourceRecord} from './bootstrap'
 import type {ExplorerMedia,ExplorerSpecies,ExplorerSpecimen} from './types'
 import {
   getExplorerClaimsForTaxon,getExplorerEvidenceForTaxon,getExplorerMediaForTaxon,getExplorerRelationships,
@@ -35,7 +35,7 @@ export type SpeciesDossier={
   specimens:readonly ExplorerSpecimen[]
   claims:readonly ProvenanceClaim[]
   evidence:readonly EvidenceRecord[]
-  sources:readonly SourceRecord[]
+  sources:readonly ClientSourceRecord[]
   previous:ExplorerSpecies|undefined
   next:ExplorerSpecies|undefined
   completeness:{tier:CompletenessTier;checks:readonly CompletenessCheck[];missing:readonly string[]}
@@ -68,13 +68,13 @@ function linkFor(bootstrap:ExplorerBootstrap,otherId:string,type:RelationshipTyp
 
 const defined=<T,>(value:T|undefined):value is T=>value!==undefined
 
-function collectSources(bootstrap:ExplorerBootstrap,species:ExplorerSpecies,claims:readonly ProvenanceClaim[],specimens:readonly ExplorerSpecimen[]):SourceRecord[]{
+function collectSources(bootstrap:ExplorerBootstrap,species:ExplorerSpecies,claims:readonly ProvenanceClaim[],specimens:readonly ExplorerSpecimen[]):ClientSourceRecord[]{
   const ids=[
     ...species.sourceIds,
     ...claims.flatMap(claim=>claim.sourceIds.map(String)),
     ...specimens.flatMap(record=>record.sourceIds),
   ]
-  const byId=new Map<string,SourceRecord>()
+  const byId=new Map<string,ClientSourceRecord>()
   for(const id of ids){const source=getExplorerSourceById(bootstrap,id);if(source&&!byId.has(String(source.id)))byId.set(String(source.id),source)}
   return [...byId.values()]
 }

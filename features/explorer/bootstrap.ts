@@ -62,6 +62,17 @@ export type ExplorerGraph={
 /** The editorial default: the 11-taxon main path, nothing switched off. */
 export const DEFAULT_GRAPH_CONFIG:GraphConfig={shown:featured.mainPathTaxonIds.map(String),off:[],defaultTaxonId:String(featured.defaultTaxonId)}
 
+/** Record shapes the browser receives (phase 7.3). Fields that no browser component reads are left out, and the
+    types make a component that starts reading one fail the type check rather than render undefined. */
+export type ClientPublicationRecord=Omit<PublicationRecord,'identifiers'|'contributors'|'note'|'verifiedOn'|'verification'>
+export type ClientSourceRecord=Omit<SourceRecord,'identifiers'>
+
+const withoutKeys=<T extends object,K extends keyof T>(item:T,keys:readonly K[]):Omit<T,K>=>{
+  const copy:Record<string,unknown>={...(item as unknown as Record<string,unknown>)}
+  for(const key of keys) delete copy[String(key)]
+  return copy as unknown as Omit<T,K>
+}
+
 export type ExplorerBootstrap={
   release:string
   graph:ExplorerGraph
@@ -80,8 +91,8 @@ export type ExplorerBootstrap={
   specimens:readonly ExplorerSpecimen[]
   occurrences:readonly ExplorerOccurrence[]
   migrationCorridors:readonly MigrationCorridorRecord[]
-  sources:readonly SourceRecord[]
-  publications:readonly PublicationRecord[]
+  sources:readonly ClientSourceRecord[]
+  publications:readonly ClientPublicationRecord[]
   institutions:readonly InstitutionRecord[]
   collections:readonly CollectionRecord[]
   materialEntities:readonly MaterialEntityRecord[]
@@ -158,8 +169,8 @@ function toExplorerSpecies(taxon:TaxonRecord,catalog:ContentCatalog):ExplorerSpe
 function buildIndexes(
   species:readonly ExplorerSpecies[],
   media:readonly ExplorerMedia[],
-  sources:readonly SourceRecord[],
-  publications:readonly PublicationRecord[],
+  sources:readonly ClientSourceRecord[],
+  publications:readonly ClientPublicationRecord[],
   institutions:readonly InstitutionRecord[],
   collections:readonly CollectionRecord[],
   materialEntities:readonly MaterialEntityRecord[],
@@ -249,14 +260,9 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
   // Oldest first everywhere (deck, species index, previous/next), regardless of the order taxa were added to the catalog.
   const species=contentCatalog.taxa.map(taxon=>toExplorerSpecies(taxon,contentCatalog)).sort((a,b)=>b.start-a.start||a.end-b.end||a.id.localeCompare(b.id))
   const media:ExplorerMedia[]=contentCatalog.media.map(toExplorerMedia)
-  const sources=contentCatalog.sources
-  // Client projection (phase 7.3): the audit-only fields are not read by any UI component and are not sent to the browser.
-  const CLIENT_PUBLICATION_OMIT=['note','verifiedOn','verification']
-  const publications:readonly PublicationRecord[]=contentCatalog.publications.map(item=>{
-    const copy:Record<string,unknown>={...item}
-    for(const key of CLIENT_PUBLICATION_OMIT) delete copy[key]
-    return copy as unknown as PublicationRecord
-  })
+  // Client projection (phase 7.3): fields no browser component reads are not sent (see the Client* types above).
+  const sources:readonly ClientSourceRecord[]=contentCatalog.sources.map(item=>withoutKeys(item,['identifiers']))
+  const publications:readonly ClientPublicationRecord[]=contentCatalog.publications.map(item=>withoutKeys(item,['identifiers','contributors','note','verifiedOn','verification']))
   const institutions=contentCatalog.institutions
   const collections=contentCatalog.collections
   const specimens:ExplorerSpecimen[]=contentCatalog.specimens.map(record=>{

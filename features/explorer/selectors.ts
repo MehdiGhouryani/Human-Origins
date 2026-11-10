@@ -1,6 +1,6 @@
-import type {EvidenceRecord,MediaRole,ProvenanceClaim,RelationshipRecord,SearchResult,SourceRecord,EvidenceSite,PublicationRecord,InstitutionRecord,InterpretationSetRecord,InterpretationPositionRecord,RelationshipHypothesisSetRecord,RelationshipHypothesisPositionRecord,MigrationCorridorRecord} from '../../domain/contracts'
+import type {EvidenceRecord,MediaRole,ProvenanceClaim,RelationshipRecord,SearchResult,EvidenceSite,InstitutionRecord,InterpretationSetRecord,InterpretationPositionRecord,RelationshipHypothesisSetRecord,RelationshipHypothesisPositionRecord,MigrationCorridorRecord,SourceRecord} from '../../domain/contracts'
 import type {ExplorerOccurrence} from './types'
-import type {ClaimProvenanceSummary,ExplorerBootstrap} from './bootstrap'
+import type {ClaimProvenanceSummary,ExplorerBootstrap,ClientPublicationRecord,ClientSourceRecord} from './bootstrap'
 import type {ExplorerMedia,ExplorerSpecies,ExplorerSpecimen} from './types'
 
 const indices=(bootstrap:ExplorerBootstrap)=>bootstrap.indexes
@@ -29,7 +29,7 @@ export const getExplorerMediaForTaxonByRole=(bootstrap:ExplorerBootstrap,id:stri
 export const getExplorerTaxonNamesForTaxon=(bootstrap:ExplorerBootstrap,id:string)=> (bootstrap.researchIndexes.taxonNamesByTaxonId[id]??[]).map(position=>bootstrap.taxonNames[position])
 export const getExplorerSiteContextsForSite=(bootstrap:ExplorerBootstrap,id:string)=> (bootstrap.researchIndexes.siteContextsBySiteId[id]??[]).map(position=>bootstrap.siteContexts[position])
 export const getExplorerMaterialEntityById=(bootstrap:ExplorerBootstrap,id:string)=>{ const position=bootstrap.indexes.materialEntitiesById[id]; return position===undefined?undefined:bootstrap.materialEntities[position] }
-export const getExplorerPublicationById=(bootstrap:ExplorerBootstrap,id:string):PublicationRecord|undefined=>{
+export const getExplorerPublicationById=(bootstrap:ExplorerBootstrap,id:string):ClientPublicationRecord|undefined=>{
   const position=indices(bootstrap).publicationsById[id]
   return position===undefined?undefined:bootstrap.publications[position]
 }
@@ -41,8 +41,8 @@ export const getExplorerOccurrenceById=(bootstrap:ExplorerBootstrap,id:string):E
   const position=indices(bootstrap).occurrencesById[id]
   return position===undefined?undefined:bootstrap.occurrences[position]
 }
-export const getExplorerPublicationForSource=(bootstrap:ExplorerBootstrap,source:SourceRecord):PublicationRecord|undefined=>source.publicationId?getExplorerPublicationById(bootstrap,String(source.publicationId)):undefined
-export const getExplorerSourceById=(bootstrap:ExplorerBootstrap,id:string):SourceRecord|undefined=>{
+export const getExplorerPublicationForSource=(bootstrap:ExplorerBootstrap,source:ClientSourceRecord):ClientPublicationRecord|undefined=>source.publicationId?getExplorerPublicationById(bootstrap,String(source.publicationId)):undefined
+export const getExplorerSourceById=(bootstrap:ExplorerBootstrap,id:string):ClientSourceRecord|undefined=>{
   const position=indices(bootstrap).sourcesById[id]
   return position===undefined?undefined:bootstrap.sources[position]
 }
