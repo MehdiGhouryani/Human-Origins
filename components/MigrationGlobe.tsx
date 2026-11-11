@@ -411,6 +411,7 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
         <AtlasDock fraction={fraction} sceneIndex={sceneIndex} playing={playing} speed={speed} readout={readout} onPlay={togglePlay} onSeek={seek} onScene={jumpToScene} onSpeed={()=>setSpeedIndex(index=>(index+1)%SPEEDS.length)}/>
       </div>
     </div>
-    <p className="sr-only" aria-live="polite">{`Scene ${sceneIndex+1} of ${SCENE_COUNT}: ${scene.title}. ${visibleEvidence.length} evidence sites shown.`}</p>
+    {/* The live region changes only with the scene, so playback does not repeat the count of visible sites (phase 7.5). */}
+    <p className="sr-only" aria-live="polite">{`Scene ${sceneIndex+1} of ${SCENE_COUNT}: ${scene.title}.`}</p>
   </div>
 }

@@ -22,7 +22,7 @@ Reference for how the system is built and the rules it enforces. The work plan i
 | `components/`, `app/` | React UI; admin under `app/admin`, API under `app/api/admin` | `'use client'` files may not import infrastructure or `bootstrap` except types (`audit:runtime-boundaries`) |
 | `migrations/` | V21 → V23 append-only migration manifest | Never delete legacy content without a disposition record |
 
-Data flow: `content/` → `buildResearchIndexes` / `buildResearchGraph` → `buildExplorerBootstrap(catalog, copy)` (server) → deep-frozen props → client selectors. The public page calls `getLiveContent()`, which merges **published** CMS media/copy over the built-in catalog.
+Data flow: `content/` → `buildResearchIndexes` / `buildResearchGraph` → `buildExplorerBootstrap(catalog, copy)` (server) → deep-frozen props (only the fields the browser reads; see `ClientPublicationRecord` and `ClientSourceRecord`) → client selectors. The public page calls `getLiveContent()`, which merges **published** CMS media/copy over the built-in catalog.
 
 ## 3. Data model
 
@@ -111,7 +111,7 @@ Environment variables (`CMS_ADMIN_PASSWORD`, `SITE_URL`, `TRUST_PROXY`, `CMS_DB_
 | `build` | `next build` |
 
 Also available: `npm run test:e2e` (Playwright: smoke, species, responsive, visual), `qa:installed`, `backup:cms`, `restore:cms`.
-Accessibility is checked ad hoc with axe-core (WCAG A/AA) — not yet a CI gate.
+Accessibility is checked with axe-core (WCAG 2.x A/AA, serious and critical findings) by `npm run test:a11y` on about, compare, evidence, migration and species. The lineage and evidence graph containers are excluded by decision. `qa:release` does not start a server, so this check runs in the e2e stage, against a running server.
 
 ## 9. Checklists
 

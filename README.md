@@ -60,6 +60,8 @@ If a step fails, send the exact command and the first error lines; the status of
 | `npm run validate:data` | Validate the whole catalog |
 | `npm run test` | Unit tests (Vitest) |
 | `npm run test:e2e` | Playwright smoke + species-page tests |
+| `npm run test:a11y` | axe check outside the graph (WCAG 2.x A/AA, serious and critical); needs a running server |
+| `npm run perf:baseline` | Lab measurements: mobile CPU x4 and Fast 4G, desktop unthrottled, medians of five runs; needs a running server |
 | `npm run build:standalone` | Self-contained server build for VPS / container hosts |
 | `npm run backup:cms` | Consistent snapshot of `.cms-data/` (SQLite + media) |
 | `npm run typecheck` · `npm run lint` | Types / architecture + UI audits + ESLint |
