@@ -1,16 +1,18 @@
 import type {MetadataRoute} from 'next'
-import {contentCatalog} from '../content/catalog'
+import {taxaById} from '../content/catalog'
 import {getSpeciesPage} from '../content/species-pages'
 import {absoluteUrl} from '../infrastructure/site/url'
-import {buildSitemapEntries} from '../infrastructure/site/sitemapEntries'
 
-export const dynamic='force-dynamic'
-
-// Species ids are canonical and append-only, so the built-in catalog is the right source for the sitemap.
-export default function sitemap():MetadataRoute.Sitemap{
-  return buildSitemapEntries({
-    taxonIds:contentCatalog.taxa.map(taxon=>String(taxon.id)),
-    reviewedOn:id=>getSpeciesPage(id)?.reviewedOn,
-    url:absoluteUrl,
-  })
+// Canonical pages only (plan phase 9.5). lastModified is the reviewer's date from the species page, and is left out when there is none.
+export default function sitemap(): MetadataRoute.Sitemap {
+  const entries: MetadataRoute.Sitemap = [
+    {url: absoluteUrl('/')},
+    {url: absoluteUrl('/about')},
+    {url: absoluteUrl('/species')},
+  ]
+  for (const id of Object.keys(taxaById)) {
+    const reviewedOn = getSpeciesPage(id)?.reviewedOn
+    entries.push({url: absoluteUrl(`/species/${id}`), ...(reviewedOn ? {lastModified: reviewedOn} : {})})
+  }
+  return entries
 }

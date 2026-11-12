@@ -9,7 +9,7 @@ import {extname,join,relative} from 'node:path'
  */
 const root=process.cwd()
 const planRel='docs/HUMAN-ORIGINS-FIX-PLAN.md'
-const APPROVED_SHA256='33f3db1ca9c54aa195535a4f24d3e00f1d0e2676c290144b5a51a2d62714ac9b'
+const APPROVED_SHA256='47a05d5c8bdc1f9b6affb3b783e0bb0fa73c888562c6be541b91cbfcc8894270'
 const RETIRED_NAME='IMPLEMENTATION-PLAN'
 const PERSIAN_DIGITS=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','۱۰','۱۱','۱۲']
 const TEXT_EXTENSIONS=new Set(['.md','.ts','.tsx','.mts','.mjs','.js','.json','.csv','.yml','.yaml','.css'])

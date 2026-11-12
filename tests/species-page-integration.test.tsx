@@ -2,6 +2,7 @@ import {describe,expect,it,vi} from 'vitest'
 import {renderToStaticMarkup} from 'react-dom/server'
 import type * as PublicationsModule from '../content/publications'
 import {makeValidPage,SYNTHETIC_REFS} from './fixtures/species-page'
+import {seoDescription} from '../features/seo/metadata'
 
 const session=vi.hoisted(()=>({valid:false}))
 vi.mock('../infrastructure/cms/requireSession',()=>({hasValidSession:async()=>session.valid,requireAdminSession:async()=>undefined}))
@@ -61,7 +62,7 @@ describe('species page integration',()=>{
   it('uses the lead as the page description when a content file exists',async()=>{
     const withContent=await generateMetadata({params:Promise.resolve({id:'afarensis'})})
     const without=await generateMetadata({params:Promise.resolve({id:'sapiens'})})
-    expect(withContent.description).toBe(makeValidPage().lead.text)
+    expect(withContent.description).toBe(seoDescription(makeValidPage().lead.text))
     expect(without.description).not.toBe(withContent.description)
     expect(String(withContent.description).length).toBeGreaterThan(100)
   })

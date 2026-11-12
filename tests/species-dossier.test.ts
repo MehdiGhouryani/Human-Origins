@@ -72,12 +72,15 @@ describe('Species dossier read model (/species/[id])',()=>{
     expect(full.missing).toEqual([])
   })
 
-  it('emits schema.org Taxon JSON-LD with only canonical fields',()=>{
+  it('emits one schema.org graph: a Taxon with citations and no parent taxon, then a breadcrumb',()=>{
     const dossier=buildSpeciesDossier(bootstrap,'neanderthal')!
-    const ld=speciesJsonLd(dossier,'https://example.org/species/neanderthal')
-    expect(ld['@type']).toBe('Taxon')
-    expect(ld.name).toBe(dossier.species.taxonomy.scientificName)
-    expect(Array.isArray(ld.citation)).toBe(true)
-    expect(JSON.stringify(ld)).not.toMatch(/score|confidence/i)
+    const doc=speciesJsonLd(dossier,'https://example.org/species/neanderthal') as {'@graph':Record<string,unknown>[]}
+    const [taxon,breadcrumb]=doc['@graph']
+    expect(taxon['@type']).toBe('Taxon')
+    expect(taxon.name).toBe(dossier.species.taxonomy.scientificName)
+    expect(Array.isArray(taxon.citation)).toBe(true)
+    expect(Object.keys(taxon).some(key=>/parent|ancestor/i.test(key))).toBe(false)
+    expect(breadcrumb['@type']).toBe('BreadcrumbList')
+    expect(JSON.stringify(doc)).not.toMatch(/score|confidence/i)
   })
 })

@@ -1,3 +1,5 @@
+import {absoluteUrl} from '../../infrastructure/site/url'
+import {aboutPageNode, breadcrumbNode, graphDocument, jsonLdHtml} from '../../features/seo/metadata'
 import type {Metadata} from 'next'
 import Link from 'next/link'
 import SiteHeader from '../../components/SiteHeader'
@@ -12,6 +14,10 @@ export const metadata:Metadata={
 
 export default function AboutPage(){
   return <div className="site">
+    <script type="application/ld+json" dangerouslySetInnerHTML={{__html: jsonLdHtml(graphDocument([
+      aboutPageNode(absoluteUrl('/about'), 'About Human Origins', 'How the Human Origins atlas works: its evidence rule, what the tree and the maps show, and what they do not claim.'),
+      breadcrumbNode(absoluteUrl('/about'), [{name: 'Human Origins', url: absoluteUrl('/')}, {name: 'About', url: absoluteUrl('/about')}]),
+    ]))}} />
     <SiteHeader/>
     <main className="about-page">
       <div className="view-kicker">ABOUT THE ATLAS</div>

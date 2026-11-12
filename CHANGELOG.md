@@ -15,6 +15,10 @@
 - Header navigation: a link pressed right after a selection keeps the species and the mode. The header now builds the target from the address bar at click time, because `useSearchParams` can lag an explorer URL write (navigation.spec.ts:31 failed about one run in six before this; 32 of 32 pass in the repeat run afterwards).
 - Axe gate extended: `tests/e2e/a11y-responsive.spec.ts` runs on every viewport (desktop, phone, iPhone SE, tablet) and on eight routes (home, about, compare, evidence, migration and three species pages). 32 of 32 pass.
 - Home page: preload hints for the three hero images, each limited to the viewport that shows it (the hero is a CSS background, which the browser found late). Home mobile LCP median 1960 ms, from 3352 ms at baseline (five runs, Fast 4G and CPU x4; raw result in `tests/perf/after-lcp-hero.json`). Rendering unchanged (max 2/255 noise).
+- Search: canonical rules for the explorer (`?species=X` points to `/species/X`, modes point to `/`), `noindex` for the comparison view, titles up to 60 characters, and descriptions of 120 to 160 characters taken from page text.
+- Crawler policy in `robots.txt`: training crawlers blocked, search and retrieval crawlers allowed, tokens checked against the operators' documentation. The sitemap lists the 21 canonical pages with `lastmod` where a reviewer date exists. Both files are no longer forced dynamic.
+- Structured data: one `@graph` per species (Taxon without any parent taxon, and a breadcrumb), AboutPage on About, WebSite on the home page. `X-Robots-Tag: noindex` on `/admin` and `/api`.
+- `/llms.txt`: a short index of the key pages, built from the catalog, with an ETag. It follows a proposed convention and makes no promise about search or answer engines.
 - Not yet met: the mobile TBT budget (under 200 ms) and the payload budgets. Measured mobile TBT is between about 0.2 s and 1.5 s, and the run-to-run spread is larger than the changes so far.
 
 ### Explorer UX

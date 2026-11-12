@@ -135,3 +135,19 @@ Tracked in [`HUMAN-ORIGINS-FIX-PLAN.md`](./HUMAN-ORIGINS-FIX-PLAN.md) where it i
 * **Editor preview and visitors.** A signed-in editor sees an empty frame in every open slot, with its code and an Upload link. A visitor sees at most one neutral frame: the header image slot ("Image in preparation: Header image"), and only on a species that has that slot and no approved picture yet. Scene and gallery slots stay hidden from visitors until approved, and on-hold slots are hidden from everyone (their hold reason is internal).
 * **Portrait frame.** A species portrait keeps its 4:5 face frame at every width (phone and tablet included); a 3:2 or 16:9 frame cut the face off. `tests/portrait-frame.test.ts` guards it.
 * **Visitor wording.** Labels a visitor reads are plain language: the header slot is "Header image", the completeness checklist says "Its own picture in the tree view", and the record and sources headings never use data-model terms. `tests/visitor-copy.test.ts` and `tests/public-wording.test.ts` guard it.
+
+## Search, crawlers and structured data
+
+Canonical rules: `/?species=X` without a mode canonicalises to `/species/X`; any mode canonicalises to `/`; the comparison view (`cmp`) is `noindex`. Species titles keep the date when they fit in 60 characters. Meta descriptions are taken from text the page already shows, between 120 and 160 characters, and never add a claim.
+
+Crawler policy (`app/robots.ts`): training crawlers are blocked (GPTBot, ClaudeBot, Google-Extended, Applebot-Extended, CCBot). Search and retrieval crawlers are allowed (OAI-SearchBot, Claude-SearchBot, PerplexityBot, Googlebot, Bingbot, Applebot). The user-triggered fetchers (ChatGPT-User, Claude-User, Perplexity-User) are allowed too; their operators state that robots.txt may not apply to them, so the file is a request, not enforcement. Each token was checked against the operator documentation.
+
+Structured data: each species page emits one `@graph` with a Taxon (scientific name, rank, description, citations) and a breadcrumb. No parent taxon is written, so ancestry is never asserted. The About page emits an AboutPage and a breadcrumb; the home page emits a WebSite. No Organization node is written, because no verified organisation identity exists. `/admin` and `/api` responses carry `X-Robots-Tag: noindex, nofollow`.
+
+The sitemap lists only canonical pages (21 at the time of writing), and sets `lastmod` from the reviewer date on species pages that have one. `/llms.txt` is a short index of the key pages built from the catalog; it follows a proposed convention and does not promise any effect on search or answer engines.
+
+## Decisions on caching and Content Security Policy
+
+Public HTML is still rendered per request with `no-store`. Pages depend on the URL and on live CMS content, and a cache that is not revalidated by tag would show published changes late. Caching waits for a decision on the hosting and CDN setup, and for a tag-based revalidation design.
+
+The planned Content Security Policy shape is a per-request nonce. Pages are rendered dynamically, and the framework scripts that carry the page data change with each request, so a hash cannot cover them. The `unsafe-inline` and `unsafe-eval` entries stay until the nonce is in place and the end-to-end suite passes without them.

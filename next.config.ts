@@ -31,6 +31,8 @@ const nextConfig:NextConfig={
   },
   async headers(){
     return [
+      {source:'/admin/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
+      {source:'/api/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
       {source:'/(.*)',headers:securityHeaders},
       // The admin panel may never be framed by another site (clickjacking protection).
       {source:'/admin/:path*',headers:[{key:'X-Frame-Options',value:'SAMEORIGIN'},{key:'Content-Security-Policy',value:securityHeaders.find(h=>h.key==='Content-Security-Policy')!.value.replace('frame-ancestors *','frame-ancestors \'self\'')}]},

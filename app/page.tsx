@@ -1,4 +1,7 @@
 import type {Metadata} from 'next'
+import {taxaById} from '../content/catalog'
+import {graphDocument, jsonLdHtml, websiteNode} from '../features/seo/metadata'
+import {absoluteUrl} from '../infrastructure/site/url'
 import {preload} from 'react-dom'
 import {buildExplorerBootstrap} from '../features/explorer/bootstrap'
 import {readExplorerState} from '../features/explorer/state'
@@ -18,9 +21,20 @@ function preloadHero(){
   preload('/assets/hero-desktop.webp',{as:'image',fetchPriority:'high',media:'(min-width: 821px)'})
 }
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: 'Human Origins — Interactive Human Evolution Atlas',
   description: 'A source-aware interactive atlas of human evolution, evidence, specimens, time and migration.',
+}
+
+// Canonical rules (plan phase 9.2): ?species=X without a mode points to /species/X; every mode points to /; the comparison view is noindex.
+export async function generateMetadata({searchParams}: PageProps): Promise<Metadata> {
+  const query = searchParams ? await searchParams : {}
+  const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)
+  const species = first(query.species)
+  const mode = first(query.mode)
+  const comparing = first(query.cmp)
+  const canonical = species && taxaById[species] && !mode ? absoluteUrl(`/species/${species}`) : absoluteUrl('/')
+  return {...baseMetadata, alternates: {canonical}, ...(comparing ? {robots: {index: false, follow: true}} : {})}
 }
 
 type PageProps = {
@@ -41,6 +55,7 @@ export default async function HomePage({searchParams}: PageProps) {
 
   return (
     <div className="site">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: jsonLdHtml(graphDocument([websiteNode(absoluteUrl('/'), 'Human Origins')]))}} />
       <SiteHeader />
       <Hero copy={live.copy} />
       <ExplorerErrorBoundary>

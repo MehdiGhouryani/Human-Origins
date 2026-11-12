@@ -1,3 +1,4 @@
+import {jsonLdHtml, seoDescription, seoTitle} from '../../../features/seo/metadata'
 import type {Metadata} from 'next'
 import {RELATION_SEMANTICS} from '../../../domain/relationship-semantics'
 import type {CSSProperties} from 'react'
@@ -68,13 +69,13 @@ export async function generateMetadata({params}:Params):Promise<Metadata>{
   const {species,portrait,gallery}=dossier
   const hero=gallery.find(media=>media.slotId===`${species.id}.S03`)
   const page=getSpeciesPage(String(species.id))
-  const description=page?page.lead.text.replace(/\*/g,''):species.description
+  const description=seoDescription(page?.lead.text??'',species.description)
   const url=absoluteUrl(`/species/${species.id}`)
   // The wide scene image makes a better social card than a tall portrait; both exist only once a reviewer approved them.
   const cardSource=hero??portrait
   const image=cardSource?resolveMediaSrc(cardSource,'card',1200):undefined
   return {
-    title:`${species.name} (${species.date}) · Human Origins`,
+    title:seoTitle(species.name,species.date),
     description,
     alternates:{canonical:url},
     openGraph:{type:'article',title:species.name,description,url,images:image?[{url:image,alt:cardSource?.alt}]:undefined},
@@ -101,7 +102,7 @@ export default async function SpeciesPage({params}:Params){
   const color=groupColors[species.group as keyof typeof groupColors]??'#e8bd70'
   const left=ageMaToFraction(species.start)*100
   const right=ageMaToFraction(species.end)*100
-  const jsonLd=JSON.stringify(speciesJsonLd(dossier,absoluteUrl(`/species/${species.id}`))).replace(/</g,'\\u003c')
+  const jsonLd=jsonLdHtml(speciesJsonLd(dossier,absoluteUrl(`/species/${species.id}`)))
   // The honest "thin record" banner is for taxa with no source-backed claims at all, not for every tier-0 record.
   const isThinRecord=completeness.tier===0&&claims.length===0
   const content=getSpeciesPage(String(species.id))

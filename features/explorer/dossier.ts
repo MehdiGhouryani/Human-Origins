@@ -1,3 +1,4 @@
+import {breadcrumbNode, graphDocument} from '../seo/metadata'
 import type {EvidenceRecord,EvidenceSite,ProvenanceClaim,RelationClass,RelationshipType} from '../../domain/contracts'
 import type {DatingClass} from '../../domain/time'
 import {rangesOverlap} from '../../domain/time'
@@ -158,17 +159,20 @@ export const completenessTierLabel:Record<CompletenessTier,string>={
 
 /** schema.org/Taxon JSON-LD. Only canonical, already-public fields are emitted. */
 export function speciesJsonLd(dossier:SpeciesDossier,pageUrl:string):Record<string,unknown>{
-  const {species,ancestors,sources}=dossier
-  return {
-    '@context':'https://schema.org',
-    '@type':'Taxon',
-    '@id':pageUrl,
-    url:pageUrl,
-    name:species.taxonomy.scientificName,
-    alternateName:species.short!==species.taxonomy.scientificName?species.short:undefined,
-    taxonRank:species.taxonomy.rank,
-    description:species.description,
-    parentTaxon:ancestors.length===1?{'@type':'Taxon',name:ancestors[0].name}:undefined,
-    citation:sources.map(source=>({'@type':'CreativeWork',name:source.title,url:source.url,publisher:source.publisher})),
-  }
+  // One @graph per species (plan phase 9.3-9.4): a Taxon with no parent taxon (ancestry is not asserted) and the breadcrumb.
+  const {species,sources}=dossier
+  const origin=new URL(pageUrl).origin
+  return graphDocument([
+    {
+      '@type':'Taxon',
+      '@id':`${pageUrl}#taxon`,
+      url:pageUrl,
+      name:species.taxonomy.scientificName,
+      alternateName:species.short!==species.taxonomy.scientificName?species.short:undefined,
+      taxonRank:species.taxonomy.rank,
+      description:species.description,
+      citation:sources.map(source=>({'@type':'CreativeWork',name:source.title,url:source.url,publisher:source.publisher})),
+    },
+    breadcrumbNode(pageUrl,[{name:'Human Origins',url:`${origin}/`},{name:'Species',url:`${origin}/species`},{name:species.name,url:pageUrl}]),
+  ])
 }
