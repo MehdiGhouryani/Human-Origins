@@ -4,7 +4,7 @@ import {Menu,X} from 'lucide-react'
 import GlobalSearch from './GlobalSearch'
 import {Suspense,useEffect,useRef,useState} from 'react'
 import Link from 'next/link'
-import {usePathname,useSearchParams} from 'next/navigation'
+import {usePathname,useRouter,useSearchParams} from 'next/navigation'
 
 type Item={label:string;path:string;query:Record<string,string>;carry:boolean}
 // Views of the explorer that live on the home page are reached from the tab bar (Tree, Timeline, Migration).
@@ -37,6 +37,13 @@ function activeLabel(pathname:string,params:URLSearchParams):string|null{
 function SiteHeaderContent(){
   const pathname=usePathname()
   const params=useSearchParams()
+  const router=useRouter()
+  // useSearchParams can lag a URL write made by the explorer. A click builds the target from the address bar at that moment,
+  // so a link pressed right after a selection keeps the species and the mode (phase 7 navigation fix).
+  const follow=(item:Item)=>(event:React.MouseEvent<HTMLAnchorElement>)=>{
+    const target=hrefFor(item,new URLSearchParams(window.location.search))
+    if(target!==event.currentTarget.getAttribute('href')){event.preventDefault();router.push(target)}
+  }
   const [open,setOpen]=useState(false)
   const toggleRef=useRef<HTMLButtonElement>(null)
   const menuRef=useRef<HTMLDivElement>(null)
@@ -75,7 +82,7 @@ function SiteHeaderContent(){
       <span><strong>HUMAN ORIGINS</strong>{' '}<small>OUR STORY. A SHARED PAST.</small></span>
     </Link>
     <nav aria-label="Modes">
-      {navItems.map(item=><Link className={active===item.label?'active':''} href={hrefFor(item,params)} key={item.label} aria-current={active===item.label?'page':undefined}>{item.label}</Link>)}
+      {navItems.map(item=><Link className={active===item.label?'active':''} href={hrefFor(item,params)} onClick={follow(item)} key={item.label} aria-current={active===item.label?'page':undefined}>{item.label}</Link>)}
     </nav>
     <div className="top-actions">
       <GlobalSearch/>
@@ -85,7 +92,7 @@ function SiteHeaderContent(){
     </div>
     {open&&<div ref={menuRef} id="mobile-navigation" className="mobile-navigation">
       <nav aria-label="Mobile navigation">
-        {navItems.map(item=><Link href={hrefFor(item,params)} key={item.label} onClick={close} className={active===item.label?'active':''} aria-current={active===item.label?'page':undefined}>{item.label}</Link>)}
+        {navItems.map(item=><Link href={hrefFor(item,params)} key={item.label} onClick={event=>{follow(item)(event);close()}} className={active===item.label?'active':''} aria-current={active===item.label?'page':undefined}>{item.label}</Link>)}
       </nav>
     </div>}
   </header>

@@ -31,6 +31,8 @@ test.describe('navigation: each destination is reachable once', ()=>{
   test('Journey and Evidence open from the header and keep the species', async({page})=>{
     await page.goto('/')
     await page.locator('.taxon-chip[data-taxon="sapiens"]').click()
+    // The header reads the URL to build its links, so wait until the selection has reached it before pressing a link.
+    await expect(page).toHaveURL(/species=sapiens/)
     await headerNav(page).getByRole('link',{name:'Journey',exact:true}).click()
     await expect(page.locator('.journey-view')).toBeVisible()
     await expect(page).toHaveURL(/journey=1/)
