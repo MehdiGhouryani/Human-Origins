@@ -1,0 +1,62 @@
+{
+  "schema": "perf-baseline/1",
+  "createdAt": "2026-11-12T18:44:29.973Z",
+  "commit": "41e39bd",
+  "base": "http://localhost:3100",
+  "runs": 5,
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "node": "v22.23.4"
+  },
+  "protocol": {
+    "mobile": "CPU x4 (Emulation.setCPUThrottlingRate), network Fast 4G (150 ms latency, 1.6 Mbps down, 0.75 Mbps up)",
+    "desktop": "no throttling; 1440x900",
+    "metrics": "TTFB = navigation responseStart; LCP, CLS, TBT (long tasks minus 50 ms), INP approximated by the slowest click event after one tab click; bytes = wire size by resource type",
+    "controls": "interactive elements inside the first viewport; controlsNonGraph excludes elements inside lineage or graph containers"
+  },
+  "scenarios": {
+    "home-mobile": {
+      "mobile": true,
+      "path": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "ttfb": 138,
+      "fcp": 1960,
+      "lcp": 1960,
+      "cls": 0,
+      "tbt": 1162,
+      "inp": 96,
+      "dom": 1088,
+      "controlsAboveFold": 31,
+      "controlsNonGraph": 27,
+      "requests": 38,
+      "bytes": {
+        "document": 72831,
+        "script": 245011,
+        "stylesheet": 23924,
+        "image": 212375,
+        "font": 121392,
+        "other": 0,
+        "total": 675533
+      },
+      "lcpRuns": [
+        3352,
+        1940,
+        1980,
+        1960,
+        1892
+      ],
+      "tbtRuns": [
+        1820,
+        874,
+        1162,
+        1282,
+        822
+      ]
+    }
+  }
+}
