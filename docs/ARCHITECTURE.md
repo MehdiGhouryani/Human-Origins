@@ -111,7 +111,7 @@ Environment variables (`CMS_ADMIN_PASSWORD`, `SITE_URL`, `TRUST_PROXY`, `CMS_DB_
 | `build` | `next build` |
 
 Also available: `npm run test:e2e` (Playwright: smoke, species, responsive, visual), `qa:installed`, `backup:cms`, `restore:cms`.
-Accessibility is checked with axe-core (WCAG 2.x A/AA, serious and critical findings) by `npm run test:a11y` on about, compare, evidence, migration and species. The lineage and evidence graph containers are excluded by decision. `qa:release` does not start a server, so this check runs in the e2e stage, against a running server.
+Accessibility is checked with axe-core (WCAG 2.x A/AA, serious and critical findings) by `npm run test:a11y` on home, about, compare, evidence, migration and three species pages, on every viewport (desktop, phone, iPhone SE and tablet). The lineage and evidence graph containers are excluded by decision. `qa:release` does not start a server, so this check runs in the e2e stage, against a running server.
 
 ## 9. Checklists
 

@@ -2,17 +2,20 @@ import {expect,test} from '@playwright/test'
 import {readFileSync} from 'node:fs'
 import {join} from 'node:path'
 
-// Phase 7.5 of the plan (v2): a repeatable axe check outside the graph. The lineage and evidence graph containers
+// Phase 7.5 of the plan (v2): a repeatable axe check outside the graph, on every viewport (the name matches the responsive projects). The lineage and evidence graph containers
 // (and the graph-adjacent notes, class names containing "graph") are frozen by the owner's decision and are excluded
 // here; their findings are tracked on the graph track, not hidden.
 const AXE_SOURCE=readFileSync(join(process.cwd(),'node_modules','axe-core','axe.min.js'),'utf8')
 const GRAPH_EXCLUDE=['[class*="lineage"]','[class*="graph"]']
 const ROUTES=[
+  {name:'home',path:'/'},
   {name:'about',path:'/about'},
   {name:'compare',path:'/?mode=compare&cmp=sapiens,neanderthal'},
   {name:'evidence',path:'/?mode=evidence'},
   {name:'migration',path:'/?mode=migration'},
   {name:'species',path:'/species/neanderthal'},
+  {name:'species-ardipithecus',path:'/species/ardipithecus'},
+  {name:'species-orrin',path:'/species/orrin'},
 ]
 
 type AxeViolation={id:string,impact?:string|null,nodes:{target:string[]}[]}

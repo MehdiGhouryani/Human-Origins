@@ -13,6 +13,7 @@
 - Explorer bootstrap: the browser no longer receives fields that no component reads (`identifiers` on publications and sources, `contributors` on publications). The narrowed `ClientPublicationRecord` and `ClientSourceRecord` types make a future read fail the type check. Serialised payload: home 357 KB to 309 KB, species 432 KB to 384 KB; rendering unchanged.
 - Migration atlas: the live region announces the scene only, not the count of visible sites, so playback does not repeat it (phase 7.5). The count stays visible on screen.
 - Header navigation: a link pressed right after a selection keeps the species and the mode. The header now builds the target from the address bar at click time, because `useSearchParams` can lag an explorer URL write (navigation.spec.ts:31 failed about one run in six before this; 32 of 32 pass in the repeat run afterwards).
+- Axe gate extended: `tests/e2e/a11y-responsive.spec.ts` runs on every viewport (desktop, phone, iPhone SE, tablet) and on eight routes (home, about, compare, evidence, migration and three species pages). 32 of 32 pass.
 - Not yet met: the mobile TBT budget (under 200 ms) and the payload budgets. Measured mobile TBT is between about 0.2 s and 1.5 s, and the run-to-run spread is larger than the changes so far.
 
 ### Explorer UX
