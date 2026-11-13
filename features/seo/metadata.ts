@@ -11,24 +11,29 @@ export function plainText(value: string): string {
   return value.replace(/\*+/g, '').replace(/\s+/g, ' ').trim()
 }
 
+/** Cuts an over-long text at a sentence end, or at a word boundary with an ellipsis, so it fits the range. */
+function cutToRange(clean: string): string {
+  const head = clean.slice(0, DESCRIPTION_MAX + 1)
+  const sentenceEnd = head.lastIndexOf('. ')
+  if (sentenceEnd >= DESCRIPTION_MIN - 1) return clean.slice(0, sentenceEnd + 1)
+  const cut = clean.slice(0, DESCRIPTION_MAX - 1)
+  const space = cut.lastIndexOf(' ')
+  return cut.slice(0, space > 0 ? space : cut.length).replace(/[,;:\s]+$/, '') + '…'
+}
+
 /**
  * Builds a meta description from text the page already shows. It keeps whole sentences when they fit in
- * 160 characters, cuts at a word boundary otherwise, and falls back to the catalog description when the text is too short.
- * No claim is added that is not already on the page.
+ * 160 characters, cuts at a word boundary otherwise, and falls back to the catalog description when the
+ * page text is too short. The fallback is cut with the same rule when it is over-long. No claim is added
+ * that is not already on the page; a source text shorter than 120 characters stays short.
  */
 export function seoDescription(text: string, fallback = ''): string {
   const clean = plainText(text)
   if (clean.length >= DESCRIPTION_MIN && clean.length <= DESCRIPTION_MAX) return clean
-  if (clean.length > DESCRIPTION_MAX) {
-    const head = clean.slice(0, DESCRIPTION_MAX + 1)
-    const sentenceEnd = head.lastIndexOf('. ')
-    if (sentenceEnd >= DESCRIPTION_MIN - 1) return clean.slice(0, sentenceEnd + 1)
-    const cut = clean.slice(0, DESCRIPTION_MAX - 1)
-    const space = cut.lastIndexOf(' ')
-    return cut.slice(0, space > 0 ? space : cut.length).replace(/[,;:\s]+$/, '') + '…'
-  }
+  if (clean.length > DESCRIPTION_MAX) return cutToRange(clean)
   const fb = plainText(fallback)
   if (fb.length >= DESCRIPTION_MIN && fb.length <= DESCRIPTION_MAX) return fb
+  if (fb.length > DESCRIPTION_MAX) return cutToRange(fb)
   return clean || fb
 }
 
