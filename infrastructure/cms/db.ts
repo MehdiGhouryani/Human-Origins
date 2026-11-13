@@ -93,6 +93,13 @@ export function getDb():DatabaseSync{
   return db
 }
 
+/** Closes the shared connection and clears the cache. Only the test teardown uses this (Windows cannot delete
+    a directory whose SQLite file is still open); the server keeps one connection for its whole life. */
+export function closeDb():void{
+  instance?.close()
+  instance=undefined
+}
+
 let transactionDepth=0
 
 /**

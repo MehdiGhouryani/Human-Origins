@@ -122,7 +122,7 @@ describe('slot publishing rules',()=>{
 })
 
 describe('CMS: slots end to end (store + release audit)',()=>{
-  afterAll(()=>{ rmSync(workDir,{recursive:true,force:true}) })
+  afterAll(async()=>{const {closeDb}=await import('../infrastructure/cms/db'); closeDb(); rmSync(workDir,{recursive:true,force:true})})
 
   const portrait=(id:string,overrides:Record<string,unknown>={})=>base(id,{slotId:'afarensis.S02',roles:['profile-portrait'],kind:'reconstruction',evidenceClass:'D',...draftD,...overrides})
 

@@ -29,7 +29,7 @@ const validInput=(id:string,overrides:Record<string,unknown>={})=>({
 
 describe('CMS',()=>{
   const uploadedIds:string[]=[]
-  afterAll(()=>{ for(const id of uploadedIds) deleteProcessedImage(id); rmSync(workDir,{recursive:true,force:true}) })
+  afterAll(async()=>{const {closeDb}=await import('../infrastructure/cms/db'); for(const id of uploadedIds) deleteProcessedImage(id); closeDb(); rmSync(workDir,{recursive:true,force:true})})
 
   it('starts with no published CMS content and serves the built-in catalog untouched',()=>{
     const live=getLiveContent()

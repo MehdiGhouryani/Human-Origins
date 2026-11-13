@@ -1,4 +1,5 @@
 import {execFileSync} from 'node:child_process'
+import {tscBin} from './lib/tsc-bin.mjs'
 import {mkdtempSync,rmSync} from 'node:fs'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
@@ -7,7 +8,7 @@ import {readFileSync} from 'node:fs'
 const root=process.cwd()
 const out=mkdtempSync(join(tmpdir(),'human-origins-reproducibility-'))
 try{
-  execFileSync('tsc',[
+  execFileSync(process.execPath,[tscBin,
     'scripts/audit-reproducibility-entry.ts',
     'infrastructure/validation/fingerprint.ts',
     'content/catalog.ts','content/collections.ts','content/taxon-names.ts','content/evidence.ts','content/foundation.ts','content/institutions.ts','content/media.ts','content/occurrences.ts','content/interpretations.ts','content/provenance.ts','content/publications.ts','content/relationships.ts','content/sites.ts','content/sources.ts','content/specimens.ts','content/taxa.ts','content/migration-corridors.ts',

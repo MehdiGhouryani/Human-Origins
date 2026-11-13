@@ -36,7 +36,7 @@ async function upload(slotId:string,subjectId:string,fields:Record<string,string
 const patch=(id:string,body:unknown)=>PATCH(new Request(`http://localhost/api/admin/media/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),{params:Promise.resolve({id})})
 
 describe('admin API: uploading to a named slot',()=>{
-  afterAll(()=>{ rmSync(workDir,{recursive:true,force:true}) })
+  afterAll(async()=>{const {closeDb}=await import('../infrastructure/cms/db'); closeDb(); rmSync(workDir,{recursive:true,force:true})})
 
   it('rejects uploads without a session',async()=>{
     session.valid=false

@@ -53,8 +53,9 @@ describe('docs/HUMAN-ORIGINS-FIX-PLAN.md',()=>{
   it('is referenced by README and AGENTS, and no other file mentions the retired plan',()=>{
     expect(read('README.md')).toContain(planRel)
     expect(read('AGENTS.md')).toContain(planRel)
+    const posix=(rel:string)=>rel.replaceAll('\\','/')
     const offenders=listFiles(root).filter(rel=>
-      rel!==planRel && rel!=='tests/plan-integrity.test.ts' && TEXT_EXTENSIONS.has(extname(rel)) && read(rel).includes(RETIRED_NAME))
+      posix(rel)!==planRel && posix(rel)!=='tests/plan-integrity.test.ts' && TEXT_EXTENSIONS.has(extname(rel)) && read(rel).includes(RETIRED_NAME))
     expect(offenders).toEqual([])
   },20_000)
 

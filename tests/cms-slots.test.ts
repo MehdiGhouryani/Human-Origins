@@ -21,7 +21,7 @@ const row=(id:string,overrides:Record<string,unknown>={})=>({
 const erectus=()=>getLiveContent().catalog.taxa.find(t=>String(t.id)==='erectus')!
 
 describe('CMS media slots',()=>{
-  afterAll(()=>rmSync(workDir,{recursive:true,force:true}))
+  afterAll(async()=>{const {closeDb}=await import('../infrastructure/cms/db'); closeDb(); rmSync(workDir,{recursive:true,force:true})})
 
   it('a draft replacement never takes the live portrait / tree avatar off the site',()=>{
     store.createMedia(row('slot-live',{isDefault:true,roles:['profile-portrait','tree-thumbnail']}))
