@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Mobile navigation before hydration (second pass)
+- The mobile menu is a native `<details>` disclosure now, in the served header and in the Suspense fallback: it opens with Enter from the keyboard and its links navigate before React attaches (and with scripts blocked), so no served variant of the header carries a control that does nothing until hydration. The hydrated header adds the focus trap, Escape/outside-tap closing, the `aria-expanded` mirror and the Space key on top of the native state; the summary carries `role="button"` because Chromium does not expose the button role for a summary inside a `display: contents` parent. Regression tests: `tests/e2e/mobile-nav-fallback.spec.ts` (framework chunks blocked, so the page never hydrates; 320/360/390/768 px) and `tests/site-header-fallback.test.tsx` (served markup has no click-controlled toggle). Finding reported, not changed: on force-dynamic routes Next streams the fallback header and the resolved header into the same HTML, so a no-JS reader receives two header copies (the second is the one shown and interactive; pre-existing behaviour, owner decision needed if it should be deduplicated server-side).
+
+### Search metadata coverage (phase 9 follow-up)
+- `seoDescription` now cuts an over-long catalog fallback with the same sentence/word rule as page text (before, a species without an authored page got its full catalog description, over 160 characters). Nothing is invented; a source text shorter than 120 characters stays short.
+- Production metadata coverage for all 18 species: `tests/species-metadata.test.tsx` runs the real `generateMetadata` per species (unique titles ≤ 60, absolute canonicals, indexable, descriptions from page text) plus the sitemap (18 species + 3 canonical static pages, `lastmod` only where a reviewer date exists) and the explorer canonical/noindex rules. Reported limitation: the descriptions of `boisei`, `ergaster` and `robustus` are 76–106 characters because their catalog records are that short — these are outside-graph taxa whose content is parked; filling them is a content decision, not a padding task.
+
+### Release gate portability
+- The data audits (`validate:data`, `audit:media`, `audit:research-model`, `audit:*`, `images:build`, `check:references`) invoked `tsc` through a bare `execFileSync`, which cannot exec the `.cmd` shim on Windows (`spawnSync tsc ENOENT`). They now resolve TypeScript's own `bin/tsc` and run it with the current Node binary (`scripts/lib/tsc-bin.mjs`), identical behaviour on Linux/macOS. CI on ubuntu is unaffected.
+
+### CSS audit (phase 7.4 counting tool)
+- `npm run audit:css` (read-only): reproducible counts for the plan's CSS debt — lines per stylesheet (globals 5306 + atlas 454 = 5760 against the deferred < 2500 target), 19 `!important`, 49 media queries, 126 selector definitions repeated across rules (top: `.tree-shell` 10×, `.topbar` 9×), and 39 class names no source or test file references (deletion is an owner decision; the 2026-10-12 purge protocol — computed-style fingerprint over page×width combinations — must be repeated first). The graph-lineage list is empty: no frozen class is unreferenced.
+
 ### Performance and accessibility (phase 7, in progress)
 - Measurement protocol: `npm run perf:baseline` (mobile: CPU x4 and a Fast 4G profile; desktop: unthrottled; medians of five runs). Baseline in `tests/perf/baseline.json`; the after-change run in `tests/perf/after-phase7.json`.
 - The client bootstrap no longer carries the audit-only publication fields (`note`, `verifiedOn`, `verification`): 5 to 6 KB less HTML on the wire on pages that carry explorer data. Fields the UI reads (including `kind`) are unchanged.
