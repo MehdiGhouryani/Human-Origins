@@ -53,10 +53,11 @@ test.describe('responsive layout contract',()=>{
     const outline=await menu.locator('a:focus').evaluate(el=>getComputedStyle(el).outlineStyle).catch(()=> 'none')
     expect(outline).not.toBe('none')
     await page.keyboard.press('Escape')
-    await expect(menu).toHaveCount(0)
+    // The menu is a native disclosure: its markup stays in the DOM and closes through the [open] attribute.
+    await expect(menu).toBeHidden()
     await expect(page.getByRole('button',{name:'Open navigation'})).toBeFocused()
     await toggle.click(); await page.mouse.click(200,700)
-    await expect(menu).toHaveCount(0)
+    await expect(menu).toBeHidden()
   })
 
   test('primary touch targets are at least 44px',async({page})=>{

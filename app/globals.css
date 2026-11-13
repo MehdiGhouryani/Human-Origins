@@ -3891,6 +3891,23 @@ body {
   display: none;
 }
 
+/* The mobile menu is a native <details> disclosure, shared by the served header and the Suspense
+   fallback: it opens and navigates before React attaches, so the toggle is never an inert control.
+   Visibility is keyed off [open]; the marker is hidden with the same pattern the other summaries
+   in atlas.css use. */
+.mobile-menu {
+  display: contents;
+}
+
+.mobile-menu summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.mobile-menu summary::-webkit-details-marker {
+  display: none;
+}
+
 .tab-panel:focus-visible {
   outline: 2px solid #f0c879;
   outline-offset: 5px;
@@ -3916,7 +3933,6 @@ body {
     display: flex !important;
   }
   .mobile-navigation {
-    display: block;
     position: absolute;
     left: 12px;
     right: 12px;
@@ -3927,6 +3943,9 @@ body {
     box-shadow: 0 18px 40px rgba(0,0,0,.34);
     border-radius: 12px;
     z-index: 30;
+  }
+  .mobile-menu[open]>.mobile-navigation {
+    display: block;
   }
   .mobile-navigation nav {
     display: grid;
