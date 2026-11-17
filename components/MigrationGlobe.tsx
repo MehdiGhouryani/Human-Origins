@@ -392,12 +392,12 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
         </div>
       </div>
 
-      <div className="atlas-zoom" data-no-drag role="group" aria-label="Map view">
+      {!compact&&<div className="atlas-zoom" data-no-drag role="group" aria-label="Map view">
         <button type="button" onClick={()=>zoomBy(1.5)} className="atlas-icon-btn" aria-label="Zoom in"><Plus size={18} aria-hidden="true"/></button>
         <button type="button" onClick={()=>zoomBy(1/1.5)} className="atlas-icon-btn" aria-label="Zoom out"><Minus size={18} aria-hidden="true"/></button>
         <button type="button" onClick={resetView} className="atlas-icon-btn" aria-label="Reset view"><RotateCcw size={17} aria-hidden="true"/></button>
         <button type="button" onClick={()=>setProjectionKind(kind=>kind==='globe'?'flat':'globe')} className="atlas-icon-btn" aria-label={projectionKind==='globe'?'Switch to flat map':'Switch to globe'}>{projectionKind==='globe'?<FlatMapIcon size={17} aria-hidden="true"/>:<Globe2 size={17} aria-hidden="true"/>}</button>
-      </div>
+      </div>}
       {compact&&<details className="atlas-mobile-map-controls" data-no-drag>
         <summary className="atlas-icon-btn atlas-mobile-map-controls-toggle" aria-label="Map controls" title="Map controls"><SlidersHorizontal size={18} aria-hidden="true"/></summary>
         <div className="atlas-mobile-map-controls-menu" role="group" aria-label="Map view controls">
