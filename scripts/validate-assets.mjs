@@ -11,6 +11,20 @@ if(existsSync(manifestPath)){
   const pkg=JSON.parse(readFileSync(join(root,'package.json'),'utf8'))
   if(data.version!==(pkg.version||'').replace('0.','')) errors.push(`asset-manifest version is not aligned with package release ${pkg.version}`)
   const listed=new Set((data.assets||[]).map(item=>item.path))
+  const walk=(directory,relative='')=>{
+    const files=[]
+    for(const entry of readdirSync(join(directory,relative),{withFileTypes:true})){
+      const child=join(relative,entry.name)
+      if(entry.isDirectory()) files.push(...walk(directory,child))
+      else if(entry.isFile()) files.push('/assets/'+child.split('\\\\').join('/'))
+      else errors.push(`public/assets/${child}: unsupported filesystem entry`)
+    }
+    return files
+  }
+  const excludedManifestFiles=new Set(['/assets/asset-manifest.json','/assets/catalog-runtime-manifest.json'])
+  for(const path of walk(join(root,'public/assets'))){
+    if(!excludedManifestFiles.has(path)&&!listed.has(path)) errors.push(`${path}: missing from asset manifest`)
+  }
   for(const item of data.assets||[]){
     const path=item.path||''
     const expected=item.sha256
