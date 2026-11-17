@@ -19,14 +19,16 @@ test('migration map controls are collapsed but usable on a phone',async({page})=
   expect(triggerSize?.height).toBeGreaterThanOrEqual(44)
   const menu=page.getByRole('group',{name:'Map view controls'})
   await expect(menu).toBeVisible()
+  // Evidence-cluster buttons also describe their action as “zoom in”; scope these controls by exact accessible name.
+  const control=(name:string)=>page.getByRole('button',{name,exact:true})
   for(const name of ['Zoom in','Zoom out','Reset view','Switch to flat map']){
-    await expect(page.getByRole('button',{name})).toBeVisible()
+    await expect(control(name)).toBeVisible()
   }
 
-  const actionSizes=await Promise.all(['Zoom in','Zoom out','Reset view','Switch to flat map'].map(name=>page.getByRole('button',{name}).boundingBox()))
+  const actionSizes=await Promise.all(['Zoom in','Zoom out','Reset view','Switch to flat map'].map(name=>control(name).boundingBox()))
   expect(actionSizes.every(size=>Boolean(size&&size.width>=44&&size.height>=44))).toBe(true)
 
-  await page.getByRole('button',{name:'Zoom in'}).click()
+  await control('Zoom in').click()
   await expect(menu).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(disclosure).not.toHaveAttribute('open','')
