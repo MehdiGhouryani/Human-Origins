@@ -9,6 +9,7 @@
 import {createHash,randomBytes} from 'node:crypto'
 import {existsSync,readFileSync,writeFileSync} from 'node:fs'
 import {dirname,join,resolve} from 'node:path'
+import {fileURLToPath} from 'node:url'
 import sharp from 'sharp'
 import {CAPTION_NOTE,altTextFor,buildAssumptions,isDefaultPortraitSlot,needsCrop,parseBriefs,parseChecksums,parseInventory} from './handoff'
 
@@ -58,7 +59,7 @@ async function main(){
   const {MEDIA_SLOTS}=await import('../../content/media-slots.generated')
   const {findSlot,isSlotOpen,slotAspect}=await import('../../domain/media-slots')
   const {contentCatalog}=await import('../../content/catalog')
-  const catalogRows=JSON.parse(readFileSync(join(dirname(new URL(import.meta.url).pathname),'catalog.json'),'utf8')) as {code:string;specimenRef?:string}[]
+  const catalogRows=JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)),'catalog.json'),'utf8')) as {code:string;specimenRef?:string}[]
   const specimenOf=new Map(catalogRows.map(row=>[row.code,(row.specimenRef??'').trim()]))
   const store=args.dryRun?null:await import('../../infrastructure/cms/store')
   const assets=args.dryRun?null:await import('../../infrastructure/cms/assets')
