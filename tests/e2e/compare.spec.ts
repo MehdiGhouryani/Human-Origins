@@ -75,11 +75,12 @@ test('on a phone the first taxon sits beside the narrow labels and the chosen ch
   // Compare is an on-demand chunk; wait until its selected cards have hydrated before measuring layout.
   await expect(cardHeaders).toHaveCount(3)
   await expect(cardHeaders.first()).toBeVisible()
-  const header=await cardHeaders.first().boundingBox()
-  expect(header?.x??999).toBeLessThan(170)                      // label column ≈104px, not 240px
-  const chip=await page.locator('.compare-chip.active').first().boundingBox()
-  expect(chip?.x??-1).toBeGreaterThanOrEqual(0)
-  expect((chip?.x??999)+(chip?.width??999)).toBeLessThanOrEqual(390)
+  const header=cardHeaders.first()
+  // The lazy chunk can hydrate/reconcile once after its first visible paint; poll the measured geometry.
+  await expect.poll(async()=>{const box=await header.boundingBox();return box?.x??999}).toBeLessThan(170) // label column ≈104px
+  const chip=page.locator('.compare-chip.active').first()
+  await expect.poll(async()=>{const box=await chip.boundingBox();return box?.x??-1}).toBeGreaterThanOrEqual(0)
+  await expect.poll(async()=>{const box=await chip.boundingBox();return box?box.x+box.width:999}).toBeLessThanOrEqual(390)
 })
 
 
