@@ -6,6 +6,7 @@ test('migration map controls are collapsed but usable on a phone',async({page})=
   const stage=page.locator('.atlas-stage.compact')
   await expect(stage).toBeVisible()
 
+  await expect(page.locator('.atlas-zoom')).toHaveCount(0)
   const disclosure=page.locator('.atlas-mobile-map-controls')
   await expect(disclosure).toBeVisible()
   await expect(disclosure).not.toHaveAttribute('open','')
