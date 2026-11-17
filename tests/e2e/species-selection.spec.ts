@@ -56,7 +56,7 @@ test('the taxa outside the main graph are explained in the status area, and the 
   await page.goto('/')
   const status=page.locator('.taxon-nav-status')
   await expect(status).toContainText('7 taxa outside main graph')
-  const graphIds=await settledGraphTaxonIds(page)
+  await settledGraphTaxonIds(page)
   await page.locator('.taxon-chip[data-taxon="common"]').click()
   await expect(status).toContainText('Common ancestor is outside the main graph')
 })
