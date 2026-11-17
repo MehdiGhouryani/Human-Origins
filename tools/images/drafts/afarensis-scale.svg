@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Australopithecus afarensis body-size estimates</title>
+  <desc id="desc">A data-derived scale diagram comparing published average stature estimates for female and male Australopithecus afarensis with a 170 centimetre adult-human reference. A separate chart shows body-mass estimates from McHenry 1992 and the 95 percent prediction interval for Lucy from Brassey and colleagues 2018. The methods differ and the estimates are not direct measurements.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#102326"/><stop offset="1" stop-color="#091719"/></linearGradient>
+    <linearGradient id="female" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d6ae72"/><stop offset="1" stop-color="#a87942"/></linearGradient>
+    <linearGradient id="male" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8bb2ac"/><stop offset="1" stop-color="#547d78"/></linearGradient>
+    <style>
+      text{font-family:Inter,Arial,sans-serif;fill:#eee8dc}
+      .display{font-family:"Cormorant Garamond",Georgia,serif}
+      .muted{fill:#9baaa5}
+      .gold{fill:#e8bd70}
+      .small{font-size:17px}
+      .tiny{font-size:14px}
+      .label{font-size:18px;font-weight:600;letter-spacing:.04em}
+      .axis{stroke:#536a68;stroke-width:1}
+      .grid{stroke:#294344;stroke-width:1;stroke-dasharray:4 7}
+      .panel{fill:url(#panel);stroke:#284244;stroke-width:1.5}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#071214"/>
+  <circle cx="1440" cy="75" r="200" fill="#183638" opacity=".2"/>
+  <text x="86" y="82" class="display" font-size="49" font-weight="600">Australopithecus afarensis</text>
+  <text x="88" y="122" class="small muted">Body-size estimates · published estimates, not direct measurements</text>
+  <rect x="84" y="166" width="690" height="565" rx="22" class="panel"/>
+  <rect x="804" y="166" width="712" height="565" rx="22" class="panel"/>
+  <text x="120" y="220" class="gold label">STATURE ESTIMATES</text>
+  <text x="120" y="251" class="muted small">Published sex-specific averages · McHenry (1991)</text>
+  <line x1="168" y1="635" x2="710" y2="635" class="axis"/>
+  <line x1="168" y1="270" x2="168" y2="635" class="axis"/>
+  <g class="muted tiny" text-anchor="end">
+    <text x="151" y="640">0</text><text x="151" y="538">50</text><text x="151" y="436">100</text><text x="151" y="334">150</text>
+  </g>
+  <g class="grid">
+    <line x1="168" y1="533.6" x2="710" y2="533.6"/><line x1="168" y1="432.2" x2="710" y2="432.2"/><line x1="168" y1="330.8" x2="710" y2="330.8"/>
+  </g>
+  <rect x="250" y="422.3" width="96" height="212.7" rx="11" fill="url(#female)"/>
+  <rect x="405" y="329.0" width="96" height="306.0" rx="11" fill="url(#male)"/>
+  <g text-anchor="middle">
+    <text x="298" y="399" font-size="27" font-weight="700">105 cm</text>
+    <text x="298" y="671" class="label">Female avg.</text>
+    <text x="453" y="305" font-size="27" font-weight="700">151 cm</text>
+    <text x="453" y="671" class="label">Male avg.</text>
+  </g>
+  <g transform="translate(580 288)" fill="#a7b3ad" opacity=".9">
+    <circle cx="42" cy="21" r="19"/>
+    <path d="M25 47 Q42 37 59 47 L68 139 L57 139 L62 212 L49 212 L42 150 L35 212 L22 212 L27 139 L16 139 Z"/>
+    <path d="M24 53 L3 121 L13 126 L37 81 M59 53 L81 121 L71 126 L47 81" fill="none" stroke="#a7b3ad" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 215 L36 215 L36 235 L3 235 Z M48 215 L72 215 L82 235 L49 235 Z"/>
+  </g>
+  <line x1="622" y1="279" x2="622" y2="645" stroke="#d6ddd7" stroke-width="1.5" stroke-dasharray="5 6"/>
+  <text x="622" y="671" text-anchor="middle" class="label">170 cm</text>
+  <text x="622" y="696" text-anchor="middle" class="tiny muted">Adult-human</text>
+  <text x="622" y="715" text-anchor="middle" class="tiny muted">reference</text>
+  <text x="840" y="220" class="gold label">BODY-MASS ESTIMATES</text>
+  <text x="840" y="251" class="muted small">Different methods are shown separately</text>
+  <text x="846" y="307" class="label">McHenry (1992) · sex-specific means</text>
+  <g class="muted tiny"><text x="848" y="356">Female avg.</text><text x="848" y="421">Male avg.</text></g>
+  <line x1="1005" y1="365" x2="1435" y2="365" class="axis"/>
+  <line x1="1005" y1="430" x2="1435" y2="430" class="axis"/>
+  <g class="grid">
+    <line x1="1005" y1="335" x2="1005" y2="450"/><line x1="1148.3" y1="335" x2="1148.3" y2="450"/><line x1="1291.7" y1="335" x2="1291.7" y2="450"/><line x1="1435" y1="335" x2="1435" y2="450"/>
+  </g>
+  <rect x="1005" y="350" width="207.8" height="30" rx="8" fill="url(#female)"/>
+  <rect x="1005" y="415" width="322.5" height="30" rx="8" fill="url(#male)"/>
+  <g font-size="20" font-weight="700">
+    <text x="1225" y="372">29 kg</text><text x="1340" y="437">45 kg</text>
+  </g>
+  <g class="muted tiny" text-anchor="middle"><text x="1005" y="475">0</text><text x="1148.3" y="475">20</text><text x="1291.7" y="475">40</text><text x="1435" y="475">60 kg</text></g>
+  <line x1="840" y1="505" x2="1480" y2="505" stroke="#294344"/>
+  <text x="846" y="548" class="label">Lucy (A.L. 288-1) · Brassey et al. (2018)</text>
+  <text x="846" y="578" class="muted small">One individual's model estimate, not a sex-specific species mean</text>
+  <line x1="1005" y1="635" x2="1435" y2="635" class="axis"/>
+  <rect x="1101.8" y="610" width="248.4" height="28" rx="8" fill="#8bb2ac" opacity=".7"/>
+  <line x1="1147.9" y1="600" x2="1147.9" y2="648" stroke="#eee8dc" stroke-width="3"/>
+  <text x="1102" y="596" class="small">13.5 kg</text>
+  <text x="1275" y="596" class="small">30.9 kg</text>
+  <text x="1148" y="675" text-anchor="middle" class="label">20.4 kg</text>
+  <text x="846" y="704" class="tiny muted">95% prediction interval: 13.5–30.9 kg</text>
+  <rect x="84" y="763" width="1432" height="155" rx="18" fill="#0a191b" stroke="#284244"/>
+  <text x="118" y="805" class="label gold">HOW TO READ THIS DIAGRAM</text>
+  <text x="118" y="838" class="small">Stature values are averages estimated from 31 Plio-Pleistocene hominid femora; the paper does not report a confidence interval here.</text>
+  <text x="118" y="867" class="small">McHenry's mass values are model-based sex averages. Lucy's shaded interval is a separate 95% prediction interval from one volumetric reconstruction.</text>
+  <text x="118" y="896" class="small muted">Sex assignments, fossil sample composition and body-mass methods are debated; these values should not be read as exact ranges for every individual.</text>
+</svg>
