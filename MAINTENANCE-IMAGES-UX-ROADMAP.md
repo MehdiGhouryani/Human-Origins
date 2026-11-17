@@ -1,0 +1,70 @@
+# Maintenance, media and UX roadmap
+
+Updated: 2026-11-17  
+Repository baseline: `main` at `b629798736d462ff355425c16ead04bebcc6e172`  
+Working branch: `chore/cleanup-assets-ux-phase1`
+
+This roadmap groups the owner's three priorities into auditable work. It supplements, rather than rewrites, the approved explorer fix plan.
+
+## 1. Remove obsolete and unnecessary files
+
+### Verified safe cleanup
+- `scripts/validate-assets.py` is not referenced by the package scripts, CI, or the repository code search. The maintained asset gate is `npm run validate:assets`, which runs `scripts/validate-assets.mjs`. The unreferenced Python duplicate is removed in this phase.
+
+### Do not delete without another verification pass
+- The CSS audit reports 39 class names with no raw source/test reference and 126 repeated selector definitions. The audit itself says this is a candidate list, not proof: computed class names and visual/CSS cascade effects can be missed. Re-run the 50 page × viewport computed-style fingerprint before deleting CSS.
+- The graph/lineage CSS is explicitly frozen by the approved plan and must not be removed as cleanup.
+- `public/assets/hero-evolution.webp` is not referenced by the current Hero component; current responsive hero assets are `hero-mobile.webp`, `hero-tablet.webp` and `hero-desktop.webp`. However, the old asset is still in the asset manifest and asset validator. Remove it only in a dedicated asset-manifest change that records its SHA-256 and confirms all deployment consumers have moved.
+- `docs/reference-ui.png`, mobile QA captures, migration records, sample species plates, and lockfiles are not deletion candidates merely because they are not imported by runtime components.
+
+## 2. Complete, create and synchronize images
+
+### Current inventory
+- Image-slot catalog: 237 rows.
+- Statuses: 180 TODO, 34 BLOCKED-NO-SPECIMEN, 23 NOT-APPLICABLE.
+- The repository contains 31 `.cms-data/media/<media-id>/` directories with 114 processed WebP variants.
+- The image directories are tracked, but `.cms-data/cms.sqlite` is intentionally excluded from Git. The SQLite records that map each media ID to a taxon, slot, status, licence, source, and review are therefore not available in this checkout.
+
+### Safe synchronization procedure
+1. Export the CMS database or a sanitized media-record manifest from the same environment that produced the 31 image IDs. Do not commit credentials, sessions, or production database secrets.
+2. Reconcile every media ID against its directory and all declared variants (thumbnail, card, detail, icon).
+3. Match each record to the canonical `taxonId` and `slotId` in `content/media-slots.generated.ts`; report unknown taxon IDs, duplicate slot occupancy, missing variants, and files without a database row.
+4. Keep imported media in draft/review-required state until the source URL, licence/rights status, specimen reference (where relevant), alt text, and editorial review are complete.
+5. Publish only through the existing CMS slot gate. Never infer that an image is publishable just because a file exists.
+
+### Creation priorities and scientific constraints
+- Prioritize the visible portrait, tree thumbnail, and dossier hero slots for the 11 main-path taxa, then fill evidence-led anatomy, site and comparison slots.
+- Generate only reconstruction/schematic classes for which the slot brief supplies a defensible evidence basis and assumptions sheet.
+- Do not generate synthetic specimen photographs or label generated reconstructions as fossil photographs.
+- Keep all 34 BLOCKED-NO-SPECIMEN slots blocked until the corresponding specimen record and provenance exist. Keep 23 NOT-APPLICABLE rows out of production.
+
+Use `npm run images:build`, the per-taxon briefs under `tools/images/prompts/`, and the existing hand-off importer. Do not bypass the slot validator.
+
+## 3. Improve UX and simplify journeys
+
+### Phase 1 shipped in this branch
+- On compact Migration views, the four map actions (zoom in/out, reset, projection switch) are moved into one native disclosure control.
+- The desktop map control rail remains unchanged.
+- Playwright coverage verifies the compact disclosure opens, exposes all actions and closes, and that desktop keeps its existing control rail.
+
+### Next UX candidates
+- Reduce the first-viewport control density on Home, Compare and Migration without hiding core tasks.
+- Keep one primary action per surface and group secondary settings into disclosure panels.
+- Improve mobile Evidence/Compare navigation and preserve clear current-selection feedback.
+- Validate with the existing 320, 360, 390, 768, 1024 and desktop viewport matrix, plus keyboard and screen-reader checks.
+
+## 4. Performance and acceptance gates
+
+Latest committed five-run lab report (`tests/perf/after-mission.json`, 2026-11-13):
+- Home mobile: LCP 2,180 ms; TBT 272 ms.
+- Species mobile: LCP 2,292 ms; TBT 635 ms.
+- Compare mobile: LCP 2,088 ms; TBT 417 ms.
+- Migration mobile: LCP 2,184 ms; TBT 404 ms; CLS 0.0953.
+- The target TBT is below 200 ms; the mobile budget is not yet met.
+
+For each future phase:
+- Record the baseline and after-change measurement with the same five-run protocol.
+- Run the relevant unit and Playwright tests.
+- Run `npm run qa:release`.
+- Keep image, CSS and content changes reversible and traceable.
+- Do not merge a performance change that worsens the agreed budgets without an explicit owner decision.
