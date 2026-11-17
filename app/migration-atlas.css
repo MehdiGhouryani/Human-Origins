@@ -136,6 +136,6 @@ body:has(.migration-view.atlas) .hero{display:none}
 .atlas-mobile-map-controls summary::marker{content:''}
 .atlas-mobile-map-controls[open] summary{color:var(--gold);background:rgba(232,189,112,.1)}
 .atlas-mobile-map-controls-menu{position:absolute;right:0;bottom:calc(100% + 6px);display:flex;flex-direction:column;gap:3px;padding:4px;border:1px solid var(--glass-line);border-radius:14px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.atlas-mobile-map-controls-menu .atlas-icon-btn{width:40px;height:40px}
+.atlas-mobile-map-controls-menu .atlas-icon-btn{width:44px;height:44px}
 .atlas-stage.compact .atlas-zoom{display:none}
 .atlas-stage.compact .atlas-mobile-map-controls{display:block;position:absolute;right:8px;top:calc(62px + (100% - 62px - 150px)/2);z-index:4}
