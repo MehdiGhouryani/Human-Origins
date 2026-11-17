@@ -329,7 +329,7 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
     window.addEventListener('keydown',onKey)
     document.addEventListener('pointerdown',onPointer)
     return ()=>{window.removeEventListener('keydown',onKey);document.removeEventListener('pointerdown',onPointer)}
-  },[])
+  },[compact])
   const toggleKind=(kind:EvidenceKind)=>setKindsOn(previous=>{const next=new Set(previous);if(next.has(kind)) next.delete(kind);else next.add(kind);return next})
   const siteItems:SiteListItem[]=useMemo(()=>[...visibleEvidence].sort((a,b)=>b.ageKa-a.ageKa).map(site=>({id:String(site.id),name:site.name,ageLabel:site.ageLabel,kind:site.kind,selected:String(site.id)===selectedSiteId})),[visibleEvidence,selectedSiteId])
 
