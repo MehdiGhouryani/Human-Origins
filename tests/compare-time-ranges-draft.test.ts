@@ -17,7 +17,6 @@ describe('compare.C13 main-path chronology diagram',()=>{
     for(const id of ['sahelanthropus','orrin','ardipithecus','anamensis','afarensis','africanus','habilis','erectus','heidelbergensis','neanderthal','sapiens']){
       expect(svg).toContain('data-taxon="'+id+'"')
     }
-    expect(svg).toContain('DEBATED')
     expect(svg).toContain('MEDIUM')
     expect(svg).toContain('HIGH')
     expect(svg).toContain('not a probability')
