@@ -39,6 +39,8 @@ function fileInfo(id,name){
   const target=resolve(join(dir,name))
   if(!dir.startsWith(mediaRoot+sep)||!target.startsWith(dir+sep)) return {exists:false,bytes:null,sha256:null,error:'path escaped media root'}
   try{
+    const directoryStat=lstatSync(dir)
+    if(directoryStat.isSymbolicLink()||!directoryStat.isDirectory()) return {exists:false,bytes:null,sha256:null,error:'media directory is not a regular directory'}
     const stat=lstatSync(target)
     if(stat.isSymbolicLink()||!stat.isFile()) return {exists:false,bytes:null,sha256:null,error:'not a regular file'}
     const bytes=readFileSync(target)
@@ -60,6 +62,7 @@ try{
 
 const issues={
   invalidRows:[],
+  unsupportedMediaRootEntries:[],
   invalidVariantPaths:[],
   missingVariantFiles:[],
   unreferencedFiles:[],
@@ -76,6 +79,7 @@ for(const row of rows){
   if(!ID_PATTERN.test(id)){issues.invalidRows.push({id,reason:'invalid media id'});continue}
   if(seenIds.has(id)){issues.invalidRows.push({id,reason:'duplicate media id'});continue}
   seenIds.add(id)
+  if(row.file_path!==`/cms-media/${id}`) issues.invalidRows.push({id,reason:'file_path does not match the canonical /cms-media/<id> path'})
   let roles,variants
   try{roles=parseJson(row.roles,`roles for ${id}`)}catch(error){issues.invalidRows.push({id,reason:error.message});continue}
   try{variants=parseJson(row.variants,`variants for ${id}`)}catch(error){issues.invalidRows.push({id,reason:error.message});continue}
@@ -132,6 +136,8 @@ for(const row of rows){
 for(const [slot,ids] of publishedSlots) if(ids.length>1) issues.duplicatePublishedSlots.push({slot,mediaIds:ids})
 for(const entry of readdirSync(mediaRoot,{withFileTypes:true})){
   if(entry.isDirectory()&&!seenIds.has(entry.name)) issues.untrackedDirectories.push(entry.name)
+  else if(entry.isSymbolicLink()) issues.unsupportedMediaRootEntries.push({name:entry.name,reason:'symbolic links are not followed'})
+  else if(!entry.isDirectory()&&!entry.isFile()) issues.unsupportedMediaRootEntries.push({name:entry.name,reason:'unsupported filesystem entry'})
 }
 
 const issueCount=Object.values(issues).reduce((sum,list)=>sum+list.length,0)
