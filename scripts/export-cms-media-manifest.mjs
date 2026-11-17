@@ -105,12 +105,17 @@ for(const row of rows){
   }
   const dir=resolve(join(mediaRoot,id))
   try{
-    const entries=readdirSync(dir,{withFileTypes:true})
-    for(const entry of entries){
-      if(entry.isFile()&&!referencedNames.has(entry.name)){
-        issues.unreferencedFiles.push({id,file:entry.name})
-      }else if(entry.isSymbolicLink()){
-        issues.unreferencedFiles.push({id,file:entry.name,reason:'symbolic link'})
+    const directoryStat=lstatSync(dir)
+    if(directoryStat.isSymbolicLink()||!directoryStat.isDirectory()){
+      issues.unsupportedMediaRootEntries.push({name:id,reason:'media directory is not a regular directory'})
+    }else{
+      const entries=readdirSync(dir,{withFileTypes:true})
+      for(const entry of entries){
+        if(entry.isFile()&&!referencedNames.has(entry.name)){
+          issues.unreferencedFiles.push({id,file:entry.name})
+        }else if(entry.isSymbolicLink()){
+          issues.unreferencedFiles.push({id,file:entry.name,reason:'symbolic link'})
+        }
       }
     }
   }catch{
