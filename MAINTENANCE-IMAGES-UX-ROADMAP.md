@@ -14,7 +14,7 @@ This roadmap groups the owner's three priorities into auditable work. It supplem
 ### Do not delete without another verification pass
 - The CSS audit reports 39 class names with no raw source/test reference and 126 repeated selector definitions. The audit itself says this is a candidate list, not proof: computed class names and visual/CSS cascade effects can be missed. Re-run the 50 page × viewport computed-style fingerprint before deleting CSS.
 - The graph/lineage CSS is explicitly frozen by the approved plan and must not be removed as cleanup.
-- `public/assets/hero-evolution.webp` is not referenced by the current Hero component; current responsive hero assets are `hero-mobile.webp`, `hero-tablet.webp` and `hero-desktop.webp`. However, the old asset is still in the asset manifest and asset validator. Remove it only in a dedicated asset-manifest change that records its SHA-256 and confirms all deployment consumers have moved.
+- `public/assets/hero-evolution.webp` was confirmed unreferenced and removed in this branch (68,230 bytes). The active `hero-mobile.webp`, `hero-tablet.webp` and `hero-desktop.webp` variants remain. Its SHA-256 and retirement reason are preserved in `migrations/v32-to-v33.ts`; the manifest and validator now describe the active responsive assets.
 - `docs/reference-ui.png`, mobile QA captures, migration records, sample species plates, and lockfiles are not deletion candidates merely because they are not imported by runtime components.
 
 ## 2. Complete, create and synchronize images
