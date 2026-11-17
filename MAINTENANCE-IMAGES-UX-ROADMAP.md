@@ -26,11 +26,11 @@ This roadmap groups the owner's three priorities into auditable work. It supplem
 - The image directories are tracked, but `.cms-data/cms.sqlite` is intentionally excluded from Git. The SQLite records that map each media ID to a taxon, slot, status, licence, source, and review are therefore not available in this checkout.
 
 ### Safe synchronization procedure
-1. Export the CMS database or a sanitized media-record manifest from the same environment that produced the 31 image IDs. Do not commit credentials, sessions, or production database secrets.
-2. Reconcile every media ID against its directory and all declared variants (thumbnail, card, detail, icon).
-3. Match each record to the canonical `taxonId` and `slotId` in `content/media-slots.generated.ts`; report unknown taxon IDs, duplicate slot occupancy, missing variants, and files without a database row.
+1. On the server or deployment volume that owns the CMS, run `CMS_DB_PATH=.cms-data/cms.sqlite CMS_MEDIA_DIR=.cms-data/media npm run export:cms-media > cms-media-manifest.json`. The command opens SQLite read-only and emits a sanitized JSON inventory; it does not export admin sessions, passwords, review identities or generator account metadata.
+2. The report includes each media ID, taxon, slot, role, provenance/rights fields, assumptions, variants, file sizes and SHA-256 values. It also reports untracked media directories, missing variant files, unreferenced files, invalid paths and duplicate published slot assignments.
+3. Share the resulting manifest (not the database or a credentials-bearing backup) for reconciliation. Match every media ID and variant to its directory and to the canonical `taxonId` and `slotId` in `content/media-slots.generated.ts`.
 4. Keep imported media in draft/review-required state until the source URL, licence/rights status, specimen reference (where relevant), alt text, and editorial review are complete.
-5. Publish only through the existing CMS slot gate. Never infer that an image is publishable just because a file exists.
+5. Publish only through the existing CMS slot gate. Never infer that an image is publishable just because a file exists. The exporter is read-only and never deletes, moves or publishes files.
 
 ### Creation priorities and scientific constraints
 - Prioritize the visible portrait, tree thumbnail, and dossier hero slots for the 11 main-path taxa, then fill evidence-led anatomy, site and comparison slots.
