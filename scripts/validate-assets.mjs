@@ -15,7 +15,7 @@ if(existsSync(manifestPath)){
     const path=item.path||''
     const expected=item.sha256
     if(path.startsWith('/assets/')&&expected){
-      const file=join(root,'public',path.replace(/^\\//,''))
+      const file=join(root,'public',path.replace(/^\//,''))
       if(existsSync(file)){
         const actual=createHash('sha256').update(readFileSync(file)).digest('hex')
         if(actual!==expected) errors.push(`${path}: sha256 mismatch`)
@@ -30,7 +30,7 @@ if(existsSync(manifestPath)){
     if(!listed.has(path)) errors.push(`${path}: missing from asset manifest`)
   }
   const responsiveHero=['/assets/hero-mobile.webp','/assets/hero-tablet.webp','/assets/hero-desktop.webp']
-  for(const path of responsiveHero) if(!existsSync(join(root,'public',path.replace(/^\\//,'')))) errors.push(`${path}: missing responsive hero variant`)
+  for(const path of responsiveHero) if(!existsSync(join(root,'public',path.replace(/^\//,'')))) errors.push(`${path}: missing responsive hero variant`)
 }
 
 if(errors.length){
