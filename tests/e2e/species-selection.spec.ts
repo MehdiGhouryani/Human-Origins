@@ -37,12 +37,24 @@ test('the taxa outside the main graph are explained in the status area, and the 
   await page.goto('/')
   const status=page.locator('.taxon-nav-status')
   await expect(status).toContainText('7 taxa outside main graph')
-  const graphNodes=page.locator('.atlas-graph-node')
-  // The initial streamed/ hydrated transition can briefly expose a duplicate graph tree. Wait for the settled graph
-  // contract before reading the data ids; the user-visible graph and its toolbar both declare eleven taxa.
-  await expect(graphNodes).toHaveCount(11)
-  const graphIds=await graphNodes.evaluateAll(els=>els.map(el=>el.getAttribute('data-taxon')??''))
-  expect(graphIds).toHaveLength(11)
+  // Streamed hydration may briefly replace the graph tree between locator calls. Read the ids only
+  // after the same eleven-node signature has survived three consecutive animation frames.
+  const idsHandle=await page.waitForFunction(()=>new Promise<string[]|false>(resolve=>{
+    let previous=''
+    let stableFrames=0
+    const sample=()=>{
+      const ids=Array.from(document.querySelectorAll<HTMLElement>('.atlas-graph-node'))
+        .map(element=>element.getAttribute('data-taxon')??'')
+      const valid=ids.length===11&&ids.every(Boolean)
+      const signature=ids.join('\\u001f')
+      stableFrames=valid&&signature===previous?stableFrames+1:valid?1:0
+      previous=valid?signature:''
+      if(stableFrames>=3) resolve(ids)
+      else requestAnimationFrame(sample)
+    }
+    sample()
+  }),null,{timeout:15000})
+  const graphIds=await idsHandle.jsonValue() as string[]
   await page.locator('.taxon-chip[data-taxon="common"]').click()
   await expect(status).toContainText('Common ancestor is outside the main graph')
 })
