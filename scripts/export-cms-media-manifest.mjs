@@ -107,7 +107,7 @@ for(const row of rows){
   try{
     const directoryStat=lstatSync(dir)
     if(directoryStat.isSymbolicLink()||!directoryStat.isDirectory()){
-      issues.unsupportedMediaRootEntries.push({name:id,reason:'media directory is not a regular directory'})
+      // The root scan below records this entry; never traverse it.
     }else{
       const entries=readdirSync(dir,{withFileTypes:true})
       for(const entry of entries){
