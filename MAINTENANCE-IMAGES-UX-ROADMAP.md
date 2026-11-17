@@ -54,6 +54,8 @@ Use `npm run images:build`, the per-taxon briefs under `tools/images/prompts/`, 
 
 ### First source-backed image draft
 - A reproducible class-A vector draft for `afarensis.S09` is available at `tools/images/drafts/afarensis-scale.svg`.
+- A reproducible class-A chronology draft for shared slot `compare.C13` is available at `tools/images/drafts/compare-time-ranges.svg`. It draws all 11 main-path catalogue time intervals with qualitative certainty labels and source titles; it explicitly does not equate time overlap with direct ancestry.
+- Rebuild the chronology draft with `npm run images:main-path-timeline`; its TypeScript generator reads `content/taxa.ts`, `content/featured.ts` and `content/sources.ts` rather than keeping a second hand-maintained age table.
 - Rebuild it with `npm run images:afarensis-scale`; the source is `tools/images/generate-afarensis-scale.mjs`.
 - The draft separates McHenry's sex-specific stature and mass averages from the 95% prediction interval for Lucy reported by Brassey et al. (2018). These are not interchangeable estimates; the image and notes state the methods and limitations.
 - The SVG has a source/caveat note and a reproducibility test. It is deliberately not in `public/assets` and is not linked to the live catalogue until CMS media metadata can attach it to `afarensis.S09`.
