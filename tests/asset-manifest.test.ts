@@ -14,7 +14,7 @@ describe('public asset manifest',()=>{
     expect(manifest.assets.some(asset=>asset.id==='hero-evolution')).toBe(false)
     expect(existsSync(join(root,'public/assets/hero-evolution.webp'))).toBe(false)
     expect(manifest.rules.hero).toContain('hero-mobile.webp')
-    for(const asset of manifest.assets) expect(existsSync(join(root,'public',asset.path.replace(/^\\//,''))),asset.path).toBe(true)
+    for(const asset of manifest.assets) expect(existsSync(join(root,'public',asset.path.slice(1))),asset.path).toBe(true)
   })
 
   it('keeps all viewport-specific hero files available',()=>{
