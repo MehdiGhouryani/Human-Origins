@@ -35,7 +35,7 @@ The 180 TODO rows are not interchangeable production tasks:
 | C — real specimen/site photo | 75 | Find an institution/museum/open-licence photograph; never generate a fake fossil photograph |
 | D — reconstruction | 33 | Follow the per-taxon brief; preserve assumptions; require human review before publication |
 
-The TODO rows also include 35 specimen-reference slots, 44 anatomy plates and 22 comparative-morphology slots. There are 33 TODO slots with a dedicated prompt file; the other slots have their own catalog brief. A slot marked BLOCKED-NO-SPECIMEN remains blocked regardless of how attractive a generated image might be.
+The TODO rows also include 35 specimen-reference slots, 44 anatomy plates and 22 comparative-morphology slots. There are 33 TODO slots with a dedicated prompt file; the other slots have their own catalog brief. A slot marked BLOCKED-NO-SPECIMEN remains blocked regardless of how attractive a generated image might be. The 21 `compare.C01`–`compare.C21` TODO rows are shared cross-taxon assets and intentionally have no single taxon ID; they need multi-specimen sources and comparison-wide provenance rather than being assigned to an arbitrary species.
 
 ### Safe synchronization procedure
 1. On the server or deployment volume that owns the CMS, run `CMS_DB_PATH=.cms-data/cms.sqlite CMS_MEDIA_DIR=.cms-data/media npm run export:cms-media > cms-media-manifest.json`. The command opens SQLite read-only and emits a sanitized JSON inventory; it does not export admin sessions, passwords, review identities or generator account metadata.
