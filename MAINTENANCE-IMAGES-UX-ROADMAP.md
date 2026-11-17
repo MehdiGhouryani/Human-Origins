@@ -25,6 +25,18 @@ This roadmap groups the owner's three priorities into auditable work. It supplem
 - The repository contains 31 `.cms-data/media/<media-id>/` directories with 114 processed WebP variants.
 - The image directories are tracked, but `.cms-data/cms.sqlite` is intentionally excluded from Git. The SQLite records that map each media ID to a taxon, slot, status, licence, source, and review are therefore not available in this checkout.
 
+### TODO backlog breakdown
+The 180 TODO rows are not interchangeable production tasks:
+
+| Evidence class | Rows | Production rule |
+|---|---:|---|
+| A — data-derived | 26 | Generate reproducibly from cited catalog data; carry units, uncertainty and method notes |
+| B — scan-based diagram | 46 | Requires a licensed scan/reference image and attribution; never use an unlicensed scan |
+| C — real specimen/site photo | 75 | Find an institution/museum/open-licence photograph; never generate a fake fossil photograph |
+| D — reconstruction | 33 | Follow the per-taxon brief; preserve assumptions; require human review before publication |
+
+The TODO rows also include 35 specimen-reference slots, 44 anatomy plates and 22 comparative-morphology slots. There are 33 TODO slots with a dedicated prompt file; the other slots have their own catalog brief. A slot marked BLOCKED-NO-SPECIMEN remains blocked regardless of how attractive a generated image might be.
+
 ### Safe synchronization procedure
 1. On the server or deployment volume that owns the CMS, run `CMS_DB_PATH=.cms-data/cms.sqlite CMS_MEDIA_DIR=.cms-data/media npm run export:cms-media > cms-media-manifest.json`. The command opens SQLite read-only and emits a sanitized JSON inventory; it does not export admin sessions, passwords, review identities or generator account metadata.
 2. The report includes each media ID, taxon, slot, role, provenance/rights fields, assumptions, variants, file sizes and SHA-256 values. It also reports untracked media directories, missing variant files, unreferenced files, invalid paths and duplicate published slot assignments.
