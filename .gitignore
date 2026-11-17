@@ -12,7 +12,11 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-/.cms-data
+# Keep CMS database and runtime data out of Git.
+# Track processed CMS image assets only.
+/.cms-data/*
+!/.cms-data/media/
+!/.cms-data/media/**
 /test-results
 /playwright-report
 
