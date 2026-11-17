@@ -15,6 +15,9 @@ import {useExplorerController} from '../features/explorer/useExplorerController'
 import type {ExplorerState} from '../features/explorer/state'
 
 const EvolutionGraph=dynamic(()=>import('./EvolutionGraph'),{loading:()=><div className="atlas-graph-loading" aria-hidden="true"/>})
+const CompareMatrix=dynamic(()=>import('./CompareMatrix'),{loading:()=><div className="view-chunk-loading" role="status">Preparing comparison…</div>})
+const SpeciesJourney=dynamic(()=>import('./SpeciesJourney'),{loading:()=><div className="view-chunk-loading" role="status">Loading journey…</div>})
+const MigrationGlobe=dynamic(()=>import('./MigrationGlobe'))
 import TaxonNavigator from './TaxonNavigator'
 import TimeMilestones from './TimeMilestones'
 import SearchResultsPanel from './SearchResultsPanel'
@@ -22,9 +25,6 @@ import FamilyView from './FamilyView'
 import RelationshipLegend from './RelationshipLegend'
 import RelationshipTable from './RelationshipTable'
 import Inspector from './Inspector'
-import CompareMatrix from './CompareMatrix'
-const MigrationGlobe=dynamic(()=>import('./MigrationGlobe'))
-import SpeciesJourney from './SpeciesJourney'
 
 export default function ExplorerShell({bootstrap,initialState}:{bootstrap:ExplorerBootstrap;initialState?:Partial<ExplorerState>}){
   const {bootstrap:immutableBootstrap,state,setState,current,age,explorerSpecies,setMode,setSelected,setCompare}=useExplorerController(bootstrap,initialState)
