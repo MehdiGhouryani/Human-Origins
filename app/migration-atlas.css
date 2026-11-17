@@ -132,6 +132,7 @@ body:has(.migration-view.atlas) .hero{display:none}
 /* Mobile map toolbar: keep the four map actions available without permanently occupying the map edge. */
 .atlas-mobile-map-controls{display:none}
 .atlas-mobile-map-controls summary{list-style:none;cursor:pointer}
+.atlas-mobile-map-controls-toggle{width:44px;height:44px}
 .atlas-mobile-map-controls summary::-webkit-details-marker{display:none}
 .atlas-mobile-map-controls summary::marker{content:''}
 .atlas-mobile-map-controls[open] summary{color:var(--gold);background:rgba(232,189,112,.1)}
