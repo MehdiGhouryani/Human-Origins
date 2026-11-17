@@ -1,6 +1,6 @@
 import {readFileSync, existsSync, readdirSync} from 'node:fs'
 import {createHash} from 'node:crypto'
-import {join, resolve} from 'node:path'
+import {join, resolve, sep} from 'node:path'
 
 const root=resolve(import.meta.dirname,'..')
 const errors=[]
@@ -16,7 +16,7 @@ if(existsSync(manifestPath)){
     for(const entry of readdirSync(join(directory,relative),{withFileTypes:true})){
       const child=join(relative,entry.name)
       if(entry.isDirectory()) files.push(...walk(directory,child))
-      else if(entry.isFile()) files.push('/assets/'+child.split('\\\\').join('/'))
+      else if(entry.isFile()) files.push('/assets/'+child.split(sep).join('/'))
       else errors.push(`public/assets/${child}: unsupported filesystem entry`)
     }
     return files
