@@ -46,13 +46,14 @@ test('the cranial scale keeps every bar on its track, and claims come from recor
   }
   await expect(page.getByText('Direct ancient genome sequences recovered.')).toHaveCount(0)
   await expect(page.getByText('Morphological and fossil record evidence.')).toHaveCount(0)
-  await expect(page.locator('.compare-temporal-callout')).not.toContainText('documented in fossil records')
+  await expect(page.locator('.compare-temporal-callout:visible')).not.toContainText('documented in fossil records')
 })
 
 test('overlapping date ranges are reported as dating only', async({page})=>{
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/?mode=compare&cmp=neanderthal,erectus')
-  const callout=page.locator('.compare-temporal-callout')
+  const callout=page.locator('.compare-temporal-callout:visible')
+  await expect(callout).toHaveCount(1)
   await expect(callout).toContainText('recorded date ranges overlap')
   await expect(callout).toContainText('They do not imply contact, descent or interbreeding')
 })
@@ -70,7 +71,11 @@ test('on a phone the matrix scrolls inside its own region, not the page', async(
 test('on a phone the first taxon sits beside the narrow labels and the chosen chips are in view', async({page})=>{
   await page.setViewportSize({width:390,height:844})
   await page.goto('/?mode=compare&cmp=sapiens,neanderthal,erectus')
-  const header=await page.locator('.compare-card-header').first().boundingBox()
+  const cardHeaders=page.locator('.compare-card-header')
+  // Compare is an on-demand chunk; wait until its selected cards have hydrated before measuring layout.
+  await expect(cardHeaders).toHaveCount(3)
+  await expect(cardHeaders.first()).toBeVisible()
+  const header=await cardHeaders.first().boundingBox()
   expect(header?.x??999).toBeLessThan(170)                      // label column ≈104px, not 240px
   const chip=await page.locator('.compare-chip.active').first().boundingBox()
   expect(chip?.x??-1).toBeGreaterThanOrEqual(0)
