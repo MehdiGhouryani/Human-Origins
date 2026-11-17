@@ -17,9 +17,11 @@ describe('public asset manifest',()=>{
     for(const asset of manifest.assets) expect(existsSync(join(root,'public',asset.path.slice(1))),asset.path).toBe(true)
   })
 
-  it('keeps all viewport-specific hero files available',()=>{
+  it('lists and keeps all viewport-specific hero files with integrity hashes',()=>{
     for(const file of ['hero-mobile.webp','hero-tablet.webp','hero-desktop.webp']){
+      const path=`/assets/${file}`
       expect(existsSync(join(root,'public/assets',file)),file).toBe(true)
+      expect(manifest.assets.find(asset=>asset.path===path)?.sha256,path).toMatch(/^[a-f0-9]{64}$/)
     }
   })
 
