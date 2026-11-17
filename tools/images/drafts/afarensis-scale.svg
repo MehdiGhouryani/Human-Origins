@@ -42,7 +42,7 @@
     <text x="453" y="305" font-size="27" font-weight="700">151 cm</text>
     <text x="453" y="671" class="label">Male avg.</text>
   </g>
-  <g transform="translate(580 288)" fill="#a7b3ad" opacity=".9">
+  <g transform="translate(560 287) scale(1.5)" fill="#a7b3ad" opacity=".9">
     <circle cx="42" cy="21" r="19"/>
     <path d="M25 47 Q42 37 59 47 L68 139 L57 139 L62 212 L49 212 L42 150 L35 212 L22 212 L27 139 L16 139 Z"/>
     <path d="M24 53 L3 121 L13 126 L37 81 M59 53 L81 121 L71 126 L47 81" fill="none" stroke="#a7b3ad" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
@@ -71,10 +71,10 @@
   <text x="846" y="548" class="label">Lucy (A.L. 288-1) · Brassey et al. (2018)</text>
   <text x="846" y="578" class="muted small">One individual's model estimate, not a sex-specific species mean</text>
   <line x1="1005" y1="635" x2="1435" y2="635" class="axis"/>
-  <rect x="1101.8" y="610" width="248.4" height="28" rx="8" fill="#8bb2ac" opacity=".7"/>
+  <rect x="1101.8" y="610" width="124.7" height="28" rx="8" fill="#8bb2ac" opacity=".7"/>
   <line x1="1147.9" y1="600" x2="1147.9" y2="648" stroke="#eee8dc" stroke-width="3"/>
   <text x="1102" y="596" class="small">13.5 kg</text>
-  <text x="1275" y="596" class="small">30.9 kg</text>
+  <text x="1227" y="596" class="small">30.9 kg</text>
   <text x="1148" y="675" text-anchor="middle" class="label">20.4 kg</text>
   <text x="846" y="704" class="tiny muted">95% prediction interval: 13.5–30.9 kg</text>
   <rect x="84" y="763" width="1432" height="155" rx="18" fill="#0a191b" stroke="#284244"/>
