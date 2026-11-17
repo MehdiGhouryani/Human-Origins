@@ -4,6 +4,27 @@ import {expect,test,type Page} from '@playwright/test'
 // seven are labelled, and their chips work like the rest.
 const profileHref=(page:Page)=>page.locator('.inspector .inspector-actions a.primary-cta').getAttribute('href')
 
+// The streamed/hydrated graph can be replaced between separate locator calls. Capture ids only after
+// the same eleven data-taxon values survive three consecutive animation frames.
+async function settledGraphTaxonIds(page:Page):Promise<string[]>{
+  const idsHandle=await page.waitForFunction(()=>new Promise<string[]|false>(resolve=>{
+    let previous=''
+    let stableFrames=0
+    const sample=()=>{
+      const ids=Array.from(document.querySelectorAll<HTMLElement>('.atlas-graph-node'))
+        .map(element=>element.getAttribute('data-taxon')??'')
+      const valid=ids.length===11&&ids.every(Boolean)
+      const signature=ids.join('|')
+      stableFrames=valid&&signature===previous?stableFrames+1:valid?1:0
+      previous=valid?signature:''
+      if(stableFrames>=3) resolve(ids)
+      else requestAnimationFrame(sample)
+    }
+    sample()
+  }),null,{timeout:15000})
+  return await idsHandle.jsonValue() as string[]
+}
+
 test('all eighteen species chips select their own profile', async({page})=>{
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/')
@@ -21,9 +42,7 @@ test('all eighteen species chips select their own profile', async({page})=>{
 test('all eleven main-path taxa on the graph select their own profile', async({page})=>{
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/')
-  const nodes=page.locator('.atlas-graph-node')
-  await expect(nodes).toHaveCount(11)
-  const ids=await nodes.evaluateAll(els=>els.map(el=>el.getAttribute('data-taxon')??''))
+  const ids=await settledGraphTaxonIds(page)
   for(const id of ids){
     const node=page.locator(`.atlas-graph-node[data-taxon="${id}"]`)
     await node.click()
@@ -37,24 +56,7 @@ test('the taxa outside the main graph are explained in the status area, and the 
   await page.goto('/')
   const status=page.locator('.taxon-nav-status')
   await expect(status).toContainText('7 taxa outside main graph')
-  // Streamed hydration may briefly replace the graph tree between locator calls. Read the ids only
-  // after the same eleven-node signature has survived three consecutive animation frames.
-  const idsHandle=await page.waitForFunction(()=>new Promise<string[]|false>(resolve=>{
-    let previous=''
-    let stableFrames=0
-    const sample=()=>{
-      const ids=Array.from(document.querySelectorAll<HTMLElement>('.atlas-graph-node'))
-        .map(element=>element.getAttribute('data-taxon')??'')
-      const valid=ids.length===11&&ids.every(Boolean)
-      const signature=ids.join('\\u001f')
-      stableFrames=valid&&signature===previous?stableFrames+1:valid?1:0
-      previous=valid?signature:''
-      if(stableFrames>=3) resolve(ids)
-      else requestAnimationFrame(sample)
-    }
-    sample()
-  }),null,{timeout:15000})
-  const graphIds=await idsHandle.jsonValue() as string[]
+  const graphIds=await settledGraphTaxonIds(page)
   await page.locator('.taxon-chip[data-taxon="common"]').click()
   await expect(status).toContainText('Common ancestor is outside the main graph')
 })
