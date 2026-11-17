@@ -2,7 +2,7 @@
   "version": "33.0",
   "rules": {
     "hero": "Responsive, self-hosted viewport variants: hero-mobile.webp, hero-tablet.webp and hero-desktop.webp.",
-    "neanderthalReconstruction": "1024x1024 WebP",
+    "neanderthalReconstruction": "CMS-managed, source-backed reconstruction. It is not a built-in public asset; publication requires rights and scientific review.",
     "speciesMedia": "Species-specific specimen/cast/reconstruction media; each item carries source + license metadata",
     "commonAncestor": "Original schematic; not a recovered species portrait",
     "externalMediaPolicy": "All built-in production media is self-hosted. Real media enters through the CMS with source and rights metadata.",
