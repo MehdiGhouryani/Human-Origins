@@ -1,6 +1,6 @@
 import {spawnSync} from 'node:child_process'
 import {DatabaseSync} from 'node:sqlite'
-import {mkdtempSync,mkdirSync,rmSync,writeFileSync} from 'node:fs'
+import {mkdtempSync,mkdirSync,rmSync,symlinkSync,writeFileSync} from 'node:fs'
 import {tmpdir} from 'node:os'
 import {join,resolve} from 'node:path'
 import {afterEach,describe,expect,it} from 'vitest'
@@ -65,6 +65,34 @@ describe('CMS media manifest export',()=>{
     expect(result.stderr).toContain('No files changed')
     expect(report.media[0]).not.toHaveProperty('review')
     expect(report.media[0]).not.toHaveProperty('generator')
+  })
+
+  it('does not traverse a symlinked media directory',()=>{
+    const id='cms-media-link-123'
+    const f=fixture([
+      {purpose:'thumbnail',src:`/cms-media/${id}/thumbnail.webp`,width:320,height:400,format:'webp'},
+    ])
+    const outside=join(f.root,'outside-media')
+    mkdirSync(outside)
+    writeFileSync(join(outside,'thumbnail.webp'),Buffer.from('must-not-be-followed'))
+    symlinkSync(outside,join(f.mediaRoot,id),'dir')
+    const db=new DatabaseSync(f.dbPath)
+    db.prepare(`INSERT INTO media_assets VALUES(
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+    )`).run(
+      id,'afarensis',JSON.stringify(['profile-portrait']),'reconstruction',`/cms-media/${id}`,320,400,
+      JSON.stringify([{purpose:'thumbnail',src:`/cms-media/${id}/thumbnail.webp`,width:320,height:400,format:'webp'}]),
+      'Human Origins','CC BY 4.0','https://example.org/source','source-2',
+      'Draft only.','Symlink test image','review-required','unknown','draft',0,'afarensis.S02','D','specimen-2','Assumptions',
+      '2026-11-17T00:00:00.000Z','2026-11-17T00:00:00.000Z'
+    )
+    db.close()
+
+    const {result,report}=runExport(f)
+    expect(result.status).toBe(0)
+    expect(report.issues.unsupportedMediaRootEntries).toContainEqual(expect.objectContaining({name:id}))
+    expect(report.issues.missingVariantFiles).toContainEqual(expect.objectContaining({id,file:'thumbnail.webp'}))
+    expect(report.issues.unreferencedFiles.some((item:{id:string})=>item.id===id)).toBe(false)
   })
 
   it('rejects variant paths that do not belong to the media record',()=>{
