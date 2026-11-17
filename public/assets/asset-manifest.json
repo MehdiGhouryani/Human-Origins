@@ -1,7 +1,7 @@
 {
   "version": "33.0",
   "rules": {
-    "hero": "1920x440 WebP",
+    "hero": "Responsive, self-hosted viewport variants: hero-mobile.webp, hero-tablet.webp and hero-desktop.webp.",
     "neanderthalReconstruction": "1024x1024 WebP",
     "speciesMedia": "Species-specific specimen/cast/reconstruction media; each item carries source + license metadata",
     "commonAncestor": "Original schematic; not a recovered species portrait",
@@ -9,17 +9,6 @@
     "architecture": "Production UI references active canonical media records. Legacy assets have an explicit migration disposition and are not shipped. Canonical media carries provenance/rights metadata, explicit roles/variants and research subject typing. The Explorer client consumes only a frozen server-built read model. Phase 2 normalizes taxonomy, taxon names, publication, institution, specimen/material, occurrence and site-context entities, publishes deterministic inverse indexes, enforces semantic integrity, exposes a deterministic graph projection, and documents append-only migration strategy. Phase 2 adds qualitative claim uncertainty profiles and source-backed interpretation sets without numeric confidence ranking. Phase 3 adds cycle-safe graph traversal (adjacency lookup, breadth-first search, shortest path) and a claim provenance-chain query on top of the existing graph projection. Phase 4 (V25) records each site's dating method and, where a published figure exists, its numeric uncertainty, instead of leaving those fields unset."
   },
   "assets": [
-    {
-      "id": "hero-evolution",
-      "path": "/assets/hero-evolution.webp",
-      "kind": "hero",
-      "width": 1920,
-      "height": 440,
-      "format": "webp",
-      "role": "hero background",
-      "bytes": 68230,
-      "sha256": "6830afdca25f921614c94126ad98ffedc92479755f1bf26dca3e77dae9b8aa55"
-    },
     {
       "id": "sample-afarensis-icon",
       "path": "/assets/species/samples/afarensis-icon.webp",
