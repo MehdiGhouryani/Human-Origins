@@ -146,5 +146,5 @@ const report={
   issues,
   media:records,
 }
-process.stdout.write(JSON.stringify(report,null,2)+'\\n')
+process.stdout.write(JSON.stringify(report,null,2)+'\n')
 process.stderr.write(`CMS media export: ${records.length} records, ${verifiedVariantCount}/${variantCount} variants verified, ${issueCount} issue(s). No files changed.\\n`)
