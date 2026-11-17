@@ -296,6 +296,30 @@
       "role": "species sample",
       "bytes": 39370,
       "sha256": "e9008a2d5eaa4cafb0085aea6c3f62fb0a7fde6a88613d2ed5e86bf8668bab1e"
+    },
+    {
+      "id": "hero-mobile",
+      "path": "/assets/hero-mobile.webp",
+      "kind": "hero",
+      "role": "responsive hero background (mobile)",
+      "bytes": 49242,
+      "sha256": "40a3559e2e1dc328781673dc4ab24b6f3febc46d1ee1bca3725fa9d56a7a6359"
+    },
+    {
+      "id": "hero-tablet",
+      "path": "/assets/hero-tablet.webp",
+      "kind": "hero",
+      "role": "responsive hero background (tablet)",
+      "bytes": 72118,
+      "sha256": "6f791c246f3d57bdf2af38cf30e862ae60fac2e5e0032ae9877f90498e2a576d"
+    },
+    {
+      "id": "hero-desktop",
+      "path": "/assets/hero-desktop.webp",
+      "kind": "hero",
+      "role": "responsive hero background (desktop)",
+      "bytes": 115742,
+      "sha256": "3fff4cc8c60bd58fe663de8bcd651ef6ddebe1e6a4a4ac80d039178dbe03639c"
     }
   ],
   "architecture": "Production UI may only reference active canonical media records. Legacy V21 plates remain quarantined. Canonical media carry alt text, provenance, rights metadata and source paths. The Explorer client consumes only a frozen server-built read model; canonical catalog/repository remains server-only. Media roles, rights status and explicit media variants are part of the canonical contract. Research graph and migration artifacts are domain-side projections, not client sources of truth."
