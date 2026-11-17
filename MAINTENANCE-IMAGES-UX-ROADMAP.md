@@ -40,6 +40,13 @@ This roadmap groups the owner's three priorities into auditable work. It supplem
 
 Use `npm run images:build`, the per-taxon briefs under `tools/images/prompts/`, and the existing hand-off importer. Do not bypass the slot validator.
 
+### First source-backed image draft
+- A reproducible class-A vector draft for `afarensis.S09` is available at `tools/images/drafts/afarensis-scale.svg`.
+- Rebuild it with `npm run images:afarensis-scale`; the source is `tools/images/generate-afarensis-scale.mjs`.
+- The draft separates McHenry's sex-specific stature and mass averages from the 95% prediction interval for Lucy reported by Brassey et al. (2018). These are not interchangeable estimates; the image and notes state the methods and limitations.
+- The SVG has a source/caveat note and a reproducibility test. It is deliberately not in `public/assets` and is not linked to the live catalogue until CMS media metadata can attach it to `afarensis.S09`.
+
+
 ## 3. Improve UX and simplify journeys
 
 ### Phase 1 shipped in this branch
