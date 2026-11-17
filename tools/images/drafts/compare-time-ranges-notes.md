@@ -2,7 +2,7 @@
 
 Status: **class-A draft generated from the canonical content catalog**.
 
-The SVG is built from featured.mainPathTaxonIds and each taxon record chronology.olderMa, chronology.youngerMa, chronology.label, chronology.certainty and sourceIds. Numeric ranges are not duplicated in the generator.
+The SVG is built from featured.mainPathTaxonIds. Bar endpoints come from taxon.chronology.olderMa and chronology.youngerMa; the text label comes from taxon.date; qualitative certainty comes from chronology.certainty; and source links come from taxon.sourceIds. Numeric ranges are not duplicated in the generator.
 
 The coloured certainty label is qualitative (high, medium, debated) and is not a probability or a statistical confidence interval. The horizontal bar is the catalogue recorded interval. Overlapping bars do not imply direct ancestry.
 
