@@ -22,7 +22,7 @@ This roadmap groups the owner's three priorities into auditable work. It supplem
 ### Current inventory
 - Image-slot catalog: 237 rows.
 - Statuses: 180 TODO, 34 BLOCKED-NO-SPECIMEN, 23 NOT-APPLICABLE.
-- The repository contains 31 `.cms-data/media/<media-id>/` directories with 114 processed WebP variants.
+- The repository contains 31 `.cms-data/media/<media-id>/` directories with 114 processed WebP variants. A visual-only thumbnail inventory for all 31 IDs is recorded in `tools/images/visual-audit/cms-thumbnail-review.csv`: 10 portraits, 10 habitat/story scenes, 8 environment plates and 3 behaviour/tool-use scenes. It deliberately does not assign species, slots, sources or rights.
 - The image directories are tracked, but `.cms-data/cms.sqlite` is intentionally excluded from Git. The SQLite records that map each media ID to a taxon, slot, status, licence, source, and review are therefore not available in this checkout.
 
 ### TODO backlog breakdown
