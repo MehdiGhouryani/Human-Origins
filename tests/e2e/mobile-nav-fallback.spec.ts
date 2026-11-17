@@ -5,14 +5,14 @@ import {expect,test,type Page} from '@playwright/test'
 // React attaches (and with scripts blocked): no click handler, only the browser's own disclosure. CSS chunks
 // must keep loading (Turbopack ships stylesheets from the same directory), so only .js is blocked.
 //
-// Note: on force-dynamic routes Next streams the Suspense fallback header and then the resolved header into
-// the same HTML; the client runtime removes the first copy on hydration. Without scripts both copies stay,
-// and the second (resolved) one is the one a reader sees and can interact with, so this test targets it.
+// The header is a single server-rendered element (there is no streamed Suspense fallback copy next to the
+// resolved header), so the plain .topbar locator is used on purpose: strict mode fails if a second header
+// with duplicate ids ever appears in the document again.
 async function blockFrameworkChunks(page:Page){
   await page.route(/\/_next\/static\/chunks\/[^?]*\.js(\?.*)?$/,route=>route.abort())
 }
 
-function servedHeader(page:Page){return page.locator('.topbar').last()}
+function servedHeader(page:Page){return page.locator('.topbar')}
 
 const WIDTHS=[320,360,390,768] as const
 
