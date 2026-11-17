@@ -1,7 +1,7 @@
 'use client'
 import {useCallback,useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react'
 import {geoPath,type GeoPermissibleObjects} from 'd3-geo'
-import {Info,Layers3,List,Map as FlatMapIcon,Globe2,Minus,Plus,RotateCcw,ChevronUp} from 'lucide-react'
+import {Info,Layers3,List,Map as FlatMapIcon,Globe2,Minus,Plus,RotateCcw,ChevronUp,SlidersHorizontal} from 'lucide-react'
 import {getExplorerEvidenceSites,getExplorerSourceById,getExplorerSpeciesById} from '../features/explorer/selectors'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {EvidenceKind} from '../domain/contracts'
@@ -398,6 +398,15 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
         <button type="button" onClick={resetView} className="atlas-icon-btn" aria-label="Reset view"><RotateCcw size={17} aria-hidden="true"/></button>
         <button type="button" onClick={()=>setProjectionKind(kind=>kind==='globe'?'flat':'globe')} className="atlas-icon-btn" aria-label={projectionKind==='globe'?'Switch to flat map':'Switch to globe'}>{projectionKind==='globe'?<FlatMapIcon size={17} aria-hidden="true"/>:<Globe2 size={17} aria-hidden="true"/>}</button>
       </div>
+      {compact&&<details className="atlas-mobile-map-controls" data-no-drag>
+        <summary className="atlas-icon-btn atlas-mobile-map-controls-toggle" aria-label="Map controls" title="Map controls"><SlidersHorizontal size={18} aria-hidden="true"/></summary>
+        <div className="atlas-mobile-map-controls-menu" role="group" aria-label="Map view controls">
+          <button type="button" onClick={()=>zoomBy(1.5)} className="atlas-icon-btn" aria-label="Zoom in"><Plus size={18} aria-hidden="true"/></button>
+          <button type="button" onClick={()=>zoomBy(1/1.5)} className="atlas-icon-btn" aria-label="Zoom out"><Minus size={18} aria-hidden="true"/></button>
+          <button type="button" onClick={resetView} className="atlas-icon-btn" aria-label="Reset view"><RotateCcw size={17} aria-hidden="true"/></button>
+          <button type="button" onClick={()=>setProjectionKind(kind=>kind==='globe'?'flat':'globe')} className="atlas-icon-btn" aria-label={projectionKind==='globe'?'Switch to flat map':'Switch to globe'}>{projectionKind==='globe'?<FlatMapIcon size={17} aria-hidden="true"/>:<Globe2 size={17} aria-hidden="true"/>}</button>
+        </div>
+      </details>}
 
       {panel&&<div className="atlas-panel-slot" data-no-drag>
         {panel==='layers'&&<LayersPanel kindsOn={kindsOn} onToggleKind={toggleKind} routesOn={routesOn} routesAvailable={routesAvailable} onToggleRoutes={()=>setRoutesOn(value=>!value)} temporalMode={temporalMode} onTemporalMode={setTemporalMode} windowLabel={temporalWindow.label} excludedCount={excludedCount} projection={projectionKind} onProjection={setProjectionKind} shelfOn={shelfOn} onToggleShelf={()=>setShelfOn(value=>!value)} species={compact?{value:selected,options:speciesOptions,onChange:onSelectSpecies}:undefined} onClose={()=>setPanel(null)}/>}
