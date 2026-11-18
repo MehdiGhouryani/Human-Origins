@@ -35,6 +35,9 @@ test('a fourth taxon waits for a removal, and nothing is dropped silently', asyn
 test('the cranial scale keeps every bar on its track, and claims come from records', async({page})=>{
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/?mode=compare&cmp=sapiens,neanderthal,erectus')
+  // Compare is a deferred view chunk; wait for its cards and data bars before measuring the scale.
+  await expect(page.locator('.compare-card-header')).toHaveCount(3)
+  await expect(page.locator('.compare-cc-bar').first()).toBeVisible()
   const bars=await page.locator('.compare-cc-bar').evaluateAll(els=>els.map(el=>({
     left:parseFloat((el as HTMLElement).style.left),
     width:parseFloat((el as HTMLElement).style.width),
