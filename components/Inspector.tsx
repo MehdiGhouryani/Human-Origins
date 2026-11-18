@@ -1,14 +1,15 @@
 'use client'
 import {useEffect,useMemo,useState} from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import {evidenceClassLabel} from '../domain/media-slots'
 import {Bookmark,ChevronRight,ExternalLink,Image as ImageIcon,X,ArrowRight,MapPin,GitBranch} from 'lucide-react'
 import {motion} from 'motion/react'
 import MediaImage from './MediaImage'
 import type {ExplorerSpecies as Species} from '../features/explorer/types'
-import EvidenceGraph from './EvidenceGraph'
-import SourceIntelligence from './SourceIntelligence'
-import RelationshipHypotheses from './RelationshipHypotheses'
+const InspectorEvidence=dynamic(()=>import('./InspectorEvidence'),{
+  loading:()=> <div className="inspector-evidence-loading" role="status">Loading evidence records…</div>,
+})
 import {getExplorerEvidenceForTaxon,getExplorerEvidenceSites,getExplorerSourceById,getExplorerSourcesForTaxon,getExplorerSpeciesList} from '../features/explorer/selectors'
 import {LIFESTYLE_TOPICS,factTopic,factsByTopic} from '../domain/facts'
 import {rangesOverlap} from '../domain/time'
@@ -122,11 +123,9 @@ export default function Inspector({bootstrap,species,bookmarked,onToggleBookmark
               {geneticRecords.length>0&&<><h4 className="tab-subhead">Genetic evidence records</h4><EvidenceList bootstrap={bootstrap} records={geneticRecords}/></>}
               {geneFlow.length>0&&<><h4 className="tab-subhead">Documented gene flow</h4><ul className="evidence-list">{geneFlow.map(l=>{const other=getExplorerSpeciesList(bootstrap).find(t=>t.id===(String(l.from)===species.id?String(l.to):String(l.from)));return <li key={String(l.id)}><strong>With {other?.short??'another population'}</strong>{l.eventAgeMa!==undefined&&<small>Dated signal ≈ {kaOrMa(l.eventAgeMa)} ago</small>}<p>{l.note??'Genetic evidence shows DNA moved between these populations.'}</p><span className="evidence-list-sources">{l.sourceIds.map(id=>{const s=getExplorerSourceById(bootstrap,String(id));return s?<a key={String(id)} href={s.url} target="_blank" rel="noreferrer">{s.title}<span className="sr-only"> (opens in a new tab)</span><ExternalLink size={11} aria-hidden="true"/></a>:null})}</span></li>})}</ul></>}
             </>:<NoData what="genetic" short={species.short} hint={species.evidence.includes('Genetics')?'The taxon is tagged with genetic evidence, but no itemised record is attached yet.':undefined}/>}
-            <EvidenceGraph bootstrap={bootstrap} species={species} onRevealSite={onRevealSite}/>
-            <RelationshipHypotheses bootstrap={bootstrap} species={species}/>
+            <InspectorEvidence bootstrap={bootstrap} species={species} onRevealSite={onRevealSite}/>
             <div className="evidence-panel"><div className="evidence-head"><strong>Source-backed record</strong><span>{linkedSources.length} {linkedSources.length===1?'source':'sources'}</span></div>{linkedSources.map(s=><a className="source-card" key={s.id} href={s.url} target="_blank" rel="noreferrer"><span><b>{s.title}</b><small>{s.note}</small></span><ExternalLink size={14} aria-hidden="true"/><span className="sr-only">(opens in a new tab)</span></a>)}</div>
-            <SourceIntelligence bootstrap={bootstrap} species={species}/>
-          </>}
+            </>}
           {tab==='Lifestyle'&&<>
             {lifestyleFacts.length>0&&<dl className="facts">{lifestyleFacts.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
             {archaeologyRecords.length>0&&<><h4 className="tab-subhead">Archaeological records</h4><EvidenceList bootstrap={bootstrap} records={archaeologyRecords}/></>}
