@@ -1,25 +1,14 @@
 {
   "version": "33.0",
   "rules": {
-    "hero": "1920x440 WebP",
-    "neanderthalReconstruction": "1024x1024 WebP",
+    "hero": "Responsive, self-hosted viewport variants: hero-mobile.webp, hero-tablet.webp and hero-desktop.webp.",
+    "neanderthalReconstruction": "CMS-managed, source-backed reconstruction. It is not a built-in public asset; publication requires rights and scientific review.",
     "speciesMedia": "Species-specific specimen/cast/reconstruction media; each item carries source + license metadata",
     "commonAncestor": "Original schematic; not a recovered species portrait",
     "externalMediaPolicy": "All built-in production media is self-hosted. Real media enters through the CMS with source and rights metadata.",
     "architecture": "Production UI references active canonical media records. Legacy assets have an explicit migration disposition and are not shipped. Canonical media carries provenance/rights metadata, explicit roles/variants and research subject typing. The Explorer client consumes only a frozen server-built read model. Phase 2 normalizes taxonomy, taxon names, publication, institution, specimen/material, occurrence and site-context entities, publishes deterministic inverse indexes, enforces semantic integrity, exposes a deterministic graph projection, and documents append-only migration strategy. Phase 2 adds qualitative claim uncertainty profiles and source-backed interpretation sets without numeric confidence ranking. Phase 3 adds cycle-safe graph traversal (adjacency lookup, breadth-first search, shortest path) and a claim provenance-chain query on top of the existing graph projection. Phase 4 (V25) records each site's dating method and, where a published figure exists, its numeric uncertainty, instead of leaving those fields unset."
   },
   "assets": [
-    {
-      "id": "hero-evolution",
-      "path": "/assets/hero-evolution.webp",
-      "kind": "hero",
-      "width": 1920,
-      "height": 440,
-      "format": "webp",
-      "role": "hero background",
-      "bytes": 68230,
-      "sha256": "6830afdca25f921614c94126ad98ffedc92479755f1bf26dca3e77dae9b8aa55"
-    },
     {
       "id": "sample-afarensis-icon",
       "path": "/assets/species/samples/afarensis-icon.webp",
@@ -307,6 +296,30 @@
       "role": "species sample",
       "bytes": 39370,
       "sha256": "e9008a2d5eaa4cafb0085aea6c3f62fb0a7fde6a88613d2ed5e86bf8668bab1e"
+    },
+    {
+      "id": "hero-mobile",
+      "path": "/assets/hero-mobile.webp",
+      "kind": "hero",
+      "role": "responsive hero background (mobile)",
+      "bytes": 49242,
+      "sha256": "40a3559e2e1dc328781673dc4ab24b6f3febc46d1ee1bca3725fa9d56a7a6359"
+    },
+    {
+      "id": "hero-tablet",
+      "path": "/assets/hero-tablet.webp",
+      "kind": "hero",
+      "role": "responsive hero background (tablet)",
+      "bytes": 72118,
+      "sha256": "6f791c246f3d57bdf2af38cf30e862ae60fac2e5e0032ae9877f90498e2a576d"
+    },
+    {
+      "id": "hero-desktop",
+      "path": "/assets/hero-desktop.webp",
+      "kind": "hero",
+      "role": "responsive hero background (desktop)",
+      "bytes": 115742,
+      "sha256": "3fff4cc8c60bd58fe663de8bcd651ef6ddebe1e6a4a4ac80d039178dbe03639c"
     }
   ],
   "architecture": "Production UI may only reference active canonical media records. Legacy V21 plates remain quarantined. Canonical media carry alt text, provenance, rights metadata and source paths. The Explorer client consumes only a frozen server-built read model; canonical catalog/repository remains server-only. Media roles, rights status and explicit media variants are part of the canonical contract. Research graph and migration artifacts are domain-side projections, not client sources of truth."

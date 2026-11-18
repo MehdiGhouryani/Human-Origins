@@ -35,6 +35,9 @@ test('a fourth taxon waits for a removal, and nothing is dropped silently', asyn
 test('the cranial scale keeps every bar on its track, and claims come from records', async({page})=>{
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/?mode=compare&cmp=sapiens,neanderthal,erectus')
+  // Compare is a deferred view chunk; wait for its cards and data bars before measuring the scale.
+  await expect(page.locator('.compare-card-header')).toHaveCount(3)
+  await expect(page.locator('.compare-cc-bar').first()).toBeVisible()
   const bars=await page.locator('.compare-cc-bar').evaluateAll(els=>els.map(el=>({
     left:parseFloat((el as HTMLElement).style.left),
     width:parseFloat((el as HTMLElement).style.width),
@@ -46,13 +49,14 @@ test('the cranial scale keeps every bar on its track, and claims come from recor
   }
   await expect(page.getByText('Direct ancient genome sequences recovered.')).toHaveCount(0)
   await expect(page.getByText('Morphological and fossil record evidence.')).toHaveCount(0)
-  await expect(page.locator('.compare-temporal-callout')).not.toContainText('documented in fossil records')
+  await expect(page.locator('.compare-temporal-callout:visible')).not.toContainText('documented in fossil records')
 })
 
 test('overlapping date ranges are reported as dating only', async({page})=>{
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/?mode=compare&cmp=neanderthal,erectus')
-  const callout=page.locator('.compare-temporal-callout')
+  const callout=page.locator('.compare-temporal-callout:visible')
+  await expect(callout).toHaveCount(1)
   await expect(callout).toContainText('recorded date ranges overlap')
   await expect(callout).toContainText('They do not imply contact, descent or interbreeding')
 })
@@ -60,21 +64,30 @@ test('overlapping date ranges are reported as dating only', async({page})=>{
 test('on a phone the matrix scrolls inside its own region, not the page', async({page})=>{
   await page.setViewportSize({width:390,height:844})
   await page.goto('/?mode=compare&cmp=sapiens,neanderthal,erectus')
-  await expect(page.locator('.compare-scroll')).toBeVisible()
+  // The view is deferred and can briefly reconcile a hidden shell; measure the one accessible, visible region.
+  await expect(page.locator('.compare-card-header:visible')).toHaveCount(3)
+  const scrollRegion=page.getByRole('region',{name:'Comparison matrix. Scroll sideways to see every selected taxon.'})
+  await expect(scrollRegion).toHaveCount(1)
+  await expect(scrollRegion).toBeVisible()
   const pageOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)
   expect(pageOverflow).toBeLessThanOrEqual(1)
-  const regionScrolls=await page.locator('.compare-scroll').evaluate(el=>el.scrollWidth>el.clientWidth)
+  const regionScrolls=await scrollRegion.evaluate(el=>el.scrollWidth>el.clientWidth)
   expect(regionScrolls).toBe(true)
 })
 
 test('on a phone the first taxon sits beside the narrow labels and the chosen chips are in view', async({page})=>{
   await page.setViewportSize({width:390,height:844})
   await page.goto('/?mode=compare&cmp=sapiens,neanderthal,erectus')
-  const header=await page.locator('.compare-card-header').first().boundingBox()
-  expect(header?.x??999).toBeLessThan(170)                      // label column ≈104px, not 240px
-  const chip=await page.locator('.compare-chip.active').first().boundingBox()
-  expect(chip?.x??-1).toBeGreaterThanOrEqual(0)
-  expect((chip?.x??999)+(chip?.width??999)).toBeLessThanOrEqual(390)
+  const cardHeaders=page.locator('.compare-card-header')
+  // Compare is an on-demand chunk; wait until its selected cards have hydrated before measuring layout.
+  await expect(cardHeaders).toHaveCount(3)
+  await expect(cardHeaders.first()).toBeVisible()
+  const header=cardHeaders.first()
+  // The lazy chunk can hydrate/reconcile once after its first visible paint; poll the measured geometry.
+  await expect.poll(async()=>{const box=await header.boundingBox();return box?.x??999}).toBeLessThan(170) // label column ≈104px
+  const chip=page.locator('.compare-chip.active').first()
+  await expect.poll(async()=>{const box=await chip.boundingBox();return box?.x??-1}).toBeGreaterThanOrEqual(0)
+  await expect.poll(async()=>{const box=await chip.boundingBox();return box?box.x+box.width:999}).toBeLessThanOrEqual(390)
 })
 
 
@@ -102,6 +115,7 @@ test('compare portraits are avatars and the chips are touch-sized',async({page})
   const box=await avatar.boundingBox()
   expect(box!.width).toBeLessThanOrEqual(80)
   expect(box!.height).toBeLessThanOrEqual(80)
-  const small=await page.$$eval('.compare-chip',els=>els.filter(el=>el.getBoundingClientRect().height<44).length)
+  // A hidden reconciliation shell remains in the DOM; only user-visible picker buttons are touch targets.
+  const small=await page.locator('.compare-chip:visible').evaluateAll(els=>els.filter(el=>el.getBoundingClientRect().height<44).length)
   expect(small).toBe(0)
 })

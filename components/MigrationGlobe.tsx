@@ -1,7 +1,7 @@
 'use client'
 import {useCallback,useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react'
 import {geoPath,type GeoPermissibleObjects} from 'd3-geo'
-import {Info,Layers3,List,Map as FlatMapIcon,Globe2,Minus,Plus,RotateCcw,ChevronUp} from 'lucide-react'
+import {Info,Layers3,List,Map as FlatMapIcon,Globe2,Minus,Plus,RotateCcw,ChevronUp,SlidersHorizontal} from 'lucide-react'
 import {getExplorerEvidenceSites,getExplorerSourceById,getExplorerSpeciesById} from '../features/explorer/selectors'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {EvidenceKind} from '../domain/contracts'
@@ -55,6 +55,7 @@ function usePrefersReducedMotion(){
 
 export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,onSelectSpecies,onTimeChange,focusSite,onFocused,temporalMode:propTemporalMode,onTemporalModeChange}:Props){
   const stageRef=useRef<HTMLDivElement>(null)
+  const mobileMapControlsRef=useRef<HTMLDetailsElement>(null)
   const [size,setSize]=useState<Size>({width:0,height:0})
   const [projectionKind,setProjectionKind]=useState<ProjectionKind>('globe')
   const [ka,setKa]=useState(()=>maToKa(time))
@@ -312,6 +313,23 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
     window.addEventListener('keydown',onKey)
     return ()=>window.removeEventListener('keydown',onKey)
   },[panel])
+
+  // The native disclosure owns its open state; Escape and outside taps close it without adding React state.
+  useEffect(()=>{
+    const details=mobileMapControlsRef.current
+    if(!details) return
+    const onKey=(event:KeyboardEvent)=>{
+      if(event.key!=='Escape'||!details.open) return
+      details.open=false
+      details.querySelector<HTMLElement>('summary')?.focus()
+    }
+    const onPointer=(event:PointerEvent)=>{
+      if(details.open&&!details.contains(event.target as Node)) details.open=false
+    }
+    window.addEventListener('keydown',onKey)
+    document.addEventListener('pointerdown',onPointer)
+    return ()=>{window.removeEventListener('keydown',onKey);document.removeEventListener('pointerdown',onPointer)}
+  },[compact])
   const toggleKind=(kind:EvidenceKind)=>setKindsOn(previous=>{const next=new Set(previous);if(next.has(kind)) next.delete(kind);else next.add(kind);return next})
   const siteItems:SiteListItem[]=useMemo(()=>[...visibleEvidence].sort((a,b)=>b.ageKa-a.ageKa).map(site=>({id:String(site.id),name:site.name,ageLabel:site.ageLabel,kind:site.kind,selected:String(site.id)===selectedSiteId})),[visibleEvidence,selectedSiteId])
 
@@ -392,12 +410,21 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
         </div>
       </div>
 
-      <div className="atlas-zoom" data-no-drag role="group" aria-label="Map view">
+      {!compact&&<div className="atlas-zoom" data-no-drag role="group" aria-label="Map view">
         <button type="button" onClick={()=>zoomBy(1.5)} className="atlas-icon-btn" aria-label="Zoom in"><Plus size={18} aria-hidden="true"/></button>
         <button type="button" onClick={()=>zoomBy(1/1.5)} className="atlas-icon-btn" aria-label="Zoom out"><Minus size={18} aria-hidden="true"/></button>
         <button type="button" onClick={resetView} className="atlas-icon-btn" aria-label="Reset view"><RotateCcw size={17} aria-hidden="true"/></button>
         <button type="button" onClick={()=>setProjectionKind(kind=>kind==='globe'?'flat':'globe')} className="atlas-icon-btn" aria-label={projectionKind==='globe'?'Switch to flat map':'Switch to globe'}>{projectionKind==='globe'?<FlatMapIcon size={17} aria-hidden="true"/>:<Globe2 size={17} aria-hidden="true"/>}</button>
-      </div>
+      </div>}
+      {compact&&<details ref={mobileMapControlsRef} className="atlas-mobile-map-controls" data-no-drag>
+        <summary role="button" className="atlas-icon-btn atlas-mobile-map-controls-toggle" aria-label="Map controls" title="Map controls"><SlidersHorizontal size={18} aria-hidden="true"/></summary>
+        <div className="atlas-mobile-map-controls-menu" role="group" aria-label="Map view controls">
+          <button type="button" onClick={()=>zoomBy(1.5)} className="atlas-icon-btn" aria-label="Zoom in"><Plus size={18} aria-hidden="true"/></button>
+          <button type="button" onClick={()=>zoomBy(1/1.5)} className="atlas-icon-btn" aria-label="Zoom out"><Minus size={18} aria-hidden="true"/></button>
+          <button type="button" onClick={resetView} className="atlas-icon-btn" aria-label="Reset view"><RotateCcw size={17} aria-hidden="true"/></button>
+          <button type="button" onClick={()=>setProjectionKind(kind=>kind==='globe'?'flat':'globe')} className="atlas-icon-btn" aria-label={projectionKind==='globe'?'Switch to flat map':'Switch to globe'}>{projectionKind==='globe'?<FlatMapIcon size={17} aria-hidden="true"/>:<Globe2 size={17} aria-hidden="true"/>}</button>
+        </div>
+      </details>}
 
       {panel&&<div className="atlas-panel-slot" data-no-drag>
         {panel==='layers'&&<LayersPanel kindsOn={kindsOn} onToggleKind={toggleKind} routesOn={routesOn} routesAvailable={routesAvailable} onToggleRoutes={()=>setRoutesOn(value=>!value)} temporalMode={temporalMode} onTemporalMode={setTemporalMode} windowLabel={temporalWindow.label} excludedCount={excludedCount} projection={projectionKind} onProjection={setProjectionKind} shelfOn={shelfOn} onToggleShelf={()=>setShelfOn(value=>!value)} species={compact?{value:selected,options:speciesOptions,onChange:onSelectSpecies}:undefined} onClose={()=>setPanel(null)}/>}

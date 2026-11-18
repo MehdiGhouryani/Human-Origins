@@ -50,6 +50,23 @@ test('the profile keeps its place while the species changes (no remount, no blan
   await expect(page.locator('.inspector')).toHaveAttribute('data-marker','kept')
 })
 
+test('the detailed Evidence modules load only after the Evidence tab is selected',async({page})=>{
+  await page.setViewportSize({width:1440,height:900})
+  const scriptRequests:string[]=[]
+  page.on('request',request=>{
+    if(request.resourceType()==='script'&&request.url().includes('/_next/static/chunks/')) scriptRequests.push(request.url())
+  })
+  await page.goto('/')
+  await page.waitForLoadState('networkidle')
+  await expect(page.getByRole('tab',{name:'Overview',exact:true})).toHaveAttribute('aria-selected','true')
+  await expect(page.locator('.inspector .source-intelligence')).toHaveCount(0)
+  const initialScripts=new Set(scriptRequests)
+  await page.getByRole('tab',{name:'Evidence',exact:true}).click()
+  await expect(page.getByText('Documented gene flow')).toBeVisible()
+  await expect(page.locator('.inspector .source-intelligence')).toBeVisible()
+  await expect.poll(()=>new Set(scriptRequests.filter(url=>!initialScripts.has(url))).size).toBeGreaterThan(0)
+})
+
 test('the three profile views switch, and the genetic evidence sits in Evidence', async({page})=>{
   await page.setViewportSize({width:1440,height:900})
   await page.goto('/')

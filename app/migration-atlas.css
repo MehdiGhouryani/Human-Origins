@@ -128,3 +128,15 @@ body:has(.migration-view.atlas) .hero{display:none}
 .atlas-select{width:100%;height:40px;border-radius:10px;border:1px solid var(--glass-line);background:#071214;color:var(--ink);font:600 14px/1 var(--font-ui);padding:0 10px}
 
 @media (prefers-reduced-motion:reduce){.atlas-overlay .pulse{animation:none}}
+
+/* Mobile map toolbar: keep the four map actions available without permanently occupying the map edge. */
+.atlas-mobile-map-controls{display:none}
+.atlas-mobile-map-controls summary{list-style:none;cursor:pointer}
+.atlas-mobile-map-controls-toggle{width:44px;height:44px}
+.atlas-mobile-map-controls summary::-webkit-details-marker{display:none}
+.atlas-mobile-map-controls summary::marker{content:''}
+.atlas-mobile-map-controls[open] summary{color:var(--gold);background:rgba(232,189,112,.1)}
+.atlas-mobile-map-controls-menu{position:absolute;right:0;bottom:calc(100% + 6px);display:flex;flex-direction:column;gap:3px;padding:4px;border:1px solid var(--glass-line);border-radius:14px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.atlas-mobile-map-controls-menu .atlas-icon-btn{width:44px;height:44px}
+.atlas-stage.compact .atlas-zoom{display:none}
+.atlas-stage.compact .atlas-mobile-map-controls{display:block;position:absolute;right:8px;top:calc(62px + (100% - 62px - 150px)/2);z-index:4}

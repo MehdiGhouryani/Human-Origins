@@ -451,3 +451,8 @@ small{font-size:11px}
 
 /* Real reconstructions in the profile preview: fill the frame and keep the face, instead of the letter-boxed placeholder plate. */
 .species-visual img.is-real{object-fit:cover;object-position:50% 14%;filter:none}
+
+.inspector-evidence-loading{min-height:52px;display:flex;align-items:center;padding:var(--sp-3);border:1px dashed var(--border);border-radius:var(--radius-s);color:var(--text-soft);font-size:var(--fs-small)}
+
+/* Compare taxon picker: these primary selection buttons are touch targets at every viewport and input mode. */
+.compare-picker-chips .compare-chip{box-sizing:border-box;min-height:44px}

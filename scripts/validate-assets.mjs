@@ -1,54 +1,54 @@
 import {readFileSync, existsSync, readdirSync} from 'node:fs'
 import {createHash} from 'node:crypto'
-import {join, resolve} from 'node:path'
-import sharp from 'sharp'
+import {join, resolve, sep} from 'node:path'
 
-const root = resolve(import.meta.dirname, '..')
-const checks = [
-  ['public/assets/hero-evolution.webp', [1920, 440]],
-]
+const root=resolve(import.meta.dirname,'..')
+const errors=[]
+const manifestPath=join(root,'public/assets/asset-manifest.json')
 
-const errors = []
-for (const [rel, [expectedW, expectedH]] of checks) {
-  const p = join(root, rel)
-  if (!existsSync(p)) {
-    errors.push(`missing: ${rel}`)
-    continue
+if(existsSync(manifestPath)){
+  const data=JSON.parse(readFileSync(manifestPath,'utf8'))
+  const pkg=JSON.parse(readFileSync(join(root,'package.json'),'utf8'))
+  if(data.version!==(pkg.version||'').replace('0.','')) errors.push(`asset-manifest version is not aligned with package release ${pkg.version}`)
+  const listed=new Set((data.assets||[]).map(item=>item.path))
+  const walk=(directory,relative='')=>{
+    const files=[]
+    for(const entry of readdirSync(join(directory,relative),{withFileTypes:true})){
+      const child=join(relative,entry.name)
+      if(entry.isDirectory()) files.push(...walk(directory,child))
+      else if(entry.isFile()) files.push('/assets/'+child.split(sep).join('/'))
+      else errors.push(`public/assets/${child}: unsupported filesystem entry`)
+    }
+    return files
   }
-  const meta = await sharp(p).metadata()
-  if (meta.width !== expectedW || meta.height !== expectedH) {
-    errors.push(`${rel}: expected (${expectedW}, ${expectedH}), got (${meta.width}, ${meta.height})`)
+  const excludedManifestFiles=new Set(['/assets/asset-manifest.json','/assets/catalog-runtime-manifest.json'])
+  for(const path of walk(join(root,'public/assets'))){
+    if(!excludedManifestFiles.has(path)&&!listed.has(path)) errors.push(`${path}: missing from asset manifest`)
   }
-}
-
-const manifestPath = join(root, 'public/assets/asset-manifest.json')
-if (existsSync(manifestPath)) {
-  const data = JSON.parse(readFileSync(manifestPath, 'utf8'))
-  const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
-  if (data.version !== (pkg.version || '').replace('0.', '')) {
-    errors.push(`asset-manifest version is not aligned with package release ${pkg.version}`)
-  }
-  const listed = new Set((data.assets || []).map(item => item.path))
-  for (const item of data.assets || []) {
-    const path = item.path || ''
-    const expected = item.sha256
-    if (path.startsWith('/assets/') && expected) {
-      const fp = join(root, 'public', path.replace(/^\//, ''))
-      if (existsSync(fp)) {
-        const actual = createHash('sha256').update(readFileSync(fp)).digest('hex')
-        if (actual !== expected) errors.push(`${path}: sha256 mismatch`)
+  for(const item of data.assets||[]){
+    const path=item.path||''
+    const expected=item.sha256
+    if(path.startsWith('/assets/')&&expected){
+      const file=join(root,'public',path.slice(1))
+      if(existsSync(file)){
+        const actual=createHash('sha256').update(readFileSync(file)).digest('hex')
+        if(actual!==expected) errors.push(`${path}: sha256 mismatch`)
+      }else{
+        errors.push(`${path}: missing from public assets`)
       }
     }
   }
-  for (const file of readdirSync(join(root, 'public/assets/species/samples'))) {
-    const path = `/assets/species/samples/${file}`
-    if (!listed.has(path)) errors.push(`${path}: missing from asset manifest`)
+  const sampleDir=join(root,'public/assets/species/samples')
+  for(const file of readdirSync(sampleDir)){
+    const path=`/assets/species/samples/${file}`
+    if(!listed.has(path)) errors.push(`${path}: missing from asset manifest`)
   }
+  const responsiveHero=['/assets/hero-mobile.webp','/assets/hero-tablet.webp','/assets/hero-desktop.webp']
+  for(const path of responsiveHero) if(!existsSync(join(root,'public',path.slice(1)))) errors.push(`${path}: missing responsive hero variant`)
 }
 
-// Legacy assets are intentionally absent after v31-to-v32; the migration disposition records their hashes.
-if (errors.length) {
-  for (const e of errors) console.error('ERROR', e)
+if(errors.length){
+  for(const error of errors) console.error('ERROR',error)
   process.exit(1)
 }
 console.log('Asset audit passed.')
