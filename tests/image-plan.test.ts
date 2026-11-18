@@ -61,7 +61,7 @@ describe('image catalog',()=>{
   it('covers lithic evidence for all 17 named taxa without assigning unattributed or disputed industries',()=>{
     expect(LITHIC_EVIDENCE).toHaveLength(17)
     for(const record of LITHIC_EVIDENCE){
-      const lithicRows=rows.filter(row=>row.taxonId===String(record.taxonId)&&/^L\\d$/.test(row.series))
+      const lithicRows=rows.filter(row=>row.taxonId===String(record.taxonId)&&/^L\d$/.test(row.series))
       expect(lithicRows,String(record.taxonId)).toHaveLength(2)
       const attributable=record.status==='contextual-association'||record.status==='strong-contextual-association'
       for(const row of lithicRows) expect(row.status,row.code).toBe(attributable?'BLOCKED-NO-MATERIAL-RECORD':'NOT-APPLICABLE')
