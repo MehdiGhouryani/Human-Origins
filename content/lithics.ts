@@ -308,21 +308,21 @@ const lithics: readonly TaxonLithicEvidence[] = [
     contexts: [
       {
         id: 'neanderthal-mousterian',
-        site: 'Kebara Cave and other Middle Palaeolithic Neanderthal contexts',
-        region: 'Levant and western Eurasia',
-        ageLabel: 'Middle Palaeolithic; dates vary by site and layer',
-        technology: 'Mousterian / prepared-core (including Levallois) reduction',
+        site: 'La Roche-Cotard (LRC I–IV)',
+        region: 'Loire Valley, central France',
+        ageLabel: 'occupation and cave closure more than 57 ± 3 thousand years ago',
+        technology: 'Mousterian industries: Levallois at LRC II and IV; Discoid at LRC III',
         relationship: 'population-association',
-        objects: ['prepared cores', 'Levallois flakes and points', 'scrapers', 'retouched flakes'],
+        objects: ['Levallois cores and flakes', 'Discoid cores and flakes', 'Mousterian scrapers', 'retouched flakes'],
         diagram: 'prepared-core-flake',
         assemblagePhotoBrief: 'A named Mousterian assemblage from a specific Neanderthal-bearing layer; keep separate from nearby H. sapiens-bearing contexts.',
         artefactPhotoBrief: 'One catalogued Levallois core or point, photographed from multiple faces with scale and layer provenance.',
-        interpretation: 'Prepared-core and Mousterian technologies are well documented in Neanderthal-bearing archaeological contexts.',
-        caveat: 'Mousterian and Levallois technologies are not exclusive biological markers; similar techniques occur in other populations and periods.',
+        interpretation: 'The La Roche-Cotard study reports Mousterian lithics across the cave and nearby excavation loci, with Levallois and Discoid reduction represented in different layers.'
+        caveat: 'The study assigns the western European LRC Mousterian contexts to Neanderthals. Mousterian technology is not a universal biological marker: similar traditions also occur in regions where H. sapiens lived.'
         sources: [{
-          label: 'The Neandertal genome and the archaeological context of Neanderthal populations',
-          url: 'https://doi.org/10.1126/science.1188021',
-          year: 2010,
+          label: 'The earliest unambiguous Neanderthal engravings on cave walls: La Roche-Cotard, Loire Valley, France',
+          url: 'https://doi.org/10.1371/journal.pone.0286568',
+          year: 2023,
           kind: 'primary-study',
         }],
       },
