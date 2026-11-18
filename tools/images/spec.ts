@@ -138,7 +138,8 @@ export function buildCatalog():CatalogRow[]{
     const active=record.status==='contextual-association'||record.status==='strong-contextual-association'
     const context=record.contexts.find(item=>item.diagram!=='none')??record.contexts[0]
     const specimenRef=active&&context?`${context.site} — ${context.region} — ${context.ageLabel}`:''
-    const commonReason=`No taxon-attributed lithic photograph is available for ${record.shortName}; ${record.status} evidence remains contextual, unattributed or disputed and must not be presented as a species-made toolkit.`
+    const attributionNote=record.status==='unattributed-evidence'?'only an unattributed archaeological context is known':record.status==='disputed-evidence'?'the reported archaeological evidence remains disputed':'no secure species-linked archaeological context is currently known'
+    const commonReason=`No taxon-attributed lithic photograph is available for ${record.shortName}; ${attributionNote}. Do not present a site assemblage as a toolkit made by this species.`
     const rowsForTaxon:[
       {n:1;title:string;role:'behavior';brief:string},
       {n:2;title:string;role:'specimen-reference';brief:string},
