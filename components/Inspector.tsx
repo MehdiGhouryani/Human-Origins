@@ -7,6 +7,9 @@ import {Bookmark,ChevronRight,ExternalLink,Image as ImageIcon,X,ArrowRight,MapPi
 import {motion} from 'motion/react'
 import MediaImage from './MediaImage'
 import type {ExplorerSpecies as Species} from '../features/explorer/types'
+const SourceIntelligence=dynamic(()=>import('./SourceIntelligence'),{
+  loading:()=> <div className="inspector-evidence-loading" role="status">Loading source records…</div>,
+})
 const InspectorEvidence=dynamic(()=>import('./InspectorEvidence'),{
   loading:()=> <div className="inspector-evidence-loading" role="status">Loading evidence records…</div>,
 })
@@ -125,6 +128,7 @@ export default function Inspector({bootstrap,species,bookmarked,onToggleBookmark
             </>:<NoData what="genetic" short={species.short} hint={species.evidence.includes('Genetics')?'The taxon is tagged with genetic evidence, but no itemised record is attached yet.':undefined}/>}
             <InspectorEvidence bootstrap={bootstrap} species={species} onRevealSite={onRevealSite}/>
             <div className="evidence-panel"><div className="evidence-head"><strong>Source-backed record</strong><span>{linkedSources.length} {linkedSources.length===1?'source':'sources'}</span></div>{linkedSources.map(s=><a className="source-card" key={s.id} href={s.url} target="_blank" rel="noreferrer"><span><b>{s.title}</b><small>{s.note}</small></span><ExternalLink size={14} aria-hidden="true"/><span className="sr-only">(opens in a new tab)</span></a>)}</div>
+            <SourceIntelligence bootstrap={bootstrap} species={species}/>
             </>}
           {tab==='Lifestyle'&&<>
             {lifestyleFacts.length>0&&<dl className="facts">{lifestyleFacts.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
