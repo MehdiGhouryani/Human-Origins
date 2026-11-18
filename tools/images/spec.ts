@@ -138,25 +138,25 @@ export function buildCatalog():CatalogRow[]{
     const active=record.status==='contextual-association'||record.status==='strong-contextual-association'
     const context=record.contexts.find(item=>item.diagram!=='none')??record.contexts[0]
     const specimenRef=active&&context?`${context.site} — ${context.region} — ${context.ageLabel}`:''
-    const commonReason=record.summary
+    const commonReason=`No taxon-attributed lithic photograph is available for ${record.shortName}; ${record.status} evidence remains contextual, unattributed or disputed and must not be presented as a species-made toolkit.`
     const rowsForTaxon:[
       {n:1;title:string;role:'behavior';brief:string},
       {n:2;title:string;role:'specimen-reference';brief:string},
     ]=[
       {
         n:1,
-        title:context?`${record.shortName}: dated stone-tool assemblage — ${context.site}`:`${record.shortName}: stone-tool assemblage`,
+        title:active&&context?`${record.shortName}: dated stone-tool assemblage — ${context.site}`:`${record.shortName}: stone-tool assemblage not attributed`,
         role:'behavior',
         brief:active&&context
-          ?`Authentic photograph of a documented lithic assemblage from ${context.site}, ${context.region}, ${context.ageLabel}. Technology: ${context.technology}. Include only artefacts from one named stratigraphic context; neutral flat lay, consistent scale bar, object IDs and provenance in caption. Do not imply individual authorship. Sources: ${context.sources.map(source=>source.label+' ('+source.url+')').join('; ')}. ${SOURCE_ORDER}`
+          ?`Authentic photograph of a documented lithic assemblage from ${context.site}, ${context.region}, ${context.ageLabel}. Technology: ${context.technology}. Include only artefacts from one named stratigraphic context; neutral flat lay, consistent scale bar, object IDs and provenance in caption. Do not imply individual authorship. ${SOURCE_ORDER}`
           :`Not applicable: ${commonReason}`,
       },
       {
         n:2,
-        title:context?`${record.shortName}: diagnostic artefact — ${context.site}`:`${record.shortName}: diagnostic artefact`,
+        title:active&&context?`${record.shortName}: diagnostic artefact — ${context.site}`:`${record.shortName}: diagnostic artefact not attributed`,
         role:'specimen-reference',
         brief:active&&context
-          ?`Authentic photograph of one catalogued artefact from ${context.site}, ${context.region}, ${context.ageLabel}; technology: ${context.technology}. Show both faces and edge with scale, collection/inventory identifier, exact layer and source. Never substitute an AI-generated artefact image. Sources: ${context.sources.map(source=>source.label+' ('+source.url+')').join('; ')}. ${SOURCE_ORDER}`
+          ?`Authentic photograph of one catalogued artefact from ${context.site}, ${context.region}, ${context.ageLabel}; technology: ${context.technology}. Show both faces and edge with scale, collection/inventory identifier, exact layer and source. Never substitute an AI-generated artefact image. ${SOURCE_ORDER}`
           :`Not applicable: ${commonReason}`,
       },
     ]
