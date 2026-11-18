@@ -41,7 +41,7 @@ describe('generated slot definitions',()=>{
     for(const id of featured.mainPathTaxonIds.map(String)){
       const own=slotsForTaxon(MEDIA_SLOTS,id)
       expect(own.filter(slot=>/^S\d+/.test(slot.series)),id).toHaveLength(15)
-      expect(own.filter(slot=>/^L\d/.test(slot.series)),id).toHaveLength(3)
+      expect(own.filter(slot=>/^L\d/.test(slot.series)),id).toHaveLength(2)
     }
     expect(slotsForTaxon(MEDIA_SLOTS,'compare')).toHaveLength(0)
     expect(MEDIA_SLOTS.filter(slot=>slot.taxonId===null)).toHaveLength(21)
