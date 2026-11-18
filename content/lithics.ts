@@ -286,7 +286,7 @@ const lithics: readonly TaxonLithicEvidence[] = [
         technology: 'Early Acheulean: large cutting tools and bifaces',
         relationship: 'unattributed-site-record',
         objects: ['bifacial handaxes', 'large cutting tools', 'core-and-flake artefacts'],
-        diagram: 'acheulean-biface',
+        diagram: 'none',
         assemblagePhotoBrief: 'A separate Kokiselei 4 Acheulean assemblage; do not combine with the Dmanisi Mode 1 material.',
         artefactPhotoBrief: 'One catalogued Kokiselei 4 biface, both faces and edge, with scale and collection record.',
         interpretation: 'The early Acheulean appears alongside Oldowan artefacts in the West Turkana archaeological sequence, showing that the technologies were not simply successive stages.',
