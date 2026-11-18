@@ -137,7 +137,7 @@ export function buildCatalog():CatalogRow[]{
   for(const record of LITHIC_EVIDENCE){
     const active=record.status==='contextual-association'||record.status==='strong-contextual-association'
     const context=record.contexts.find(item=>item.diagram!=='none')??record.contexts[0]
-    const specimenRef=active&&context?\u0060${context.site} — ${context.region} — ${context.ageLabel}\u0060:''
+    const specimenRef=active&&context?`${context.site} — ${context.region} — ${context.ageLabel}`:''
     const commonReason=record.summary
     const rowsForTaxon:[
       {n:1;title:string;role:'behavior';brief:string},
@@ -145,19 +145,19 @@ export function buildCatalog():CatalogRow[]{
     ]=[
       {
         n:1,
-        title:context?\u0060${record.shortName}: dated stone-tool assemblage — ${context.site}\u0060:\u0060${record.shortName}: stone-tool assemblage\u0060,
+        title:context?`${record.shortName}: dated stone-tool assemblage — ${context.site}`:`${record.shortName}: stone-tool assemblage`,
         role:'behavior',
         brief:active&&context
-          ?\u0060Authentic photograph of a documented lithic assemblage from ${context.site}, ${context.region}, ${context.ageLabel}. Technology: ${context.technology}. Include only artefacts from one named stratigraphic context; neutral flat lay, consistent scale bar, object IDs and provenance in caption. Do not imply individual authorship. Sources: ${context.sources.map(source=>source.label+' ('+source.url+')').join('; ')}. ${SOURCE_ORDER}\u0060
-          :\u0060Not applicable: ${commonReason}\u0060,
+          ?`Authentic photograph of a documented lithic assemblage from ${context.site}, ${context.region}, ${context.ageLabel}. Technology: ${context.technology}. Include only artefacts from one named stratigraphic context; neutral flat lay, consistent scale bar, object IDs and provenance in caption. Do not imply individual authorship. Sources: ${context.sources.map(source=>source.label+' ('+source.url+')').join('; ')}. ${SOURCE_ORDER}`
+          :`Not applicable: ${commonReason}`,
       },
       {
         n:2,
-        title:context?\u0060${record.shortName}: diagnostic artefact — ${context.site}\u0060:\u0060${record.shortName}: diagnostic artefact\u0060,
+        title:context?`${record.shortName}: diagnostic artefact — ${context.site}`:`${record.shortName}: diagnostic artefact`,
         role:'specimen-reference',
         brief:active&&context
-          ?\u0060Authentic photograph of one catalogued artefact from ${context.site}, ${context.region}, ${context.ageLabel}; technology: ${context.technology}. Show both faces and edge with scale, collection/inventory identifier, exact layer and source. Never substitute an AI-generated artefact image. Sources: ${context.sources.map(source=>source.label+' ('+source.url+')').join('; ')}. ${SOURCE_ORDER}\u0060
-          :\u0060Not applicable: ${commonReason}\u0060,
+          ?`Authentic photograph of one catalogued artefact from ${context.site}, ${context.region}, ${context.ageLabel}; technology: ${context.technology}. Show both faces and edge with scale, collection/inventory identifier, exact layer and source. Never substitute an AI-generated artefact image. Sources: ${context.sources.map(source=>source.label+' ('+source.url+')').join('; ')}. ${SOURCE_ORDER}`
+          :`Not applicable: ${commonReason}`,
       },
     ]
     for(const item of rowsForTaxon){
@@ -165,9 +165,9 @@ export function buildCatalog():CatalogRow[]{
       const status:RowStatus=applicable?'BLOCKED-NO-MATERIAL-RECORD':'NOT-APPLICABLE'
       const format=fmtOf('plate')
       rows.push({
-        code:\u0060${record.taxonId}.L${item.n}\u0060,
+        code:`${record.taxonId}.L${item.n}`,
         taxonId:String(record.taxonId),
-        series:\u0060L${item.n}\u0060,
+        series:`L${item.n}`,
         title:item.title,
         role:item.role,
         mediaKind:'specimen-photo',
