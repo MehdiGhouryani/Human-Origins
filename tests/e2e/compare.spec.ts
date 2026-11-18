@@ -115,6 +115,7 @@ test('compare portraits are avatars and the chips are touch-sized',async({page})
   const box=await avatar.boundingBox()
   expect(box!.width).toBeLessThanOrEqual(80)
   expect(box!.height).toBeLessThanOrEqual(80)
-  const small=await page.$$eval('.compare-chip',els=>els.filter(el=>el.getBoundingClientRect().height<44).length)
+  // A hidden reconciliation shell remains in the DOM; only user-visible picker buttons are touch targets.
+  const small=await page.locator('.compare-chip:visible').evaluateAll(els=>els.filter(el=>el.getBoundingClientRect().height<44).length)
   expect(small).toBe(0)
 })
