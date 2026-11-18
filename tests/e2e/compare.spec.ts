@@ -64,10 +64,14 @@ test('overlapping date ranges are reported as dating only', async({page})=>{
 test('on a phone the matrix scrolls inside its own region, not the page', async({page})=>{
   await page.setViewportSize({width:390,height:844})
   await page.goto('/?mode=compare&cmp=sapiens,neanderthal,erectus')
-  await expect(page.locator('.compare-scroll')).toBeVisible()
+  // The view is deferred and can briefly reconcile a hidden shell; measure the one accessible, visible region.
+  await expect(page.locator('.compare-card-header:visible')).toHaveCount(3)
+  const scrollRegion=page.getByRole('region',{name:'Comparison matrix. Scroll sideways to see every selected taxon.'})
+  await expect(scrollRegion).toHaveCount(1)
+  await expect(scrollRegion).toBeVisible()
   const pageOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)
   expect(pageOverflow).toBeLessThanOrEqual(1)
-  const regionScrolls=await page.locator('.compare-scroll').evaluate(el=>el.scrollWidth>el.clientWidth)
+  const regionScrolls=await scrollRegion.evaluate(el=>el.scrollWidth>el.clientWidth)
   expect(regionScrolls).toBe(true)
 })
 
