@@ -85,6 +85,13 @@ const oldowanReview: LithicSource = {
   kind: 'review',
 }
 
+const boiseiHandSource: LithicSource = {
+  label: 'New fossils reveal the hand of Paranthropus boisei',
+  url: 'https://doi.org/10.1038/s41586-025-09594-8',
+  year: 2025,
+  kind: 'primary-study',
+}
+
 const lomekwiSource: LithicSource = {
   label: '3.3-million-year-old stone tools from Lomekwi 3, West Turkana, Kenya',
   url: 'https://doi.org/10.1038/nature14464',
@@ -181,7 +188,7 @@ const lithics: readonly TaxonLithicEvidence[] = [
         artefactPhotoBrief: 'One catalogued Oldowan core or flake from a specified layer, both faces, scale, institution and collection number.',
         interpretation: 'The 2025 review identifies early Homo and P. boisei among the most plausible Oldowan toolmakers, while concluding that the maker question remains unresolved.',
         caveat: 'Co-occurrence and plausible manual capability do not prove that P. boisei produced a particular core or flake. Caption as an archaeological association, never “made by P. boisei”.',
-        sources: [oldowanReview],
+        sources: [oldowanReview, boiseiHandSource],
       },
     ],
   },
