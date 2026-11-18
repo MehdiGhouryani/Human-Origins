@@ -25,7 +25,7 @@ describe('image catalog',()=>{
 
   it('has 238 unique rows: 165 standard + 18 special + 34 photo slots + 21 comparative',()=>{
     expect(rows).toHaveLength(238)
-    expect(new Set(rows.map(row=>row.code)).size).toBe(237)
+    expect(new Set(rows.map(row=>row.code)).size).toBe(238)
     expect(rows.filter(row=>/\.S\d+[ab]?$/.test(row.code))).toHaveLength(165)
     expect(rows.filter(row=>/\.X\d+$/.test(row.code))).toHaveLength(18)
     expect(rows.filter(row=>/\.L\d$/.test(row.code))).toHaveLength(34)
