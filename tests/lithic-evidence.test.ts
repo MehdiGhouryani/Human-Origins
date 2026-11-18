@@ -27,6 +27,12 @@ describe('per-taxon lithic evidence registry',()=>{
       if(record.status==='disputed-evidence') {
         expect(record.contexts.some(context=>context.relationship==='disputed'),String(record.taxonId)).toBe(true)
       }
+      if(record.status==='unattributed-evidence') {
+        expect(hasActionableLithicContext(record),String(record.taxonId)).toBe(false)
+      }
+      for(const context of record.contexts){
+        if(context.relationship==='unattributed-site-record') expect(context.diagram,context.id).toBe('none')
+      }
     }
   })
 
