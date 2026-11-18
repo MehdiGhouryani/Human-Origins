@@ -3,6 +3,7 @@
 import type {ExplorerSpecies as Species} from '../features/explorer/types'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {SourceRecord} from '../domain/contracts'
+import {ExternalLink} from 'lucide-react'
 import EvidenceGraph from './EvidenceGraph'
 import RelationshipHypotheses from './RelationshipHypotheses'
 import SourceIntelligence from './SourceIntelligence'
@@ -12,7 +13,7 @@ export default function InspectorEvidence({bootstrap,species,onRevealSite,source
   return <>
     <EvidenceGraph bootstrap={bootstrap} species={species} onRevealSite={onRevealSite}/>
     <RelationshipHypotheses bootstrap={bootstrap} species={species}/>
-    <div className="evidence-panel"><div className="evidence-head"><strong>Source-backed record</strong><span>{sources.length} {sources.length===1?'source':'sources'}</span></div>{sources.map(source=><a className="source-card" key={source.id} href={source.url} target="_blank" rel="noreferrer"><span><b>{source.title}</b><small>{source.note}</small></span><span aria-hidden="true">↗</span><span className="sr-only">(opens in a new tab)</span></a>)}</div>
+    <div className="evidence-panel"><div className="evidence-head"><strong>Source-backed record</strong><span>{sources.length} {sources.length===1?'source':'sources'}</span></div>{sources.map(source=><a className="source-card" key={source.id} href={source.url} target="_blank" rel="noreferrer"><span><b>{source.title}</b><small>{source.note}</small></span><ExternalLink size={14} aria-hidden="true"/><span className="sr-only">(opens in a new tab)</span></a>)}</div>
     <SourceIntelligence bootstrap={bootstrap} species={species}/>
   </>
 }
