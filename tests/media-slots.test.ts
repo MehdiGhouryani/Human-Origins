@@ -25,7 +25,7 @@ describe('generated slot definitions',()=>{
 
   it('has one slot per catalog row (237), unique and valid',()=>{
     expect(MEDIA_SLOTS).toHaveLength(238)
-    expect(new Set(MEDIA_SLOTS.map(slot=>String(slot.id))).size).toBe(237)
+    expect(new Set(MEDIA_SLOTS.map(slot=>String(slot.id))).size).toBe(238)
     expect(buildCatalog().map(row=>row.code)).toEqual(MEDIA_SLOTS.map(slot=>String(slot.id)))
   })
 
@@ -59,9 +59,9 @@ describe('generated slot definitions',()=>{
       expect(slot.notApplicableReason.length,String(slot.id)).toBeGreaterThan(20)
     }
     const held=MEDIA_SLOTS.filter(slot=>slot.applicable&&slot.holdReason!=='')
-    expect([...new Set(held.map(slot=>String(slot.taxonId)))].sort()).toEqual(['boisei','denisovan','erectus','floresiensis','heidelbergensis','habilis','neanderthal','orrin','sapiens'])
+    expect([...new Set(held.map(slot=>String(slot.taxonId)))].sort()).toEqual(['boisei','denisovan','erectus','floresiensis','habilis','heidelbergensis','neanderthal','orrin','sapiens'])
     for(const slot of held) expect(isSlotOpen(slot),String(slot.id)).toBe(false)
-    expect(MEDIA_SLOTS.filter(isSlotOpen).length).toBe(237-23-held.length)
+    expect(MEDIA_SLOTS.filter(isSlotOpen).length).toBe(238-25-held.length)
   })
 
   it('requires review exactly for class-D reconstructions',()=>{
