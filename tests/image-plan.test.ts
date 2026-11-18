@@ -6,6 +6,7 @@ import {renderCatalogFiles} from '../tools/images/build'
 import {TAXA} from '../tools/images/taxa'
 import {specimenRecords,taxa} from '../content'
 import {featured} from '../content/featured'
+import {LITHIC_EVIDENCE} from '../content/lithics'
 
 /**
  * Guards the image production plan (tools/images): the catalog is complete and consistent with the project data,
@@ -22,49 +23,54 @@ describe('image catalog',()=>{
     for(const id of CORE_TAXA_ORDER) expect(known.has(id),id).toBe(true)
   })
 
-  it('has 237 unique rows: 165 standard + 18 special + 33 stone-tool + 21 comparative',()=>{
-    expect(rows).toHaveLength(237)
+  it('has 238 unique rows: 165 standard + 18 special + 34 photo slots + 21 comparative',()=>{
+    expect(rows).toHaveLength(238)
     expect(new Set(rows.map(row=>row.code)).size).toBe(237)
     expect(rows.filter(row=>/\.S\d+[ab]?$/.test(row.code))).toHaveLength(165)
     expect(rows.filter(row=>/\.X\d+$/.test(row.code))).toHaveLength(18)
-    expect(rows.filter(row=>/\.L\d$/.test(row.code))).toHaveLength(33)
+    expect(rows.filter(row=>/\.L\d$/.test(row.code))).toHaveLength(34)
     expect(rows.filter(row=>row.code.startsWith('compare.'))).toHaveLength(21)
     for(const id of CORE_TAXA_ORDER){
       expect(rows.filter(row=>row.code.startsWith(`${id}.S`)),id).toHaveLength(15)
-      expect(rows.filter(row=>row.code.startsWith(`${id}.L`)),id).toHaveLength(3)
+      expect(rows.filter(row=>row.code.startsWith(`${id}.L`)),id).toHaveLength(2)
     }
   })
 
-  it('splits production waves 66 / 55 / 44 / 18 / 21 / 33',()=>{
+  it('splits production waves 66 / 55 / 44 / 18 / 21 / 34',()=>{
     const count=(wave:number)=>rows.filter(row=>row.wave===wave).length
-    expect([1,2,3,4,5,6].map(count)).toEqual([66,55,44,18,21,33])
+    expect([1,2,3,4,5,6].map(count)).toEqual([66,55,44,18,21,34])
   })
 
-  it('never lets AI-style prompts or class D near stone tools: lithic rows are photographs (C) or diagrams (B)',()=>{
+  it('keeps per-taxon lithic photo rows free of AI prompts and blocks them until material provenance is catalogued',()=>{
+    expect(rows.filter(row=>/\.L\d$/.test(row.code))).toHaveLength(34)
     for(const row of rows.filter(item=>/\.L\d$/.test(item.code))){
-      expect(['B','C'],row.code).toContain(row.evidenceClass)
+      expect(row.evidenceClass,row.code).toBe('C')
+      expect(row.mediaKind,row.code).toBe('specimen-photo')
       expect(row.promptFile,row.code).toBe('')
+      if(row.status==='BLOCKED-NO-MATERIAL-RECORD'){
+        expect(row.statusReason,row.code).toMatch(/material entity/)
+        expect(row.specimenRef,row.code).toContain('—')
+        expect(row.brief,row.code).toMatch(/Authentic photograph/)
+      }else{
+        expect(row.status,row.code).toBe('NOT-APPLICABLE')
+        expect(row.statusReason.length,row.code).toBeGreaterThan(20)
+      }
     }
   })
 
-  it('gives every actionable stone-tool row type sites, search terms and an attribution caution',()=>{
-    for(const brief of TAXA){
-      const l=brief.lithics
-      const lithicRows=rows.filter(row=>row.code.startsWith(`${brief.id}.L`))
-      if(!l){
-        for(const row of lithicRows){expect(row.status,row.code).toBe('NOT-APPLICABLE');expect(row.statusReason.length,row.code).toBeGreaterThan(20)}
-        continue
+  it('covers lithic evidence for all 17 named taxa without assigning unattributed or disputed industries',()=>{
+    expect(LITHIC_EVIDENCE).toHaveLength(17)
+    for(const record of LITHIC_EVIDENCE){
+      const lithicRows=rows.filter(row=>row.taxonId===String(record.taxonId)&&/^L\\d$/.test(row.series))
+      expect(lithicRows,String(record.taxonId)).toHaveLength(2)
+      const attributable=record.status==='contextual-association'||record.status==='strong-contextual-association'
+      for(const row of lithicRows) expect(row.status,row.code).toBe(attributable?'BLOCKED-NO-MATERIAL-RECORD':'NOT-APPLICABLE')
+      for(const context of record.contexts){
+        expect(context.site,context.id).not.toBe('')
+        expect(context.ageLabel,context.id).not.toBe('')
+        expect(context.relationship,context.id).not.toBe('none')
+        expect(context.sources.length,context.id).toBeGreaterThan(0)
       }
-      expect(l.kit.length,brief.id).toBeGreaterThanOrEqual(3)
-      expect(l.typeSites.length,brief.id).toBeGreaterThanOrEqual(1)
-      expect(l.searchTerms.length,brief.id).toBeGreaterThanOrEqual(2)
-      expect(l.attribution.length,brief.id).toBeGreaterThan(40)
-      expect(l.caution.length,brief.id).toBeGreaterThan(20)
-      const byCode=(n:number)=>lithicRows.find(row=>row.code.endsWith(`.L${n}`))!
-      expect(byCode(1).brief,`${brief.id}.L1`).toContain(l.searchTerms[0])
-      expect(byCode(1).brief,`${brief.id}.L1`).toContain(l.kit[0])
-      expect(byCode(2).brief,`${brief.id}.L2`).toContain(l.keyType)
-      expect(byCode(3).brief,`${brief.id}.L3`).toContain(l.sequence)
     }
   })
 
@@ -93,7 +99,7 @@ describe('image catalog',()=>{
     const na=rows.filter(row=>row.status==='NOT-APPLICABLE').map(row=>row.code).sort()
     const expected=[
       ...TAXA.filter(brief=>!brief.behavior).map(brief=>`${brief.id}.S11`),
-      ...TAXA.filter(brief=>!brief.lithics).flatMap(brief=>[1,2,3].map(n=>`${brief.id}.L${n}`)),
+      ...LITHIC_EVIDENCE.filter(record=>record.status!=='contextual-association'&&record.status!=='strong-contextual-association').flatMap(record=>[1,2].map(n=>`${record.taxonId}.L${n}`)),
     ].sort()
     expect(na).toEqual(expected)
   })
