@@ -24,7 +24,7 @@ describe('generated slot definitions',()=>{
   const taxonIds=new Set(taxa.map(taxon=>String(taxon.id)))
 
   it('has one slot per catalog row (237), unique and valid',()=>{
-    expect(MEDIA_SLOTS).toHaveLength(237)
+    expect(MEDIA_SLOTS).toHaveLength(238)
     expect(new Set(MEDIA_SLOTS.map(slot=>String(slot.id))).size).toBe(237)
     expect(buildCatalog().map(row=>row.code)).toEqual(MEDIA_SLOTS.map(slot=>String(slot.id)))
   })
@@ -51,15 +51,15 @@ describe('generated slot definitions',()=>{
     for(const slot of MEDIA_SLOTS) expect(slot.publicRule,String(slot.id)).toBe(slot.series==='S02'||slot.series==='S03'?'always':'whenFilled')
   })
 
-  it('keeps not-applicable slots closed with a reason, and holds slots of taxa without specimen records',()=>{
+  it('keeps not-applicable slots closed, and separately holds photos without a material record',()=>{
     const notApplicable=MEDIA_SLOTS.filter(slot=>!slot.applicable)
-    expect(notApplicable).toHaveLength(23)
+    expect(notApplicable).toHaveLength(25)
     for(const slot of notApplicable){
       expect(isSlotOpen(slot),String(slot.id)).toBe(false)
       expect(slot.notApplicableReason.length,String(slot.id)).toBeGreaterThan(20)
     }
     const held=MEDIA_SLOTS.filter(slot=>slot.applicable&&slot.holdReason!=='')
-    expect([...new Set(held.map(slot=>String(slot.taxonId)))].sort()).toEqual(['heidelbergensis','orrin'])
+    expect([...new Set(held.map(slot=>String(slot.taxonId)))].sort()).toEqual(['boisei','denisovan','erectus','floresiensis','heidelbergensis','habilis','neanderthal','orrin','sapiens'])
     for(const slot of held) expect(isSlotOpen(slot),String(slot.id)).toBe(false)
     expect(MEDIA_SLOTS.filter(isSlotOpen).length).toBe(237-23-held.length)
   })
