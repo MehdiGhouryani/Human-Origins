@@ -3522,7 +3522,7 @@
     "code": "neanderthal.L1",
     "taxonId": "neanderthal",
     "series": "L1",
-    "title": "Neanderthals: dated stone-tool assemblage — Kebara Cave and other Middle Palaeolithic Neanderthal contexts",
+    "title": "Neanderthals: dated stone-tool assemblage — La Roche-Cotard (LRC I–IV)",
     "role": "behavior",
     "mediaKind": "specimen-photo",
     "evidenceClass": "C",
@@ -3531,15 +3531,15 @@
     "size": "1600×1200",
     "status": "BLOCKED-NO-MATERIAL-RECORD",
     "statusReason": "No archaeological material entity has been catalogued for this context yet. Register the artefact or assemblage, exact site and layer, collection identifier, primary source, image licence and credit before uploading a photograph.",
-    "specimenRef": "Kebara Cave and other Middle Palaeolithic Neanderthal contexts — Levant and western Eurasia — Middle Palaeolithic; dates vary by site and layer",
-    "brief": "Authentic photograph of a documented lithic assemblage from Kebara Cave and other Middle Palaeolithic Neanderthal contexts, Levant and western Eurasia, Middle Palaeolithic; dates vary by site and layer. Technology: Mousterian / prepared-core (including Levallois) reduction. Include only artefacts from one named stratigraphic context; neutral flat lay, consistent scale bar, object IDs and provenance in caption. Do not imply individual authorship. Source order: (1) museum or institutional open-access collections, (2) licensed 3D scan repositories (e.g. MorphoSource, Smithsonian) with an explicit licence, (3) Wikimedia Commons with a CC licence. Record institution, catalog number, licence, credit and source URL. Never AI-generated; if no licensed image exists, leave the slot empty.",
+    "specimenRef": "La Roche-Cotard (LRC I–IV) — Loire Valley, central France — occupation and cave closure more than 57 ± 3 thousand years ago",
+    "brief": "Authentic photograph of a documented lithic assemblage from La Roche-Cotard (LRC I–IV), Loire Valley, central France, occupation and cave closure more than 57 ± 3 thousand years ago. Technology: Mousterian industries: Levallois at LRC II and IV; Discoid at LRC III. Include only artefacts from one named stratigraphic context; neutral flat lay, consistent scale bar, object IDs and provenance in caption. Do not imply individual authorship. Source order: (1) museum or institutional open-access collections, (2) licensed 3D scan repositories (e.g. MorphoSource, Smithsonian) with an explicit licence, (3) Wikimedia Commons with a CC licence. Record institution, catalog number, licence, credit and source URL. Never AI-generated; if no licensed image exists, leave the slot empty.",
     "promptFile": ""
   },
   {
     "code": "neanderthal.L2",
     "taxonId": "neanderthal",
     "series": "L2",
-    "title": "Neanderthals: diagnostic artefact — Kebara Cave and other Middle Palaeolithic Neanderthal contexts",
+    "title": "Neanderthals: diagnostic artefact — La Roche-Cotard (LRC I–IV)",
     "role": "specimen-reference",
     "mediaKind": "specimen-photo",
     "evidenceClass": "C",
@@ -3548,8 +3548,8 @@
     "size": "1600×1200",
     "status": "BLOCKED-NO-MATERIAL-RECORD",
     "statusReason": "No archaeological material entity has been catalogued for this context yet. Register the artefact or assemblage, exact site and layer, collection identifier, primary source, image licence and credit before uploading a photograph.",
-    "specimenRef": "Kebara Cave and other Middle Palaeolithic Neanderthal contexts — Levant and western Eurasia — Middle Palaeolithic; dates vary by site and layer",
-    "brief": "Authentic photograph of one catalogued artefact from Kebara Cave and other Middle Palaeolithic Neanderthal contexts, Levant and western Eurasia, Middle Palaeolithic; dates vary by site and layer; technology: Mousterian / prepared-core (including Levallois) reduction. Show both faces and edge with scale, collection/inventory identifier, exact layer and source. Never substitute an AI-generated artefact image. Source order: (1) museum or institutional open-access collections, (2) licensed 3D scan repositories (e.g. MorphoSource, Smithsonian) with an explicit licence, (3) Wikimedia Commons with a CC licence. Record institution, catalog number, licence, credit and source URL. Never AI-generated; if no licensed image exists, leave the slot empty.",
+    "specimenRef": "La Roche-Cotard (LRC I–IV) — Loire Valley, central France — occupation and cave closure more than 57 ± 3 thousand years ago",
+    "brief": "Authentic photograph of one catalogued artefact from La Roche-Cotard (LRC I–IV), Loire Valley, central France, occupation and cave closure more than 57 ± 3 thousand years ago; technology: Mousterian industries: Levallois at LRC II and IV; Discoid at LRC III. Show both faces and edge with scale, collection/inventory identifier, exact layer and source. Never substitute an AI-generated artefact image. Source order: (1) museum or institutional open-access collections, (2) licensed 3D scan repositories (e.g. MorphoSource, Smithsonian) with an explicit licence, (3) Wikimedia Commons with a CC licence. Record institution, catalog number, licence, credit and source URL. Never AI-generated; if no licensed image exists, leave the slot empty.",
     "promptFile": ""
   },
   {
