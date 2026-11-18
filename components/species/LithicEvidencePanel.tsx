@@ -90,7 +90,7 @@ function ReductionDiagram({context}:{context:LithicContext}){
 }
 
 function ContextCard({context,index}:{context:LithicContext;index:number}){
-  const hasDiagram=context.diagram!=='none'
+  const hasDiagram=context.diagram!=='none'&&context.relationship!=='unattributed-site-record'&&context.relationship!=='disputed'
   return <article className={styles.context} aria-labelledby={'lithic-context-' + context.id}>
     <header className={styles.contextHeader}>
       <div>
