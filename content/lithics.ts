@@ -146,7 +146,7 @@ const lithics: readonly TaxonLithicEvidence[] = [
         technology: 'Lomekwian large-flake / core technology',
         relationship: 'unattributed-site-record',
         objects: ['large cores', 'detached flakes', 'percussive implements'],
-        diagram: 'oldowan-core-flake',
+        diagram: 'none',
         assemblagePhotoBrief: 'Authentic Lomekwi 3 assemblage from a documented museum or excavation record; retain the Lomekwi site attribution and do not attach the objects to A. afarensis.',
         artefactPhotoBrief: 'One catalogued Lomekwi 3 core or flake, both faces, with scale and its institutional record; caption as unattributed.',
         interpretation: 'Lomekwi 3 demonstrates stone knapping well before the classic Oldowan record, but it is not assigned to A. afarensis or to any other named hominin species.',
@@ -230,7 +230,7 @@ const lithics: readonly TaxonLithicEvidence[] = [
         technology: 'Early Acheulean: large cutting tools and bifaces',
         relationship: 'unattributed-site-record',
         objects: ['bifacial handaxes', 'large cutting tools', 'associated core-and-flake artefacts'],
-        diagram: 'acheulean-biface',
+        diagram: 'none',
         assemblagePhotoBrief: 'A dated Kokiselei 4 Acheulean assemblage with the exact excavation unit and collection record; do not combine it with Oldowan finds from another level.',
         artefactPhotoBrief: 'One catalogued Kokiselei 4 biface photographed from both faces and edge, with scale and collection provenance.',
         interpretation: 'Kokiselei 4 documents early Acheulean technology at about 1.76 Ma. The publication discusses technological coexistence and does not assign every artefact to a named species.',
@@ -483,5 +483,5 @@ export function getLithicEvidence(taxonId: string): TaxonLithicEvidence | undefi
 }
 
 export function hasActionableLithicContext(record: TaxonLithicEvidence): boolean {
-  return record.contexts.some(context => context.relationship !== 'none' && context.diagram !== 'none')
+  return record.contexts.some(context => context.relationship !== 'none' && context.relationship !== 'unattributed-site-record' && context.diagram !== 'none')
 }
