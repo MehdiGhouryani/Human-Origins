@@ -38,6 +38,8 @@ import {getExplorerMediaForTaxon} from '../../../features/explorer/selectors'
 import {hasValidSession} from '../../../infrastructure/cms/requireSession'
 import SlotGallery,{HeroBanner,SceneFigures,SlotHero,galleryHasContent} from '../../../components/species/SlotGallery'
 import {placeSceneSlots} from '../../../features/explorer/slotPlacement'
+import LithicEvidencePanel from '../../../components/species/LithicEvidencePanel'
+import {getLithicEvidence} from '../../../content/lithics'
 
 // Same contract as the atlas: CMS content can change at any time, so render per request.
 export const dynamic='force-dynamic'
@@ -106,6 +108,7 @@ export default async function SpeciesPage({params}:Params){
   // The honest "thin record" banner is for taxa with no source-backed claims at all, not for every tier-0 record.
   const isThinRecord=completeness.tier===0&&claims.length===0
   const content=getSpeciesPage(String(species.id))
+  const lithicEvidence=getLithicEvidence(String(species.id))
   const adminPreview=await hasValidSession()
   const slotStates=resolveSlots({slots:MEDIA_SLOTS,media:getExplorerMediaForTaxon(bootstrap,String(species.id)),taxonId:String(species.id),adminPreview,builtIns:{avatar:dossier.treeIcon,portrait}})
   const looseImages=gallery.filter(media=>!media.slotId)
@@ -121,7 +124,7 @@ export default async function SpeciesPage({params}:Params){
   const navItems:NavItem[]=content?[
     {id:'at-a-glance',label:'At a glance'},
     ...content.sections.map(section=>({id:section.id,label:SECTION_TITLES[section.id]})),
-    {id:'debated',label:'Debated'},{id:'unknown',label:'Unknown'},...(showGallery?[{id:'images',label:'Images'}]:[]),{id:'sources',label:'Sources'},
+    {id:'debated',label:'Debated'},{id:'unknown',label:'Unknown'},...(showGallery?[{id:'images',label:'Images'}]:[]),...(lithicEvidence?[{id:'stone-tools',label:'Stone tools'}]:[]),{id:'sources',label:'Sources'},
   ]:[]
 
   return <main className="dossier species-page" style={{'--dossier-accent':color} as CSSProperties}>
@@ -199,6 +202,7 @@ export default async function SpeciesPage({params}:Params){
     </div>
 
     <SlotGallery states={slotStates} extras={looseImages} adminPreview={adminPreview} exclude={galleryExclude}/>
+    {lithicEvidence&&<LithicEvidencePanel record={lithicEvidence}/>}
 
     <section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-evidence-h">
       <ResponsiveDetails id="panel-evidence" summary={<h2 id="panel-evidence-h">Evidence and relationships</h2>}>
