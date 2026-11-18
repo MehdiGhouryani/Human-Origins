@@ -14,7 +14,7 @@ const KINDS=new Set(['specimen-photo','cast-photo','reconstruction','context-sch
 
 describe('media slot ids',()=>{
   it('accepts catalog codes and rejects anything else',()=>{
-    for(const ok of ['afarensis.S02','orrin.X1','sapiens.L3','heidelbergensis.S07a','compare.C03','a-b.S10']) expect(isMediaSlotId(ok),ok).toBe(true)
+    for(const ok of ['afarensis.S02','orrin.X1','sapiens.L2','heidelbergensis.S07a','compare.C03','a-b.S10']) expect(isMediaSlotId(ok),ok).toBe(true)
     for(const bad of ['afarensis','afarensis.s02','Afarensis.S02','afarensis.S','afarensis.S002','x.Y1','',' afarensis.S02','afarensis.S02 ']) expect(isMediaSlotId(bad),bad).toBe(false)
     expect(()=>asMediaSlotId('nope')).toThrow()
   })
@@ -23,7 +23,7 @@ describe('media slot ids',()=>{
 describe('generated slot definitions',()=>{
   const taxonIds=new Set(taxa.map(taxon=>String(taxon.id)))
 
-  it('has one slot per catalog row (237), unique and valid',()=>{
+  it('has one slot per catalog row (238), unique and valid',()=>{
     expect(MEDIA_SLOTS).toHaveLength(238)
     expect(new Set(MEDIA_SLOTS.map(slot=>String(slot.id))).size).toBe(238)
     expect(buildCatalog().map(row=>row.code)).toEqual(MEDIA_SLOTS.map(slot=>String(slot.id)))
@@ -37,7 +37,7 @@ describe('generated slot definitions',()=>{
     }
   })
 
-  it('gives every core taxon 15 standard and 3 stone-tool slots, and slotsForTaxon finds them',()=>{
+  it('gives every core taxon 15 standard and 2 stone-tool photo slots, and slotsForTaxon finds them',()=>{
     for(const id of featured.mainPathTaxonIds.map(String)){
       const own=slotsForTaxon(MEDIA_SLOTS,id)
       expect(own.filter(slot=>/^S\d+/.test(slot.series)),id).toHaveLength(15)
