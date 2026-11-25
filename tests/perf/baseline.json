@@ -1,14 +1,14 @@
 {
   "schema": "perf-baseline/1",
-  "createdAt": "2026-11-08T11:17:51.236Z",
-  "commit": "cb981db",
-  "base": "http://localhost:3100",
+  "createdAt": "2026-11-25T18:36:53.871Z",
+  "commit": "bd0fbc1",
+  "base": "http://127.0.0.1:3000",
   "runs": 5,
   "environment": {
     "platform": "linux",
     "arch": "x64",
-    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
-    "node": "v22.23.4"
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "node": "v22.23.5"
   },
   "protocol": {
     "mobile": "CPU x4 (Emulation.setCPUThrottlingRate), network Fast 4G (150 ms latency, 1.6 Mbps down, 0.75 Mbps up)",
@@ -24,38 +24,38 @@
         "width": 390,
         "height": 844
       },
-      "ttfb": 182,
-      "fcp": 1816,
-      "lcp": 3352,
+      "ttfb": 56,
+      "fcp": 1844,
+      "lcp": 1844,
       "cls": 0,
-      "tbt": 1505,
-      "inp": 104,
-      "dom": 1085,
+      "tbt": 176,
+      "inp": 48,
+      "dom": 1096,
       "controlsAboveFold": 31,
       "controlsNonGraph": 27,
-      "requests": 38,
+      "requests": 51,
       "bytes": {
-        "document": 81573,
-        "script": 244958,
-        "stylesheet": 23906,
-        "image": 212375,
+        "document": 72662,
+        "script": 245138,
+        "stylesheet": 23951,
+        "image": 226520,
         "font": 121392,
         "other": 0,
-        "total": 684204
+        "total": 689663
       },
       "lcpRuns": [
-        3740,
-        3272,
-        3096,
-        3352,
-        4456
+        1912,
+        1832,
+        1844,
+        1848,
+        1840
       ],
       "tbtRuns": [
-        2258,
-        1235,
-        1505,
-        1413,
-        2080
+        181,
+        177,
+        153,
+        176,
+        152
       ]
     },
     "home-desktop": {
@@ -65,38 +65,38 @@
         "width": 1440,
         "height": 900
       },
-      "ttfb": 107,
-      "fcp": 388,
-      "lcp": 604,
-      "cls": 0.0029,
-      "tbt": 140,
-      "inp": 40,
-      "dom": 1220,
+      "ttfb": 40,
+      "fcp": 176,
+      "lcp": 176,
+      "cls": 0.0028,
+      "tbt": 0,
+      "inp": 24,
+      "dom": 1231,
       "controlsAboveFold": 51,
       "controlsNonGraph": 34,
-      "requests": 47,
+      "requests": 51,
       "bytes": {
-        "document": 81573,
-        "script": 244958,
-        "stylesheet": 23906,
-        "image": 288667,
+        "document": 72662,
+        "script": 245138,
+        "stylesheet": 23951,
+        "image": 293022,
         "font": 121392,
         "other": 0,
-        "total": 760496
+        "total": 756165
       },
       "lcpRuns": [
-        752,
-        544,
-        616,
-        508,
-        604
+        184,
+        188,
+        176,
+        168,
+        168
       ],
       "tbtRuns": [
-        397,
-        63,
-        140,
-        277,
-        98
+        0,
+        0,
+        0,
+        0,
+        0
       ]
     },
     "species-mobile": {
@@ -106,38 +106,38 @@
         "width": 390,
         "height": 844
       },
-      "ttfb": 137,
-      "fcp": 1880,
-      "lcp": 2060,
+      "ttfb": 39,
+      "fcp": 1600,
+      "lcp": 1716,
       "cls": 0,
-      "tbt": 452,
+      "tbt": 187,
       "inp": null,
-      "dom": 1061,
+      "dom": 1066,
       "controlsAboveFold": 5,
       "controlsNonGraph": 5,
-      "requests": 23,
+      "requests": 22,
       "bytes": {
-        "document": 94504,
-        "script": 169112,
-        "stylesheet": 30087,
+        "document": 84421,
+        "script": 169291,
+        "stylesheet": 30132,
         "image": 17524,
         "font": 121392,
-        "other": 5331,
-        "total": 437950
+        "other": 3167,
+        "total": 425927
       },
       "lcpRuns": [
-        2088,
-        2060,
-        2056,
-        2024,
-        2100
+        1708,
+        1712,
+        1756,
+        1716,
+        1716
       ],
       "tbtRuns": [
-        525,
-        452,
-        401,
-        469,
-        446
+        183,
+        176,
+        194,
+        187,
+        189
       ]
     },
     "species-desktop": {
@@ -147,38 +147,38 @@
         "width": 1440,
         "height": 900
       },
-      "ttfb": 103,
-      "fcp": 328,
-      "lcp": 328,
+      "ttfb": 42,
+      "fcp": 192,
+      "lcp": 192,
       "cls": 0,
-      "tbt": 12,
+      "tbt": 4,
       "inp": null,
-      "dom": 1061,
+      "dom": 1066,
       "controlsAboveFold": 19,
       "controlsNonGraph": 19,
-      "requests": 23,
+      "requests": 19,
       "bytes": {
-        "document": 94504,
-        "script": 169112,
-        "stylesheet": 30087,
+        "document": 84421,
+        "script": 169291,
+        "stylesheet": 30132,
         "image": 17524,
         "font": 121392,
-        "other": 8382,
-        "total": 441001
+        "other": 0,
+        "total": 422760
       },
       "lcpRuns": [
-        1184,
-        964,
-        320,
-        328,
-        312
+        224,
+        192,
+        204,
+        192,
+        188
       ],
       "tbtRuns": [
-        556,
-        41,
         0,
-        2,
-        12
+        4,
+        0,
+        6,
+        4
       ]
     },
     "compare-mobile": {
@@ -188,38 +188,38 @@
         "width": 390,
         "height": 844
       },
-      "ttfb": 105,
-      "fcp": 1600,
-      "lcp": 2944,
-      "cls": 0,
-      "tbt": 441,
-      "inp": 376,
-      "dom": 316,
+      "ttfb": 44,
+      "fcp": 1252,
+      "lcp": 2204,
+      "cls": 0.0004,
+      "tbt": 136,
+      "inp": 160,
+      "dom": 327,
       "controlsAboveFold": 26,
       "controlsNonGraph": 26,
-      "requests": 23,
+      "requests": 22,
       "bytes": {
-        "document": 70843,
-        "script": 233993,
-        "stylesheet": 23906,
+        "document": 61919,
+        "script": 234173,
+        "stylesheet": 23951,
         "image": 53489,
         "font": 121392,
-        "other": 2065,
-        "total": 505688
+        "other": 0,
+        "total": 494924
       },
       "lcpRuns": [
-        2924,
-        2948,
-        2728,
-        2984,
-        2944
+        2204,
+        2228,
+        2204,
+        1780,
+        1760
       ],
       "tbtRuns": [
-        500,
-        415,
-        400,
-        467,
-        441
+        151,
+        136,
+        164,
+        123,
+        125
       ]
     },
     "migration-mobile": {
@@ -229,38 +229,38 @@
         "width": 390,
         "height": 844
       },
-      "ttfb": 92,
-      "fcp": 1744,
-      "lcp": 1744,
+      "ttfb": 33,
+      "fcp": 1772,
+      "lcp": 1772,
       "cls": 0.0953,
-      "tbt": 710,
-      "inp": 288,
-      "dom": 337,
+      "tbt": 150,
+      "inp": 120,
+      "dom": 347,
       "controlsAboveFold": 32,
       "controlsNonGraph": 32,
       "requests": 25,
       "bytes": {
-        "document": 72075,
-        "script": 260526,
-        "stylesheet": 23906,
-        "image": 17524,
+        "document": 63094,
+        "script": 260695,
+        "stylesheet": 23951,
+        "image": 67549,
         "font": 121392,
-        "other": 79757,
-        "total": 575180
+        "other": 77690,
+        "total": 614371
       },
       "lcpRuns": [
-        1812,
-        1588,
-        1744,
-        1844,
-        1712
+        1772,
+        1772,
+        1788,
+        1768,
+        1236
       ],
       "tbtRuns": [
-        723,
-        613,
-        675,
-        887,
-        710
+        150,
+        166,
+        140,
+        135,
+        166
       ]
     },
     "evidence-desktop": {
@@ -270,38 +270,38 @@
         "width": 1440,
         "height": 900
       },
-      "ttfb": 71,
-      "fcp": 332,
-      "lcp": 404,
+      "ttfb": 33,
+      "fcp": 164,
+      "lcp": 164,
       "cls": 0,
-      "tbt": 15,
-      "inp": 48,
-      "dom": 509,
+      "tbt": 0,
+      "inp": 32,
+      "dom": 519,
       "controlsAboveFold": 39,
       "controlsNonGraph": 39,
-      "requests": 44,
+      "requests": 40,
       "bytes": {
-        "document": 75761,
-        "script": 233993,
-        "stylesheet": 23906,
-        "image": 153611,
+        "document": 66316,
+        "script": 234173,
+        "stylesheet": 23951,
+        "image": 153609,
         "font": 121392,
-        "other": 8486,
-        "total": 617157
+        "other": 2091,
+        "total": 601532
       },
       "lcpRuns": [
-        452,
-        400,
-        500,
-        404,
-        388
+        180,
+        160,
+        152,
+        172,
+        164
       ],
       "tbtRuns": [
-        65,
-        13,
-        33,
-        6,
-        15
+        0,
+        0,
+        0,
+        0,
+        0
       ]
     },
     "about-mobile": {
@@ -311,38 +311,38 @@
         "width": 390,
         "height": 844
       },
-      "ttfb": 23,
-      "fcp": 1292,
-      "lcp": 1292,
+      "ttfb": 8,
+      "fcp": 1148,
+      "lcp": 1148,
       "cls": 0,
-      "tbt": 226,
+      "tbt": 86,
       "inp": null,
-      "dom": 94,
+      "dom": 102,
       "controlsAboveFold": 3,
       "controlsNonGraph": 3,
       "requests": 16,
       "bytes": {
-        "document": 6402,
-        "script": 152834,
-        "stylesheet": 23906,
+        "document": 6829,
+        "script": 153013,
+        "stylesheet": 23951,
         "image": 0,
         "font": 121392,
-        "other": 1044,
-        "total": 305578
+        "other": 1043,
+        "total": 306228
       },
       "lcpRuns": [
-        1276,
-        1300,
-        1292,
-        1296,
-        1280
+        1136,
+        1148,
+        1152,
+        1148,
+        1156
       ],
       "tbtRuns": [
-        226,
-        147,
-        237,
-        206,
-        268
+        85,
+        86,
+        81,
+        95,
+        87
       ]
     }
   }
