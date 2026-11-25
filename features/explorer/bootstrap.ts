@@ -406,6 +406,31 @@ export function projectExplorerBootstrapForClient(bootstrap:ExplorerBootstrap):E
     specimensByTaxonId:emptyMulti,
     occurrencesByTaxonId:emptyMulti,
   }
+  const researchIndexes:ResearchIndexes={
+    taxonNamesByTaxonId:bootstrap.researchIndexes.taxonNamesByTaxonId,
+    materialEntitiesByTaxonId:emptyMulti,
+    materialEntitiesByInstitutionId:emptyMulti,
+    specimensByMaterialEntityId:emptyMulti,
+    specimensByOccurrenceId:emptyMulti,
+    occurrencesBySpecimenId:emptyMulti,
+    occurrencesBySiteId:emptyMulti,
+    evidenceBySpecimenId:emptyMulti,
+    evidenceByOccurrenceId:emptyMulti,
+    evidenceBySiteId:emptyMulti,
+    claimsByEvidenceId:bootstrap.researchIndexes.claimsByEvidenceId,
+    claimsBySpecimenId:emptyMulti,
+    claimsBySiteId:emptyMulti,
+    claimsBySourceId:emptyMulti,
+    relationshipsByTaxonId:bootstrap.researchIndexes.relationshipsByTaxonId,
+    sourcesByPublicationId:emptyMulti,
+    sourcesByInstitutionId:emptyMulti,
+    siteContextsBySiteId:emptyMulti,
+    mediaBySubjectId:bootstrap.researchIndexes.mediaBySubjectId,
+    interpretationSetsByClaimId:bootstrap.researchIndexes.interpretationSetsByClaimId,
+    interpretationPositionsBySetId:bootstrap.researchIndexes.interpretationPositionsBySetId,
+    relationshipHypothesisSetsByRelationshipId:bootstrap.researchIndexes.relationshipHypothesisSetsByRelationshipId,
+    relationshipHypothesisPositionsBySetId:bootstrap.researchIndexes.relationshipHypothesisPositionsBySetId,
+  }
   return deepFreeze({
     ...bootstrap,
     siteContexts:[],
@@ -417,6 +442,7 @@ export function projectExplorerBootstrapForClient(bootstrap:ExplorerBootstrap):E
     institutions:[],
     collections:[],
     materialEntities:[],
+    researchIndexes,
     indexes,
   })
 }
