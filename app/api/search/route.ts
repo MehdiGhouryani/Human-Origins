@@ -1,7 +1,8 @@
 import {NextResponse} from 'next/server'
 import {buildExplorerBootstrap} from '../../../features/explorer/bootstrap'
 import {getLiveContent} from '../../../infrastructure/cms/live'
-import {buildSearchResponse,normalizeQuery} from '../../../features/search/targets'
+import {normalizeQuery} from '../../../features/search/targets'
+import {buildSearchResponse} from '../../../features/search/response'
 
 export const dynamic='force-dynamic'
 
