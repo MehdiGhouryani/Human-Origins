@@ -1,7 +1,7 @@
 import {describe,expect,it} from 'vitest'
 import {buildExplorerBootstrap,projectExplorerBootstrapForClient} from '../features/explorer/bootstrap'
 import {buildExplorerMigrationDetails,buildExplorerTaxonDetails} from '../features/explorer/details'
-import {buildSearchResponse} from '../features/search/targets'
+import {buildSearchResponse} from '../features/search/response'
 
 describe('phase 7.3 on-demand explorer data',()=>{
   const full=buildExplorerBootstrap()
