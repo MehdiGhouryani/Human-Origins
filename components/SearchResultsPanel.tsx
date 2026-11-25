@@ -15,10 +15,8 @@ export default function SearchResultsPanel({query,initialResults,onClear,onSelec
   const [state,setState]=useState<ResultState>(()=>({query:initialResults?.query??'',data:initialResults,loading:false}))
 
   useEffect(()=>{
-    if(initialResults?.query===q){setState({query:q,data:initialResults,loading:false});return}
-    if(q.length<2){setState({query:q,loading:false});return}
+    if(initialResults?.query===q||q.length<2) return
     const controller=new AbortController()
-    setState({query:q,loading:true})
     fetch('/api/search?q='+encodeURIComponent(q),{signal:controller.signal,cache:'no-store',headers:{Accept:'application/json'}})
       .then(async response=>{
         if(!response.ok) throw new Error('Search is temporarily unavailable.')
@@ -34,12 +32,14 @@ export default function SearchResultsPanel({query,initialResults,onClear,onSelec
 
   if(q.length<2) return null
   const current=state.query===q?state:undefined
-  const data=current?.data
+  const data=current?.data??(initialResults?.query===q?initialResults:undefined)
+  const loading=q.length>=2&&!data&&!current?.error
+  const error=current?.error
   const total=data?.total??0
-  return <section className="search-page" aria-labelledby="search-page-title" aria-busy={Boolean(current?.loading)}>
+  return <section className="search-page" aria-labelledby="search-page-title" aria-busy={loading}>
     <h2 id="search-page-title">{data?total?total+' '+(total===1?'result':'results')+' for “'+q+'”':'No results for “'+q+'”':'Search results for “'+q+'”'}</h2>
-    {current?.loading&&!data&&<p className="empty-state" role="status">Searching the research catalogue…</p>}
-    {current?.error&&<p className="empty-state" role="alert">{current.error}</p>}
+    {loading&&!data&&<p className="empty-state" role="status">Searching the research catalogue…</p>}
+    {error&&<p className="empty-state" role="alert">{error}</p>}
     {data&&total===0&&<p className="empty-state">Nothing in the atlas matches that. Try a taxon name (for example “erectus”), a site, or a source title. Searching covers taxa, specimens, sites, evidence, claims, sources, publications and institutions.</p>}
     {data?.groups.map(group=><div key={group.kind} className="search-page-group"><h3>{group.label}</h3><ul>{group.items.map(item=><li key={group.kind+':'+item.id}>
       {group.kind==='taxon'?<button type="button" className="search-taxon" onClick={()=>onSelectTaxon(String(item.id))}><strong>{item.title}</strong>{item.subtitle&&<small>{item.subtitle}</small>}</button>:<a href={item.href} {...(item.external?{target:'_blank',rel:'noopener noreferrer'}:{})}>
