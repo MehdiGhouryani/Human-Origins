@@ -1,4 +1,3 @@
-import type {SearchResult} from '../../domain/contracts'
 import type {ExplorerBootstrap} from '../explorer/bootstrap'
 import {searchExplorerCatalog} from '../explorer/selectors'
 import {groupSearchResults,normalizeQuery} from './targets'
