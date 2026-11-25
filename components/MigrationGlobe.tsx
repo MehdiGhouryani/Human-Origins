@@ -57,7 +57,7 @@ function usePrefersReducedMotion(){
 
 export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,onSelectSpecies,onTimeChange,focusSite,onFocused,temporalMode:propTemporalMode,onTemporalModeChange}:Props){
   const {data:migrationDetails,loading:detailsLoading,error:detailsError}=useExplorerMigrationDetails(true)
-  const evidenceSites=migrationDetails?.sites??[]
+  const evidenceSites=useMemo(()=>migrationDetails?.sites??[],[migrationDetails])
   const stageRef=useRef<HTMLDivElement>(null)
   const [size,setSize]=useState<Size>({width:0,height:0})
   const [projectionKind,setProjectionKind]=useState<ProjectionKind>('globe')
