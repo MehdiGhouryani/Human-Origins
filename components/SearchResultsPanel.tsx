@@ -2,7 +2,8 @@
 
 import {useEffect,useState} from 'react'
 import {ExternalLink} from 'lucide-react'
-import {normalizeQuery,type SearchResponse} from '../features/search/targets'
+import {normalizeQuery} from '../features/search/targets'
+import type {SearchResponse} from '../features/search/response'
 
 type ResultState={query:string;data?:SearchResponse;error?:string;loading:boolean}
 
