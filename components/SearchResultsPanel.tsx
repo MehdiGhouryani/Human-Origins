@@ -2,22 +2,20 @@
 
 import {useEffect,useState} from 'react'
 import {ExternalLink} from 'lucide-react'
-import {normalizeQuery} from '../features/search/targets'
+import {normalizeQuery,type SearchResponse} from '../features/search/targets'
 
-type SearchItem={id:string;title:string;subtitle?:string;href:string;external:boolean}
-type SearchGroup={kind:string;label:string;items:SearchItem[]}
-type SearchResponse={query:string;total:number;groups:SearchGroup[]}
 type ResultState={query:string;data?:SearchResponse;error?:string;loading:boolean}
 
 /**
  * In-flow search results for the explorer URL. The server resolves matches and destinations, so the full catalogue
  * never needs to be serialized to the browser for search.
  */
-export default function SearchResultsPanel({query,onClear,onSelectTaxon}:{query:string;onClear:()=>void;onSelectTaxon:(id:string)=>void}){
+export default function SearchResultsPanel({query,initialResults,onClear,onSelectTaxon}:{query:string;initialResults?:SearchResponse;onClear:()=>void;onSelectTaxon:(id:string)=>void}){
   const q=normalizeQuery(query)
-  const [state,setState]=useState<ResultState>({query:'',loading:false})
+  const [state,setState]=useState<ResultState>(()=>({query:initialResults?.query??'',data:initialResults,loading:false}))
 
   useEffect(()=>{
+    if(initialResults?.query===q){setState({query:q,data:initialResults,loading:false});return}
     if(q.length<2){setState({query:q,loading:false});return}
     const controller=new AbortController()
     setState({query:q,loading:true})
@@ -32,7 +30,7 @@ export default function SearchResultsPanel({query,onClear,onSelectTaxon}:{query:
         setState({query:q,error:error instanceof Error?error.message:'Search is temporarily unavailable.',loading:false})
       })
     return()=>controller.abort()
-  },[q])
+  },[q,initialResults])
 
   if(q.length<2) return null
   const current=state.query===q?state:undefined
