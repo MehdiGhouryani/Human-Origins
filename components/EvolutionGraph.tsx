@@ -28,7 +28,7 @@ import type {ReactNode} from 'react'
 import {Crosshair,GitBranch,List,Maximize2,Minus,Plus,Route} from 'lucide-react'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {ExplorerSpecies} from '../features/explorer/types'
-import {getExplorerSourceById} from '../features/explorer/selectors'
+import {getExplorerGraphSourceById} from '../features/explorer/selectors'
 import {groupColors,relationshipColors} from '../presentation/palette'
 import {findMedia,resolveMediaSrc} from '../presentation/mediaDelivery'
 import {RELATION_SEMANTICS} from '../domain/relationship-semantics'
@@ -186,7 +186,7 @@ const GraphNode=memo(function GraphNode({species,node,r,isSelected,tabStop,alive
 
 function RelationCaption({bootstrap,link,byId}:{bootstrap:ExplorerBootstrap;link:Link;byId:ReadonlyMap<string,ExplorerSpecies>}){
   const semantics=RELATION_SEMANTICS[link.relation]
-  const sources=link.sourceIds.map(id=>getExplorerSourceById(bootstrap,String(id))?.title??String(id))
+  const sources=link.sourceIds.map(id=>getExplorerGraphSourceById(bootstrap,String(id))?.title??String(id))
   return <>
     <strong>{byId.get(String(link.from))?.short} {link.relation==='gene-flow'?'⇄':'→'} {byId.get(String(link.to))?.short}: {semantics.label}{link.relation==='gene-flow'&&link.eventAgeMa!==undefined?` · about ${formatEventAge(link.eventAgeMa)} ago`:''}</strong>
     <span>{semantics.meaning}</span>
