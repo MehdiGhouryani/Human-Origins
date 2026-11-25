@@ -4,11 +4,10 @@ import {useEffect,useState} from 'react'
 import type {ExplorerTaxonDetails} from '../features/explorer/details'
 import {useDetailsPanelOpen,useExplorerTaxonDetails} from '../features/explorer/useExplorerDetails'
 import type {ExplorerSpecies as Species} from '../features/explorer/types'
-import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 
-type Props={bootstrap:ExplorerBootstrap;species:Species;onRevealSite?:(siteId:string)=>void;details?:ExplorerTaxonDetails}
+type Props={species:Species;onRevealSite?:(siteId:string)=>void;details?:ExplorerTaxonDetails}
 
-export default function SpecimenGallery({bootstrap,species,onRevealSite,details:providedDetails}:Props){
+export default function SpecimenGallery({species,onRevealSite,details:providedDetails}:Props){
  const panelOpen=useDetailsPanelOpen('panel-specimens')
  const {data:loadedDetails,loading,error}=useExplorerTaxonDetails(species.id,providedDetails===undefined&&panelOpen)
  const details=providedDetails??loadedDetails
