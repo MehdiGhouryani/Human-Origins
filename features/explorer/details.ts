@@ -1,5 +1,5 @@
 import type {EvidenceSite,InstitutionRecord} from '../../domain/contracts'
-import type {CanonicalSiteContextRecord,PublicationRecord} from '../../domain/contracts'
+import type {CanonicalSiteContextRecord} from '../../domain/contracts'
 import type {ClientPublicationRecord,ClientSourceRecord,ExplorerBootstrap} from './bootstrap'
 import type {ExplorerOccurrence,ExplorerSpecimen} from './types'
 
@@ -113,3 +113,19 @@ export function buildExplorerMigrationDetails(bootstrap:ExplorerBootstrap):Explo
     siteContexts:bootstrap.siteContexts,
   }
 }
+
+export const getExplorerDetailSourceById=(details:ExplorerDetailBundle,id:string)=>
+  details.sources.find(source=>idOf(source.id)===id)
+
+export const getExplorerDetailSiteContextForSite=(details:ExplorerDetailBundle,id:string)=>
+  details.siteContexts.find(context=>idOf(context.siteId)===id)
+
+export const getExplorerDetailSpecimensForTaxon=(details:ExplorerTaxonDetails)=>details.specimens
+
+export const getExplorerDetailPublicationForSource=(details:ExplorerTaxonDetails,source:ClientSourceRecord)=>
+  source.publicationId
+    ?details.publications.find(publication=>idOf(publication.id)===idOf(source.publicationId))
+    :undefined
+
+export const getExplorerDetailInstitutionById=(details:ExplorerTaxonDetails,id:string)=>
+  details.institutions.find(institution=>idOf(institution.id)===id)
