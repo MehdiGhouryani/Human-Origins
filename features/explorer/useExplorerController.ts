@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react'
 import {useSearchParams} from 'next/navigation'
-import {getExplorerEvidenceSites,getExplorerSpeciesById,getExplorerSpeciesList} from './selectors'
+import {getExplorerSpeciesById,getExplorerSpeciesList} from './selectors'
 import type {ExplorerBootstrap} from './bootstrap'
 import type {ExplorerMode,ExplorerState,UrlValidity} from './state'
 import {DEFAULT_EXPLORER_STATE,applyUrlState,readExplorerState,writeExplorerSearch} from './state'
