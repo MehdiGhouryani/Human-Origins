@@ -6,13 +6,13 @@ import {useDetailsPanelOpen,useExplorerTaxonDetails} from '../features/explorer/
 import {BookOpen,ExternalLink,FileText,Landmark,Link2,ShieldCheck,GitBranch,Database,ChevronDown,AlertTriangle,GitCompare,Waypoints} from 'lucide-react'
 import type {ExplorerSpecies} from '../features/explorer/types'
 import {getExplorerClaimEvidence,getExplorerClaimsForTaxon,getExplorerInterpretationPositionsForSet,getExplorerInterpretationSetsForClaim,getExplorerProvenanceChainForClaim} from '../features/explorer/selectors'
-import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
+import type {ClientClientSourceRecord,ExplorerBootstrap} from '../features/explorer/bootstrap'
 import {claimStatusLabel,claimStatusTone,sourceTypeLabel,uncertaintyDimensionLabel,uncertaintyStateLabel,interpretationKindLabel} from '../domain/labels'
-import type {ProvenanceClaim,SourceRecord,SourceType} from '../domain/contracts'
+import type {ProvenanceClaim,SourceType} from '../domain/contracts'
 
 const sourceIcon=(type:SourceType)=>type==='primary-study'||type==='peer-reviewed-paper'?<FileText size={14}/>:type==='museum-3d'?<Landmark size={14}/>:<BookOpen size={14}/>
 
-function SourceCard({source,details}:{source:SourceRecord;details:ExplorerTaxonDetails}){
+function SourceCard({source,details}:{source:ClientSourceRecord;details:ExplorerTaxonDetails}){
   const institution=source.institutionId?getExplorerDetailInstitutionById(details,String(source.institutionId)):undefined
   const publication=getExplorerDetailPublicationForSource(details,source)
   return <article className="source-intel-card">
@@ -33,7 +33,7 @@ function SourceCard({source,details}:{source:SourceRecord;details:ExplorerTaxonD
 
 function ClaimChain({bootstrap,details,claim,open}:{bootstrap:ExplorerBootstrap;details:ExplorerTaxonDetails;claim:ProvenanceClaim; open:boolean}){
   const evidence=getExplorerClaimEvidence(bootstrap,claim)
-  const sources=claim.sourceIds.map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is SourceRecord=>Boolean(source))
+  const sources=claim.sourceIds.map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is ClientSourceRecord=>Boolean(source))
   const interpretationSets=getExplorerInterpretationSetsForClaim(bootstrap,String(claim.id))
   const provenance=getExplorerProvenanceChainForClaim(bootstrap,String(claim.id))
   return <details className="provenance-claim" open={open}>
@@ -60,8 +60,8 @@ function ClaimChain({bootstrap,details,claim,open}:{bootstrap:ExplorerBootstrap;
 /** Source cards shown before "Show all": 16 of 18 species have no authored page, and their full registry made the page about 4,000px long on a phone. */
 const SOURCE_PREVIEW=4
 
-export default function SourceIntelligence({bootstrap,species,details:providedDetails}:{bootstrap:ExplorerBootstrap;species:ExplorerSpecies;details?:ExplorerTaxonDetails}){
-  const panelOpen=useDetailsPanelOpen('panel-evidence')
+export default function SourceIntelligence({bootstrap,species,details:providedDetails,panelId='panel-evidence'}:{bootstrap:ExplorerBootstrap;species:ExplorerSpecies;details?:ExplorerTaxonDetails;panelId?:string}){
+  const panelOpen=useDetailsPanelOpen(panelId)
   const {data:loadedDetails,loading,error}=useExplorerTaxonDetails(species.id,providedDetails===undefined&&panelOpen)
   const details=providedDetails??loadedDetails
   const [filter,setFilter]=useState<'all'|SourceType>('all')
@@ -70,10 +70,10 @@ export default function SourceIntelligence({bootstrap,species,details:providedDe
   const claims=getExplorerClaimsForTaxon(bootstrap,species.id)
   const records=useMemo(()=>{
     if(!details) return []
-    const fromClaims=claims.flatMap(claim=>claim.sourceIds).map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is SourceRecord=>Boolean(source))
-    const specimenSources=details.specimens.flatMap(record=>record.sourceIds).map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is SourceRecord=>Boolean(source))
+    const fromClaims=claims.flatMap(claim=>claim.sourceIds).map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is ClientSourceRecord=>Boolean(source))
+    const specimenSources=details.specimens.flatMap(record=>record.sourceIds).map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is ClientSourceRecord=>Boolean(source))
     const merged=[...fromClaims,...details.sources,...specimenSources]
-    const byId=new Map<string,SourceRecord>()
+    const byId=new Map<string,ClientSourceRecord>()
     merged.forEach(record=>byId.set(String(record.id),record))
     return Array.from(byId.values())
   },[claims,details])
