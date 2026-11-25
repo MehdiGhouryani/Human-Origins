@@ -1,9 +1,9 @@
 'use client'
 
-import {useEffect,useState} from 'react'
+import {useCallback,useEffect,useState,useSyncExternalStore} from 'react'
 import type {ExplorerDetailBundle,ExplorerMigrationDetails,ExplorerTaxonDetails} from './details'
 
-type DetailState<T>={key:string;data?:T;error?:string;loading:boolean}
+type DetailState<T>={key:string;data?:T;error?:string}
 const resolved=new Map<string,ExplorerDetailBundle>()
 const inFlight=new Map<string,Promise<ExplorerDetailBundle>>()
 
@@ -33,26 +33,22 @@ async function requestDetails<T extends ExplorerDetailBundle>(key:string,url:str
 }
 
 function useDetailRequest<T extends ExplorerDetailBundle>(key:string,url:string,kind:T['kind'],enabled:boolean){
-  const [state,setState]=useState<DetailState<T>>({key,loading:false})
+  const [state,setState]=useState<DetailState<T>>({key})
   useEffect(()=>{
     if(!enabled) return
     let active=true
-    const cached=resolved.get(key)
-    if(cached&&cached.kind===kind){
-      setState({key,data:cached as T,loading:false})
-      return
-    }
-    setState({key,loading:true})
     requestDetails<T>(key,url,kind).then(
-      data=>{if(active)setState({key,data,loading:false})},
-      error=>{if(active)setState({key,error:error instanceof Error?error.message:'Research details could not be loaded.',loading:false})},
+      data=>{if(active)setState({key,data})},
+      error=>{if(active)setState({key,error:error instanceof Error?error.message:'Research details could not be loaded.'})},
     )
     return()=>{active=false}
   },[key,url,kind,enabled])
   const cached=resolved.get(key)
-  const data=state.key===key?state.data:(cached?.kind===kind?cached as T:undefined)
+  const cachedData=cached?.kind===kind?cached as T:undefined
+  const data=state.key===key?state.data??cachedData:cachedData
   const error=state.key===key?state.error:undefined
-  return {data,loading:enabled&&!data&&!error||Boolean(state.key===key&&state.loading),error}
+  const loading=enabled&&!data&&!error
+  return {data,loading,error}
 }
 
 /** Loads one taxon's source/specimen/site detail only when its Evidence or specimen panel is opened. */
@@ -66,19 +62,18 @@ export function useExplorerMigrationDetails(enabled=true){
   return useDetailRequest<ExplorerMigrationDetails>('migration','/api/explorer/migration','migration',enabled)
 }
 
-/** Follows the native ResponsiveDetails disclosure so closed mobile panels do not fetch their records. */
+/** Reads the native disclosure as an external DOM store without mirroring it through effect state. */
 export function useDetailsPanelOpen(id:string){
-  const [open,setOpen]=useState(false)
-  useEffect(()=>{
+  const subscribe=useCallback((notify:()=>void)=>{
     const element=document.getElementById(id) as HTMLDetailsElement|null
-    if(!element){setOpen(true);return}
-    const sync=()=>setOpen(element.open)
-    const frame=requestAnimationFrame(sync)
+    if(!element) return ()=>{}
+    const sync=()=>notify()
     element.addEventListener('toggle',sync)
-    return()=>{
-      cancelAnimationFrame(frame)
-      element.removeEventListener('toggle',sync)
-    }
+    return()=>element.removeEventListener('toggle',sync)
   },[id])
-  return open
+  const getSnapshot=useCallback(()=>{
+    const element=document.getElementById(id) as HTMLDetailsElement|null
+    return element?element.open:true
+  },[id])
+  return useSyncExternalStore(subscribe,getSnapshot,()=>false)
 }
