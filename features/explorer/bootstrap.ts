@@ -85,6 +85,9 @@ export type ExplorerBootstrap={
   taxonNames:readonly TaxonNameRecord[]
   siteContexts:readonly CanonicalSiteContextRecord[]
   media:readonly ExplorerMedia[]
+  /** Small routing metadata retained while full site records load on demand. */
+  siteIds:readonly string[]
+  taxaWithSiteRange:readonly string[]
   sites:readonly EvidenceSite[]
   evidence:readonly EvidenceRecord[]
   claims:readonly ProvenanceClaim[]
@@ -347,6 +350,8 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
     species,
     relationships,
     media,
+    siteIds:sites.map(site=>String(site.id)),
+    taxaWithSiteRange:[...new Set(sites.flatMap(site=>site.relatedTaxonIds.map(String)))],
     sites,
     evidence,
     claims,
@@ -370,4 +375,41 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
     provenanceChains,
   }
   return deepFreeze(normalized)
+}
+
+/**
+ * Compact projection sent to browser components. Full research detail records stay on the server and are
+ * returned by the taxon and migration detail endpoints only when those views are opened.
+ * Evidence, claims, relationships, graph state, media, and provenance summaries remain intact.
+ */
+export function projectExplorerBootstrapForClient(bootstrap:ExplorerBootstrap):ExplorerBootstrap{
+  const emptyIndex=Object.freeze({}) as Readonly<Record<string,number>>
+  const emptyMulti=Object.freeze({}) as Readonly<Record<string,readonly number[]>>
+  const indexes:ExplorerBootstrapIndexes={
+    ...bootstrap.indexes,
+    sourcesById:emptyIndex,
+    publicationsById:emptyIndex,
+    institutionsById:emptyIndex,
+    collectionsById:emptyIndex,
+    materialEntitiesById:emptyIndex,
+    siteContextsById:emptyIndex,
+    occurrencesById:emptyIndex,
+    sitesById:emptyIndex,
+    specimensById:emptyIndex,
+    specimensByTaxonId:emptyMulti,
+    occurrencesByTaxonId:emptyMulti,
+  }
+  return deepFreeze({
+    ...bootstrap,
+    siteContexts:[],
+    sites:[],
+    specimens:[],
+    occurrences:[],
+    sources:[],
+    publications:[],
+    institutions:[],
+    collections:[],
+    materialEntities:[],
+    indexes,
+  })
 }
