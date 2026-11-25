@@ -2,7 +2,9 @@
 import {useCallback,useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react'
 import {geoPath,type GeoPermissibleObjects} from 'd3-geo'
 import {Info,Layers3,List,Map as FlatMapIcon,Globe2,Minus,Plus,RotateCcw,ChevronUp} from 'lucide-react'
-import {getExplorerEvidenceSites,getExplorerSourceById,getExplorerSpeciesById} from '../features/explorer/selectors'
+import {getExplorerSpeciesById} from '../features/explorer/selectors'
+import {getExplorerDetailSourceById} from '../features/explorer/details'
+import {useExplorerMigrationDetails} from '../features/explorer/useExplorerDetails'
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 import type {EvidenceKind} from '../domain/contracts'
 import {maToKa,formatAgeMa,getExploratoryTemporalWindow,evaluateSiteWindowOverlap,type TemporalMode} from '../domain/time'
@@ -54,6 +56,8 @@ function usePrefersReducedMotion(){
 }
 
 export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,onSelectSpecies,onTimeChange,focusSite,onFocused,temporalMode:propTemporalMode,onTemporalModeChange}:Props){
+  const {data:migrationDetails,loading:detailsLoading,error:detailsError}=useExplorerMigrationDetails(true)
+  const evidenceSites=migrationDetails?.sites??[]
   const stageRef=useRef<HTMLDivElement>(null)
   const [size,setSize]=useState<Size>({width:0,height:0})
   const [projectionKind,setProjectionKind]=useState<ProjectionKind>('globe')
@@ -224,10 +228,9 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
   useEffect(()=>{resetRef.current=resetView},[resetView])
 
   // ---- evidence
-  const evidenceSites=getExplorerEvidenceSites(bootstrap)
   const timeMa=ka/1000
   const temporalWindow=useMemo(()=>getExploratoryTemporalWindow(timeMa),[timeMa])
-  const siteContextMap=useMemo(()=>new Map(bootstrap.siteContexts.map(context=>[String(context.siteId),context])),[bootstrap.siteContexts])
+  const siteContextMap=useMemo(()=>new Map((migrationDetails?.siteContexts??[]).map(context=>[String(context.siteId),context])),[migrationDetails])
   const selectedSiteId=selection?.type==='site'?selection.id:null
   const siteEvaluations=useMemo(()=>{
     const map=new Map<string,ReturnType<typeof evaluateSiteWindowOverlap>>()
@@ -320,7 +323,7 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
     if(selection?.type==='site'){
       const site=siteById.get(selection.id)
       if(site){
-        const source=getExplorerSourceById(bootstrap,String(site.sourceIds[0]??''))
+        const source=migrationDetails?getExplorerDetailSourceById(migrationDetails,String(site.sourceIds[0]??'')):undefined
         const taxa=site.relatedTaxonIds.map(id=>getExplorerSpeciesById(bootstrap,String(id))?.short).filter(Boolean).join(' · ')||'Multi-taxon context'
         const context=siteContextMap.get(String(site.id))
         const evaluation=siteEvaluations.get(String(site.id))
@@ -331,7 +334,7 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
       }
     }
     if(selection?.type==='route'&&activeRoute){
-      const source=activeRoute.sourceId?getExplorerSourceById(bootstrap,activeRoute.sourceId):undefined
+      const source=activeRoute.sourceId?migrationDetails?getExplorerDetailSourceById(migrationDetails,activeRoute.sourceId):undefined:undefined
       return <RouteCard label={activeRoute.label} color={activeRoute.color} percent={Math.round(routeProgress(activeRoute.startKa,activeRoute.endKa)*100)} window={`${activeRoute.startKa}–${activeRoute.endKa} ka`} sourceTitle={source?.title} sourceUrl={source?.url} onClose={()=>setSelection(null)}/>
     }
     return <SceneCard index={sceneIndex} count={SCENE_COUNT} title={scene.title} subtitle={scene.subtitle} note={scene.note} following={follow} shelfNote={shelfOn} onFocus={()=>{setFollow(true);setFocusToken(token=>token+1)}}/>
@@ -345,6 +348,7 @@ export default function MigrationGlobe({bootstrap,time,selected,speciesOptions,o
   return <div className="migration-view atlas" data-projection={projectionKind}>
     {/* The page hero (and its h1) is hidden in this view, so the map names itself. */}
     <h1 className="sr-only">Human migration atlas: where the evidence places our species through time</h1>
+    {!migrationDetails&&<p className="sr-only" role={detailsError?'alert':'status'}>{detailsError??(detailsLoading?'Loading mapped sites and dating context…':'Waiting for migration details…')}</p>}
     <div ref={stageRef} className={stageClass} tabIndex={0} data-zoom={camera.zoom.toFixed(2)} data-lon={(-camera.rot[0]).toFixed(1)} data-lat={(-camera.rot[1]).toFixed(1)} role="group" aria-roledescription="interactive map" aria-label="Human migration map. Arrow keys rotate, plus and minus zoom, 0 resets." onClick={onStageClick} onDoubleClick={()=>zoomBy(1.6)} {...handlers}>
       {ready&&<>
         <GlobeCanvas kind={projectionKind} camera={camera} size={size} insets={insets} land={land} shelf={shelf} palette={globePalette}/>
