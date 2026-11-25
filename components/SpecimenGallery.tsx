@@ -1,6 +1,6 @@
 'use client'
 import {ExternalLink,MapPin,CalendarDays,Database,Box,Building2,FileText,MapPinned} from 'lucide-react'
-import {useEffect,useState} from 'react'
+import {useState} from 'react'
 import type {ExplorerTaxonDetails} from '../features/explorer/details'
 import {useDetailsPanelOpen,useExplorerTaxonDetails} from '../features/explorer/useExplorerDetails'
 import type {ExplorerSpecies as Species} from '../features/explorer/types'
@@ -13,10 +13,6 @@ export default function SpecimenGallery({species,onRevealSite,details:providedDe
  const details=providedDetails??loadedDetails
  const records=details?.specimens??[]
  const [selected,setSelected]=useState('')
- useEffect(()=>{
-   if(!records.length) return
-   if(!records.some(record=>record.id===selected)) setSelected(records[0].id)
- },[records,selected])
  const active=records.find(record=>record.id===selected) ?? records[0]
  if(!details) return <div className="specimen-empty" role={error?'alert':'status'}>{error??(loading?'Loading specimen records…':'Open this section to load specimen records.')}</div>
  if(!records.length) return <div className="specimen-empty"><Database size={16}/><strong>No specimen-level records linked yet.</strong><p>The species record is intentionally kept separate from unverified specimen claims. Add a source-backed specimen when an institutional record is available.</p></div>
