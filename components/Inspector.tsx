@@ -1,5 +1,8 @@
 'use client'
 import {useEffect,useMemo,useState} from 'react'
+import type {ExplorerTaxonDetails} from '../features/explorer/details'
+import {getExplorerDetailSourceById} from '../features/explorer/details'
+import {useExplorerTaxonDetails} from '../features/explorer/useExplorerDetails'
 import Link from 'next/link'
 import {evidenceClassLabel} from '../domain/media-slots'
 import {Bookmark,ChevronRight,ExternalLink,Image as ImageIcon,X,ArrowRight,MapPin,GitBranch} from 'lucide-react'
@@ -9,7 +12,7 @@ import type {ExplorerSpecies as Species} from '../features/explorer/types'
 import EvidenceGraph from './EvidenceGraph'
 import SourceIntelligence from './SourceIntelligence'
 import RelationshipHypotheses from './RelationshipHypotheses'
-import {getExplorerEvidenceForTaxon,getExplorerEvidenceSites,getExplorerSourceById,getExplorerSourcesForTaxon,getExplorerSpeciesList} from '../features/explorer/selectors'
+import {getExplorerEvidenceForTaxon,getExplorerSpeciesList} from '../features/explorer/selectors'
 import {LIFESTYLE_TOPICS,factTopic,factsByTopic} from '../domain/facts'
 import {rangesOverlap} from '../domain/time'
 import {isInferredNode,taxonStatusLabel} from '../domain/taxon-model'
@@ -30,11 +33,11 @@ const kaOrMa=(ageMa:number)=>ageMa>=1?`${ageMa} Ma`:`${Math.round(ageMa*1000)} k
 /** Distinguishes "the atlas holds no data" from "no evidence exists": the two are scientifically different statements. */
 const NoData=({what,short,hint}:{what:string;short:string;hint?:string})=><div className="empty-tab" role="note"><strong>No {what} data is represented for {short}.</strong><p>This describes what the atlas currently holds, not a finding that none exists.{hint?` ${hint}`:''}</p></div>
 
-function EvidenceList({bootstrap,records}:{bootstrap:ExplorerBootstrap;records:readonly EvidenceRecord[]}){
+function EvidenceList({details,records}:{details:ExplorerTaxonDetails;records:readonly EvidenceRecord[]}){
   return <ul className="evidence-list">{records.map(record=><li key={String(record.id)}>
     <strong>{record.title}</strong><small>{record.ageLabel}{record.datingMethod?` · ${record.datingMethod}`:''}</small>
     <p>{record.claim}</p>
-    <span className="evidence-list-sources">{record.sourceIds.map(id=>{const source=getExplorerSourceById(bootstrap,String(id));return source?<a key={String(id)} href={source.url} target="_blank" rel="noreferrer">{source.title}<span className="sr-only"> (opens in a new tab)</span><ExternalLink size={11} aria-hidden="true"/></a>:null})}</span>
+    <span className="evidence-list-sources">{record.sourceIds.map(id=>{const source=getExplorerDetailSourceById(details,String(id));return source?<a key={String(id)} href={source.url} target="_blank" rel="noreferrer">{source.title}<span className="sr-only"> (opens in a new tab)</span><ExternalLink size={11} aria-hidden="true"/></a>:null})}</span>
   </li>)}</ul>
 }
 
@@ -47,18 +50,19 @@ export type InspectorTab=Tab
  */
 export default function Inspector({bootstrap,species,bookmarked,onToggleBookmark,onRevealSite,onClose,open=false,initialTab='Overview'}:Props){
   const [tab,setTab]=useState<Tab>(initialTab)
+  const {data:details,loading:detailsLoading,error:detailsError}=useExplorerTaxonDetails(species.id,tab==='Evidence'||tab==='Lifestyle')
   const [saveMessage,setSaveMessage]=useState('')
   const m=species.media.find(item=>item.roles.includes('profile-portrait')&&!item.placeholder) ??
     species.media.find(item=>item.roles.includes('profile-portrait')) ??
     findMedia(species.media,species.defaultMediaId)
   const inferred=isInferredNode(species)
-  const linkedSources=useMemo(()=>getExplorerSourcesForTaxon(bootstrap,species.id),[bootstrap,species.id])
+  const linkedSources=details?.sources??[]
   const coexisting=useMemo(()=>inferred?[]:getExplorerSpeciesList(bootstrap).filter(o=>o.id!==species.id&&!isInferredNode(o)&&rangesOverlap({olderMa:species.start,youngerMa:species.end},{olderMa:o.start,youngerMa:o.end})),[bootstrap,species,inferred])
   const evidence=useMemo(()=>getExplorerEvidenceForTaxon(bootstrap,species.id),[bootstrap,species.id])
   const geneticRecords=useMemo(()=>evidence.filter(r=>r.kind==='genetics'),[evidence])
   const archaeologyRecords=useMemo(()=>evidence.filter(r=>r.kind==='archaeology'),[evidence])
   // The map has something of this taxon to show only if a registered site names it, or (for H. sapiens) a migration corridor exists.
-  const hasMapRange=useMemo(()=>species.id==='sapiens'||getExplorerEvidenceSites(bootstrap).some(site=>site.relatedTaxonIds.map(String).includes(species.id)),[bootstrap,species.id])
+  const hasMapRange=species.id==='sapiens'||bootstrap.taxaWithSiteRange.includes(species.id)
   const geneFlow=useMemo(()=>relationsOf(species.id,bootstrap.relationships).geneFlow,[bootstrap,species.id])
   const lifestyleFacts=factsByTopic(species.facts,...LIFESTYLE_TOPICS)
   const otherFacts=species.facts.filter(([label])=>factTopic(label)==='other')
@@ -118,18 +122,21 @@ export default function Inspector({bootstrap,species,bookmarked,onToggleBookmark
             {otherFacts.length>0&&<p className="fine-print">Unclassified facts are shown as authored.</p>}
           </>}
           {tab==='Evidence'&&<>
-            {(geneticRecords.length>0||geneFlow.length>0)?<>
-              {geneticRecords.length>0&&<><h4 className="tab-subhead">Genetic evidence records</h4><EvidenceList bootstrap={bootstrap} records={geneticRecords}/></>}
-              {geneFlow.length>0&&<><h4 className="tab-subhead">Documented gene flow</h4><ul className="evidence-list">{geneFlow.map(l=>{const other=getExplorerSpeciesList(bootstrap).find(t=>t.id===(String(l.from)===species.id?String(l.to):String(l.from)));return <li key={String(l.id)}><strong>With {other?.short??'another population'}</strong>{l.eventAgeMa!==undefined&&<small>Dated signal ≈ {kaOrMa(l.eventAgeMa)} ago</small>}<p>{l.note??'Genetic evidence shows DNA moved between these populations.'}</p><span className="evidence-list-sources">{l.sourceIds.map(id=>{const s=getExplorerSourceById(bootstrap,String(id));return s?<a key={String(id)} href={s.url} target="_blank" rel="noreferrer">{s.title}<span className="sr-only"> (opens in a new tab)</span><ExternalLink size={11} aria-hidden="true"/></a>:null})}</span></li>})}</ul></>}
+            {!details&&<p className="empty-tab" role={detailsError?'alert':'status'}>{detailsError??(detailsLoading?'Loading sources and dating context…':'Evidence details are not available yet.')}</p>}
+            {details&&(geneticRecords.length>0||geneFlow.length>0)?<>
+              {geneticRecords.length>0&&<><h4 className="tab-subhead">Genetic evidence records</h4><EvidenceList details={details!} records={geneticRecords}/></>}
+              {geneFlow.length>0&&<><h4 className="tab-subhead">Documented gene flow</h4><ul className="evidence-list">{geneFlow.map(l=>{const other=getExplorerSpeciesList(bootstrap).find(t=>t.id===(String(l.from)===species.id?String(l.to):String(l.from)));return <li key={String(l.id)}><strong>With {other?.short??'another population'}</strong>{l.eventAgeMa!==undefined&&<small>Dated signal ≈ {kaOrMa(l.eventAgeMa)} ago</small>}<p>{l.note??'Genetic evidence shows DNA moved between these populations.'}</p><span className="evidence-list-sources">{l.sourceIds.map(id=>{const s=getExplorerDetailSourceById(details,String(id));return s?<a key={String(id)} href={s.url} target="_blank" rel="noreferrer">{s.title}<span className="sr-only"> (opens in a new tab)</span><ExternalLink size={11} aria-hidden="true"/></a>:null})}</span></li>})}</ul></>}
             </>:<NoData what="genetic" short={species.short} hint={species.evidence.includes('Genetics')?'The taxon is tagged with genetic evidence, but no itemised record is attached yet.':undefined}/>}
-            <EvidenceGraph bootstrap={bootstrap} species={species} onRevealSite={onRevealSite}/>
-            <RelationshipHypotheses bootstrap={bootstrap} species={species}/>
-            <div className="evidence-panel"><div className="evidence-head"><strong>Source-backed record</strong><span>{linkedSources.length} {linkedSources.length===1?'source':'sources'}</span></div>{linkedSources.map(s=><a className="source-card" key={s.id} href={s.url} target="_blank" rel="noreferrer"><span><b>{s.title}</b><small>{s.note}</small></span><ExternalLink size={14} aria-hidden="true"/><span className="sr-only">(opens in a new tab)</span></a>)}</div>
-            <SourceIntelligence bootstrap={bootstrap} species={species}/>
+            {details&&<>
+              <EvidenceGraph bootstrap={bootstrap} species={species} details={details} onRevealSite={onRevealSite}/>
+              <RelationshipHypotheses bootstrap={bootstrap} species={species}/>
+              <div className="evidence-panel"><div className="evidence-head"><strong>Source-backed record</strong><span>{linkedSources.length} {linkedSources.length===1?'source':'sources'}</span></div>{linkedSources.map(s=><a className="source-card" key={s.id} href={s.url} target="_blank" rel="noreferrer"><span><b>{s.title}</b><small>{s.note}</small></span><ExternalLink size={14} aria-hidden="true"/><span className="sr-only">(opens in a new tab)</span></a>)}</div>
+              <SourceIntelligence bootstrap={bootstrap} species={species} details={details}/>
+            </>}
           </>}
           {tab==='Lifestyle'&&<>
             {lifestyleFacts.length>0&&<dl className="facts">{lifestyleFacts.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
-            {archaeologyRecords.length>0&&<><h4 className="tab-subhead">Archaeological records</h4><EvidenceList bootstrap={bootstrap} records={archaeologyRecords}/></>}
+            {details&&archaeologyRecords.length>0&&<><h4 className="tab-subhead">Archaeological records</h4><EvidenceList details={details} records={archaeologyRecords}/></>}
             {lifestyleFacts.length===0&&archaeologyRecords.length===0&&<NoData what="lifestyle or archaeology" short={species.short} hint={species.evidence.includes('Archaeology')?'The taxon is tagged with archaeological evidence; see the Evidence tab for the sources.':undefined}/>}
           </>}
         </div>
