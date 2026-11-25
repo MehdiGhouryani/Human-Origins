@@ -25,7 +25,7 @@ export function useExplorerController(bootstrap:ExplorerBootstrap,initialState:P
     const compareIds=new Set(immutableBootstrap.species.filter(t=>!t.inferred).map(t=>t.id))
     return {
       taxonIds:new Set(immutableBootstrap.species.map(t=>t.id)),
-      siteIds:new Set(getExplorerEvidenceSites(immutableBootstrap).map(site=>String(site.id))),
+      siteIds:new Set(immutableBootstrap.siteIds),
       defaultTaxonId:defaultId,
       compareIds,
       compareDefault:immutableBootstrap.featured.compareTaxonIds.filter(id=>compareIds.has(id)),
