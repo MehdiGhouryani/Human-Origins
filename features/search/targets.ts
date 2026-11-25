@@ -1,5 +1,6 @@
 import type {SearchResult,SearchResultKind} from '../../domain/contracts'
 import type {ExplorerBootstrap} from '../explorer/bootstrap'
+import {searchExplorerCatalog} from '../explorer/selectors'
 
 /** Where a search result leads. `external` results leave the atlas and are announced as such in the UI. */
 export type SearchTarget={href:string;external:boolean}
@@ -53,3 +54,32 @@ export function groupSearchResults(bootstrap:ExplorerBootstrap,results:readonly 
 
 /** Normalises user input before searching: trims, collapses whitespace, and caps length. */
 export const normalizeQuery=(raw:string|null|undefined):string=>(raw??'').replace(/\s+/g,' ').trim().slice(0,MAX_QUERY_LENGTH)
+
+/** Compact, serializable search view model used by both SSR and the search API. */
+export type SearchResponse={
+  query:string
+  total:number
+  groups:{
+    kind:string
+    label:string
+    items:{id:string;title:string;subtitle?:string;href:string;external:boolean}[]
+  }[]
+}
+
+export function buildSearchResponse(bootstrap:ExplorerBootstrap,rawQuery:string|null|undefined):SearchResponse{
+  const query=normalizeQuery(rawQuery)
+  if(query.length<2) return {query,total:0,groups:[]}
+  const groups=groupSearchResults(bootstrap,searchExplorerCatalog(bootstrap,query,80))
+  const items=groups.map(group=>({
+    kind:group.kind,
+    label:group.label,
+    items:group.items.map(({id,title,subtitle,target})=>({
+      id:String(id),
+      title,
+      ...(subtitle?{subtitle}:{}),
+      href:target.href,
+      external:target.external,
+    })),
+  }))
+  return {query,total:items.reduce((sum,group)=>sum+group.items.length,0),groups:items}
+}
