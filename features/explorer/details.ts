@@ -80,6 +80,9 @@ export function buildExplorerTaxonDetails(bootstrap:ExplorerBootstrap,taxonId:st
   for(const record of occurrences){addIds(sourceIds,record.sourceIds);addLinks(sourceIds,record.sourceLinks)}
   for(const record of evidence){addIds(sourceIds,record.sourceIds);addLinks(sourceIds,record.sourceLinks)}
   for(const claim of claims){addIds(sourceIds,claim.sourceIds);addLinks(sourceIds,claim.sourceLinks)}
+  for(const relationship of bootstrap.relationships.filter(item=>String(item.from)===taxonId||String(item.to)===taxonId)){
+    if(relationship.type==='gene-flow'){addIds(sourceIds,relationship.sourceIds);addLinks(sourceIds,relationship.sourceLinks)}
+  }
   for(const site of sites){addIds(sourceIds,site.sourceIds)}
   for(const context of siteContexts){addIds(sourceIds,context.sourceIds);addLinks(sourceIds,context.sourceLinks)}
 
