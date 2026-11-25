@@ -73,6 +73,8 @@ const withoutKeys=<T extends object,K extends keyof T>(item:T,keys:readonly K[])
   return copy as unknown as Omit<T,K>
 }
 
+export type ExplorerGraphSource={id:string;title:string;url:string}
+
 export type ExplorerBootstrap={
   release:string
   graph:ExplorerGraph
@@ -82,6 +84,8 @@ export type ExplorerBootstrap={
   fingerprint:string
   species:readonly ExplorerSpecies[]
   relationships:readonly RelationshipRecord[]
+  /** Minimal source labels/links required by the frozen lineage graph. */
+  graphSources:readonly ExplorerGraphSource[]
   taxonNames:readonly TaxonNameRecord[]
   siteContexts:readonly CanonicalSiteContextRecord[]
   media:readonly ExplorerMedia[]
@@ -307,6 +311,8 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
     sourceLinks:record.sourceLinks.map(link=>({...link,sourceId:asSourceId(String(link.sourceId))})),
   }))
   const relationships=contentCatalog.relationships.map(item=>({...item,from:asTaxonId(String(item.from)),to:asTaxonId(String(item.to)),sourceIds:item.sourceIds.map(id=>asSourceId(String(id)))}))
+  const graphSourceIds=new Set(relationships.flatMap(item=>[...item.sourceIds.map(String),...(item.sourceLinks??[]).map(link=>String(link.sourceId))]))
+  const graphSources=sources.filter(source=>graphSourceIds.has(String(source.id))).map(source=>({id:String(source.id),title:source.title,url:source.url}))
   const sites=contentCatalog.siteViews.map(item=>({...item,id:asSiteId(String(item.id)),sourceIds:item.sourceIds.map(id=>asSourceId(String(id))),relatedTaxonIds:item.relatedTaxonIds.map(id=>asTaxonId(String(id)))}))
   const evidence=contentCatalog.evidence.map(item=>({...item,id:asEvidenceId(String(item.id)),taxonId:asTaxonId(String(item.taxonId)),siteId:asSiteId(String(item.siteId)),sourceIds:item.sourceIds.map(id=>asSourceId(String(id)))}))
   const claims=contentCatalog.claims.map(item=>({...item,id:asClaimId(String(item.id)),taxonId:asTaxonId(String(item.taxonId)),evidenceIds:item.evidenceIds.map(id=>asEvidenceId(String(id))),sourceIds:item.sourceIds.map(id=>asSourceId(String(id))),interpretationSetIds:item.interpretationSetIds.map(id=>asInterpretationSetId(String(id)))}))
@@ -349,6 +355,7 @@ export function buildExplorerBootstrap(contentCatalog:ContentCatalog=baseCatalog
     fingerprint:isBase?catalogRuntimeMetadata.fingerprint:createCatalogFingerprint(contentCatalog),
     species,
     relationships,
+    graphSources,
     media,
     siteIds:sites.map(site=>String(site.id)),
     taxaWithSiteRange:[...new Set(sites.flatMap(site=>site.relatedTaxonIds.map(String)))],
