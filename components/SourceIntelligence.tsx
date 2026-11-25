@@ -6,7 +6,7 @@ import {useDetailsPanelOpen,useExplorerTaxonDetails} from '../features/explorer/
 import {BookOpen,ExternalLink,FileText,Landmark,Link2,ShieldCheck,GitBranch,Database,ChevronDown,AlertTriangle,GitCompare,Waypoints} from 'lucide-react'
 import type {ExplorerSpecies} from '../features/explorer/types'
 import {getExplorerClaimEvidence,getExplorerClaimsForTaxon,getExplorerInterpretationPositionsForSet,getExplorerInterpretationSetsForClaim,getExplorerProvenanceChainForClaim} from '../features/explorer/selectors'
-import type {ClientClientSourceRecord,ExplorerBootstrap} from '../features/explorer/bootstrap'
+import type {ClientSourceRecord,ExplorerBootstrap} from '../features/explorer/bootstrap'
 import {claimStatusLabel,claimStatusTone,sourceTypeLabel,uncertaintyDimensionLabel,uncertaintyStateLabel,interpretationKindLabel} from '../domain/labels'
 import type {ProvenanceClaim,SourceType} from '../domain/contracts'
 
