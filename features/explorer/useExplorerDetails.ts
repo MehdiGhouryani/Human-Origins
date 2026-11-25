@@ -1,6 +1,6 @@
 'use client'
 
-import {useCallback,useEffect,useState,useSyncExternalStore} from 'react'
+import {useEffect,useState} from 'react'
 import type {ExplorerDetailBundle,ExplorerMigrationDetails,ExplorerTaxonDetails} from './details'
 
 type DetailState<T>={key:string;data?:T;error?:string}
@@ -62,18 +62,22 @@ export function useExplorerMigrationDetails(enabled=true){
   return useDetailRequest<ExplorerMigrationDetails>('migration','/api/explorer/migration','migration',enabled)
 }
 
-/** Reads the native disclosure as an external DOM store without mirroring it through effect state. */
+/** Follows the native disclosure after the parent has applied its responsive default state. */
 export function useDetailsPanelOpen(id:string){
-  const subscribe=useCallback((notify:()=>void)=>{
+  const [open,setOpen]=useState(false)
+  useEffect(()=>{
     const element=document.getElementById(id) as HTMLDetailsElement|null
-    if(!element) return ()=>{}
-    const sync=()=>notify()
+    if(!element){
+      const frame=requestAnimationFrame(()=>setOpen(true))
+      return()=>cancelAnimationFrame(frame)
+    }
+    const sync=()=>setOpen(element.open)
+    const frame=requestAnimationFrame(sync)
     element.addEventListener('toggle',sync)
-    return()=>element.removeEventListener('toggle',sync)
+    return()=>{
+      cancelAnimationFrame(frame)
+      element.removeEventListener('toggle',sync)
+    }
   },[id])
-  const getSnapshot=useCallback(()=>{
-    const element=document.getElementById(id) as HTMLDetailsElement|null
-    return element?element.open:true
-  },[id])
-  return useSyncExternalStore(subscribe,getSnapshot,()=>false)
+  return open
 }
