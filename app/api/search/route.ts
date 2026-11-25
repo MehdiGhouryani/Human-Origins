@@ -1,8 +1,7 @@
 import {NextResponse} from 'next/server'
 import {buildExplorerBootstrap} from '../../../features/explorer/bootstrap'
-import {searchExplorerCatalog} from '../../../features/explorer/selectors'
 import {getLiveContent} from '../../../infrastructure/cms/live'
-import {groupSearchResults,normalizeQuery} from '../../../features/search/targets'
+import {buildSearchResponse,normalizeQuery} from '../../../features/search/targets'
 
 export const dynamic='force-dynamic'
 
@@ -15,10 +14,5 @@ export function GET(request:Request){
   if(q.length<2) return NextResponse.json({query:q,groups:[],total:0},{headers:{'Cache-Control':'no-store'}})
   const live=getLiveContent()
   const bootstrap=buildExplorerBootstrap(live.catalog,live.copy,live.graphConfig)
-  const groups=groupSearchResults(bootstrap,searchExplorerCatalog(bootstrap,q,80))
-  const total=groups.reduce((sum,group)=>sum+group.items.length,0)
-  return NextResponse.json({
-    query:q,total,
-    groups:groups.map(group=>({kind:group.kind,label:group.label,items:group.items.map(({id,title,subtitle,target})=>({id,title,subtitle,href:target.href,external:target.external}))})),
-  },{headers:{'Cache-Control':'no-store'}})
+  return NextResponse.json(buildSearchResponse(bootstrap,q),{headers:{'Cache-Control':'no-store'}})
 }
