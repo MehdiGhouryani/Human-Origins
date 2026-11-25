@@ -23,6 +23,38 @@ jobs:
       - run: npm run test:e2e -- --grep-invert "visual:"
         env:
           CMS_ADMIN_PASSWORD: ci-only-password
+      # Phase 7.1 measurement is informational: keep its result as an artifact for review.
+      - name: Measure phase 7.1 performance baseline
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          npm run start > /tmp/human-origins-next.log 2>&1 &
+          server_pid=$!
+          cleanup() { kill "$server_pid" 2>/dev/null || true; }
+          trap cleanup EXIT
+          ready=0
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/about >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/human-origins-next.log
+            exit 1
+          fi
+          npm run perf:baseline -- --base http://127.0.0.1:3000 --runs 5 --out artifacts/phase-7-baseline.json
+      - name: Upload phase 7.1 performance baseline
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-7-performance-baseline
+          path: artifacts/phase-7-baseline.json
+          if-no-files-found: ignore
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
