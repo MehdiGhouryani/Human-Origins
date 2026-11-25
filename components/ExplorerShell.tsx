@@ -15,7 +15,7 @@ import {useBookmarks} from '../features/bookmarks/useBookmarks'
 import {getCopy} from '../content/copy-registry'
 import {useExplorerController} from '../features/explorer/useExplorerController'
 import type {ExplorerState} from '../features/explorer/state'
-import type {SearchResponse} from '../features/search/targets'
+import type {SearchResponse} from '../features/search/response'
 
 const EvolutionGraph=dynamic(()=>import('./EvolutionGraph'),{loading:()=><div className="atlas-graph-loading" aria-hidden="true"/>})
 import TaxonNavigator from './TaxonNavigator'
