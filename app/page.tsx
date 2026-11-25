@@ -44,7 +44,7 @@ type PageProps = {
 export default async function HomePage({searchParams}: PageProps) {
   preloadHero()
   const live = getLiveContent()
-  const bootstrap = buildExplorerBootstrap(live.catalog, live.copy, live.graphConfig)
+  const bootstrap = projectExplorerBootstrapForClient(buildExplorerBootstrap(live.catalog, live.copy, live.graphConfig))
   const resolvedParams = searchParams ? await searchParams : {}
   const query = new URLSearchParams()
   for (const [key, value] of Object.entries(resolvedParams)) {
