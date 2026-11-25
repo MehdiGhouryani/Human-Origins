@@ -107,7 +107,7 @@ export default function ExplorerShell({bootstrap,initialState}:{bootstrap:Explor
     {!state.journey&&state.mode==='compare'?<div className="compare-stage">{modeTabBar}<div id="explorer-stage"><CompareMatrix bootstrap={immutableBootstrap} selectedIds={state.compare} onChange={setCompare}/></div></div>:<main className={`workspace with-inspector${sheetOpen?' sheet-open':''}`}>
       <div className="sr-only" aria-live="polite" aria-atomic="true">Viewing {current?.name ?? 'species'} in {state.mode} mode.</div>
       <section className="tree-panel" aria-label="Human Origins explorer">
-        {state.query&&<SearchResultsPanel bootstrap={immutableBootstrap} query={state.query} onClear={()=>setState(previous=>({...previous,query:''}))} onSelectTaxon={selectFromSearch}/>}
+        {state.query&&<SearchResultsPanel query={state.query} onClear={()=>setState(previous=>({...previous,query:''}))} onSelectTaxon={selectFromSearch}/>}
         {modeTabBar}
 
         {!atlasMode&&<TaxonNavigator species={explorerSpecies} selectedId={state.selectedId} onSelect={handleSelectSpecies} savedIds={savedIds} graphIds={graphIds}/>}
