@@ -210,13 +210,13 @@ export default async function SpeciesPage({params}:Params){
 
     <section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-specimens-h">
       <ResponsiveDetails id="panel-specimens" summary={<h2 id="panel-specimens-h">Specimens and records</h2>}>
-        <SpecimenGallery bootstrap={clientBootstrap} species={species}/>
+        <SpecimenGallery species={species}/>
       </ResponsiveDetails>
     </section>
 
     {content&&numbering?<ReferenceList numbering={numbering} publications={publicationsById}/>:<section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-sources-h">
       <ResponsiveDetails id="panel-sources" summary={<h2 id="panel-sources-h">Sources and claims</h2>}>
-        <SourceIntelligence bootstrap={clientBootstrap} species={species}/>
+        <SourceIntelligence bootstrap={clientBootstrap} species={species} panelId="panel-sources"/>
       </ResponsiveDetails>
     </section>}
 
