@@ -1,6 +1,7 @@
 import {describe,expect,it} from 'vitest'
 import {buildExplorerBootstrap,projectExplorerBootstrapForClient} from '../features/explorer/bootstrap'
 import {buildExplorerMigrationDetails,buildExplorerTaxonDetails} from '../features/explorer/details'
+import {buildSearchResponse} from '../features/search/targets'
 
 describe('phase 7.3 on-demand explorer data',()=>{
   const full=buildExplorerBootstrap()
@@ -79,4 +80,14 @@ describe('phase 7.3 on-demand explorer data',()=>{
       for(const sourceId of corridor.sourceIds) expect(sourceIds.has(String(sourceId))).toBe(true)
     }
   })
+
+  it('returns a compact server-renderable search result without exposing the full catalogue',()=>{
+    const result=buildSearchResponse(full,'neanderthal')
+    expect(result.query).toBe('neanderthal')
+    expect(result.total).toBeGreaterThan(0)
+    expect(result.groups.some(group=>group.kind==='taxon'&&group.items.some(item=>item.id==='neanderthal'))).toBe(true)
+    expect(result.groups.flatMap(group=>group.items).every(item=>typeof item.href==='string'&&typeof item.external==='boolean')).toBe(true)
+    expect(buildSearchResponse(full,'x')).toEqual({query:'x',total:0,groups:[]})
+  })
+
 })
