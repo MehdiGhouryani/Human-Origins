@@ -104,6 +104,11 @@ export function buildExplorerTaxonDetails(bootstrap:ExplorerBootstrap,taxonId:st
 export function buildExplorerMigrationDetails(bootstrap:ExplorerBootstrap):ExplorerMigrationDetails{
   const sourceIds=new Set<string>()
   for(const site of bootstrap.sites) addIds(sourceIds,site.sourceIds)
+  // Site-context records may carry provenance links that are not repeated in the map-only site projection.
+  for(const context of bootstrap.siteContexts){
+    addIds(sourceIds,context.sourceIds)
+    addLinks(sourceIds,context.sourceLinks)
+  }
   for(const corridor of bootstrap.migrationCorridors){
     addIds(sourceIds,corridor.sourceIds)
     addLinks(sourceIds,corridor.sourceLinks)
