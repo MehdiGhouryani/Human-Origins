@@ -55,6 +55,37 @@ jobs:
           name: phase-7-performance-baseline
           path: artifacts/phase-7-baseline.json
           if-no-files-found: ignore
+      # Phase 7.4 CSS spike: capture non-graph computed styles at four widths before changing chunking.
+      - name: Capture non-graph CSS fingerprint
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          npm run start > /tmp/human-origins-css.log 2>&1 &
+          server_pid=$!
+          cleanup() { kill "$server_pid" 2>/dev/null || true; }
+          trap cleanup EXIT
+          ready=0
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/about >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/human-origins-css.log
+            exit 1
+          fi
+          npm run css:fingerprint -- --base http://127.0.0.1:3000 --out artifacts/css-fingerprint.json
+      - name: Upload non-graph CSS fingerprint
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-7-css-fingerprint
+          path: artifacts/css-fingerprint.json
+          if-no-files-found: ignore
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
