@@ -12,6 +12,7 @@ export const getExplorerSpeciesById=(bootstrap:ExplorerBootstrap,id:string):Expl
 }
 export const getExplorerSpeciesList=(bootstrap:ExplorerBootstrap):readonly ExplorerSpecies[]=>bootstrap.species
 export const getExplorerRelationships=(bootstrap:ExplorerBootstrap):readonly RelationshipRecord[]=>bootstrap.relationships
+export const getExplorerGraphSourceById=(bootstrap:ExplorerBootstrap,id:string)=>bootstrap.graphSources.find(source=>source.id===id)
 export const getExplorerEvidenceSites=(bootstrap:ExplorerBootstrap):readonly EvidenceSite[]=>bootstrap.sites
 export const getExplorerMigrationCorridors=(bootstrap:ExplorerBootstrap):readonly MigrationCorridorRecord[]=>bootstrap.migrationCorridors
 export const getExplorerMigrationCorridorById=(bootstrap:ExplorerBootstrap,id:string):MigrationCorridorRecord|undefined=>{

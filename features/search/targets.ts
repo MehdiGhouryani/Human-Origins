@@ -53,3 +53,4 @@ export function groupSearchResults(bootstrap:ExplorerBootstrap,results:readonly 
 
 /** Normalises user input before searching: trims, collapses whitespace, and caps length. */
 export const normalizeQuery=(raw:string|null|undefined):string=>(raw??'').replace(/\s+/g,' ').trim().slice(0,MAX_QUERY_LENGTH)
+

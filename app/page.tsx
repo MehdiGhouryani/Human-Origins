@@ -3,8 +3,9 @@ import {taxaById} from '../content/catalog'
 import {graphDocument, jsonLdHtml, websiteNode} from '../features/seo/metadata'
 import {absoluteUrl} from '../infrastructure/site/url'
 import {preload} from 'react-dom'
-import {buildExplorerBootstrap} from '../features/explorer/bootstrap'
+import {buildExplorerBootstrap,projectExplorerBootstrapForClient} from '../features/explorer/bootstrap'
 import {readExplorerState} from '../features/explorer/state'
+import {buildSearchResponse} from '../features/search/response'
 import {getLiveContent} from '../infrastructure/cms/live'
 import SiteHeader from '../components/SiteHeader'
 import Hero from '../components/Hero'
@@ -44,7 +45,7 @@ type PageProps = {
 export default async function HomePage({searchParams}: PageProps) {
   preloadHero()
   const live = getLiveContent()
-  const bootstrap = buildExplorerBootstrap(live.catalog, live.copy, live.graphConfig)
+  const serverBootstrap = buildExplorerBootstrap(live.catalog, live.copy, live.graphConfig)
   const resolvedParams = searchParams ? await searchParams : {}
   const query = new URLSearchParams()
   for (const [key, value] of Object.entries(resolvedParams)) {
@@ -52,6 +53,8 @@ export default async function HomePage({searchParams}: PageProps) {
     else if (Array.isArray(value)) value.forEach(v => query.append(key, v))
   }
   const initialState = readExplorerState(query.toString())
+  const initialSearch = query.has('q') ? buildSearchResponse(serverBootstrap, query.get('q')) : undefined
+  const bootstrap = projectExplorerBootstrapForClient(serverBootstrap)
 
   return (
     <div className="site">
@@ -59,7 +62,7 @@ export default async function HomePage({searchParams}: PageProps) {
       <SiteHeader />
       <Hero copy={live.copy} />
       <ExplorerErrorBoundary>
-        <ExplorerShell bootstrap={bootstrap} initialState={initialState} />
+        <ExplorerShell bootstrap={bootstrap} initialState={initialState} initialSearch={initialSearch} />
       </ExplorerErrorBoundary>
     </div>
   )

@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react'
 import {useSearchParams} from 'next/navigation'
-import {getExplorerEvidenceSites,getExplorerSpeciesById,getExplorerSpeciesList} from './selectors'
+import {getExplorerSpeciesById,getExplorerSpeciesList} from './selectors'
 import type {ExplorerBootstrap} from './bootstrap'
 import type {ExplorerMode,ExplorerState,UrlValidity} from './state'
 import {DEFAULT_EXPLORER_STATE,applyUrlState,readExplorerState,writeExplorerSearch} from './state'
@@ -25,7 +25,7 @@ export function useExplorerController(bootstrap:ExplorerBootstrap,initialState:P
     const compareIds=new Set(immutableBootstrap.species.filter(t=>!t.inferred).map(t=>t.id))
     return {
       taxonIds:new Set(immutableBootstrap.species.map(t=>t.id)),
-      siteIds:new Set(getExplorerEvidenceSites(immutableBootstrap).map(site=>String(site.id))),
+      siteIds:new Set(immutableBootstrap.siteIds),
       defaultTaxonId:defaultId,
       compareIds,
       compareDefault:immutableBootstrap.featured.compareTaxonIds.filter(id=>compareIds.has(id)),

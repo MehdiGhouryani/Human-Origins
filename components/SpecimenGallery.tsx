@@ -1,17 +1,22 @@
 'use client'
 import {ExternalLink,MapPin,CalendarDays,Database,Box,Building2,FileText,MapPinned} from 'lucide-react'
-import {useMemo,useState} from 'react'
+import {useState} from 'react'
+import type {ExplorerTaxonDetails} from '../features/explorer/details'
+import {useDetailsPanelOpen,useExplorerTaxonDetails} from '../features/explorer/useExplorerDetails'
 import type {ExplorerSpecies as Species} from '../features/explorer/types'
-import {getExplorerSpecimensForTaxon} from '../features/explorer/selectors'
-import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
 
-type Props={bootstrap:ExplorerBootstrap;species:Species;onRevealSite?:(siteId:string)=>void}
+type Props={species:Species;onRevealSite?:(siteId:string)=>void;details?:ExplorerTaxonDetails}
 
-export default function SpecimenGallery({bootstrap,species,onRevealSite}:Props){
- const records=useMemo(()=>getExplorerSpecimensForTaxon(bootstrap,species.id),[bootstrap,species.id])
- const [selected,setSelected]=useState(records[0]?.id ?? '')
- const active=records.find(r=>r.id===selected) ?? records[0]
+export default function SpecimenGallery({species,onRevealSite,details:providedDetails}:Props){
+ const panelOpen=useDetailsPanelOpen('panel-specimens')
+ const {data:loadedDetails,loading,error}=useExplorerTaxonDetails(species.id,providedDetails===undefined&&panelOpen)
+ const details=providedDetails??loadedDetails
+ const records=details?.specimens??[]
+ const [selected,setSelected]=useState('')
+ const active=records.find(record=>record.id===selected) ?? records[0]
+ if(!details) return <div className="specimen-empty" role={error?'alert':'status'}>{error??(loading?'Loading specimen records…':'Open this section to load specimen records.')}</div>
  if(!records.length) return <div className="specimen-empty"><Database size={16}/><strong>No specimen-level records linked yet.</strong><p>The species record is intentionally kept separate from unverified specimen claims. Add a source-backed specimen when an institutional record is available.</p></div>
+ if(!active) return null
  return <section className="specimen-gallery" aria-label={`Specimen records for ${species.name}`}>
    <div className="specimen-head"><div><span>SPECIMEN-LEVEL RECORDS</span><h3>Fossils & source records</h3></div><b>{records.length} records</b></div>
    <div className="specimen-feature">

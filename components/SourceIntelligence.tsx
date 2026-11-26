@@ -1,17 +1,20 @@
 'use client'
 import {useMemo,useState} from 'react'
+import type {ExplorerTaxonDetails} from '../features/explorer/details'
+import {getExplorerDetailInstitutionById,getExplorerDetailPublicationForSource,getExplorerDetailSourceById} from '../features/explorer/details'
+import {useDetailsPanelOpen,useExplorerTaxonDetails} from '../features/explorer/useExplorerDetails'
 import {BookOpen,ExternalLink,FileText,Landmark,Link2,ShieldCheck,GitBranch,Database,ChevronDown,AlertTriangle,GitCompare,Waypoints} from 'lucide-react'
 import type {ExplorerSpecies} from '../features/explorer/types'
-import {getExplorerClaimEvidence,getExplorerClaimSources,getExplorerSourceById,getExplorerSourcesForTaxon,getExplorerSpecimensForTaxon,getExplorerClaimsForTaxon,getExplorerInstitutionById,getExplorerPublicationForSource,getExplorerInterpretationPositionsForSet,getExplorerInterpretationSetsForClaim,getExplorerProvenanceChainForClaim} from '../features/explorer/selectors'
-import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
+import {getExplorerClaimEvidence,getExplorerClaimsForTaxon,getExplorerInterpretationPositionsForSet,getExplorerInterpretationSetsForClaim,getExplorerProvenanceChainForClaim} from '../features/explorer/selectors'
+import type {ClientSourceRecord,ExplorerBootstrap} from '../features/explorer/bootstrap'
 import {claimStatusLabel,claimStatusTone,sourceTypeLabel,uncertaintyDimensionLabel,uncertaintyStateLabel,interpretationKindLabel} from '../domain/labels'
-import type {ProvenanceClaim,SourceRecord,SourceType} from '../domain/contracts'
+import type {ProvenanceClaim,SourceType} from '../domain/contracts'
 
 const sourceIcon=(type:SourceType)=>type==='primary-study'||type==='peer-reviewed-paper'?<FileText size={14}/>:type==='museum-3d'?<Landmark size={14}/>:<BookOpen size={14}/>
 
-function SourceCard({source,bootstrap}:{source:SourceRecord;bootstrap:ExplorerBootstrap}){
-  const institution=source.institutionId?getExplorerInstitutionById(bootstrap,String(source.institutionId)):undefined
-  const publication=getExplorerPublicationForSource(bootstrap,source)
+function SourceCard({source,details}:{source:ClientSourceRecord;details:ExplorerTaxonDetails}){
+  const institution=source.institutionId?getExplorerDetailInstitutionById(details,String(source.institutionId)):undefined
+  const publication=getExplorerDetailPublicationForSource(details,source)
   return <article className="source-intel-card">
     <div className="source-intel-icon">{sourceIcon(source.type)}</div>
     <div className="source-intel-main">
@@ -28,9 +31,9 @@ function SourceCard({source,bootstrap}:{source:SourceRecord;bootstrap:ExplorerBo
   </article>
 }
 
-function ClaimChain({bootstrap,claim,open}:{bootstrap:ExplorerBootstrap;claim:ProvenanceClaim; open:boolean}){
+function ClaimChain({bootstrap,details,claim,open}:{bootstrap:ExplorerBootstrap;details:ExplorerTaxonDetails;claim:ProvenanceClaim; open:boolean}){
   const evidence=getExplorerClaimEvidence(bootstrap,claim)
-  const sources=getExplorerClaimSources(bootstrap,claim)
+  const sources=claim.sourceIds.map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is ClientSourceRecord=>Boolean(source))
   const interpretationSets=getExplorerInterpretationSetsForClaim(bootstrap,String(claim.id))
   const provenance=getExplorerProvenanceChainForClaim(bootstrap,String(claim.id))
   return <details className="provenance-claim" open={open}>
@@ -50,33 +53,37 @@ function ClaimChain({bootstrap,claim,open}:{bootstrap:ExplorerBootstrap;claim:Pr
     {claim.uncertaintyProfile.length>0&&<div className="claim-uncertainty"><div className="claim-subhead"><span><AlertTriangle size={11}/> UNCERTAINTY PROFILE</span><small>Qualitative · no confidence score</small></div><div className="uncertainty-list">{claim.uncertaintyProfile.map(item=><div className="uncertainty-item" key={item.dimension}><span className={`uncertainty-state ${item.state}`}>{uncertaintyStateLabel[item.state]}</span><div><b>{uncertaintyDimensionLabel[item.dimension]}</b><p>{item.note}</p></div></div>)}</div></div>}
     {provenance&&(provenance.specimenIds.length>0||provenance.siteIds.length>0)&&<div className="claim-subhead"><span><Waypoints size={11}/> FULL PROVENANCE TRAIL</span><small>{provenance.specimenIds.length} specimen{provenance.specimenIds.length===1?'':'s'} · {provenance.siteIds.length} site{provenance.siteIds.length===1?'':'s'}{provenance.reachedSource?'':' · no source reachable'}</small></div>}
     {interpretationSets.length>0&&<div className="interpretation-block"><div className="claim-subhead"><span><GitCompare size={11}/> OPEN INTERPRETATIONS</span><small>{interpretationSets.length} set{interpretationSets.length===1?'':'s'}</small></div>{interpretationSets.map(set=><div className="interpretation-set" key={set.id}><div className="interpretation-question"><strong>{set.question}</strong><small>{set.status==='multiple-positions'?'Multiple documented positions':'Open question'}</small></div><div className="interpretation-positions">{getExplorerInterpretationPositionsForSet(bootstrap,String(set.id)).map(position=><article className="interpretation-position" key={position.id}><span>{interpretationKindLabel[position.kind]}</span><h5>{position.label}</h5><p>{position.summary}</p></article>)}</div></div>)}</div>}
-    <div className="claim-sources">{sources.map(source=><div className="claim-source-line" key={source.id}><span className={`claim-source-kind ${claimStatusTone[claim.status]}`}>{sourceTypeLabel[source.type]}</span><strong>{source.title}</strong>{getExplorerPublicationForSource(bootstrap,source)?.doi&&<code>{getExplorerPublicationForSource(bootstrap,source)?.doi}</code>}<a href={source.url} target="_blank" rel="noreferrer" aria-label={`Open ${source.title}`}><ExternalLink size={11}/></a></div>)}</div>
+    <div className="claim-sources">{sources.map(source=><div className="claim-source-line" key={source.id}><span className={`claim-source-kind ${claimStatusTone[claim.status]}`}>{sourceTypeLabel[source.type]}</span><strong>{source.title}</strong>{getExplorerDetailPublicationForSource(details,source)?.doi&&<code>{getExplorerDetailPublicationForSource(details,source)?.doi}</code>}<a href={source.url} target="_blank" rel="noreferrer" aria-label={`Open ${source.title}`}><ExternalLink size={11}/></a></div>)}</div>
   </details>
 }
 
 /** Source cards shown before "Show all": 16 of 18 species have no authored page, and their full registry made the page about 4,000px long on a phone. */
 const SOURCE_PREVIEW=4
 
-export default function SourceIntelligence({bootstrap,species}:{bootstrap:ExplorerBootstrap;species:ExplorerSpecies}){
+export default function SourceIntelligence({bootstrap,species,details:providedDetails,panelId='panel-evidence'}:{bootstrap:ExplorerBootstrap;species:ExplorerSpecies;details?:ExplorerTaxonDetails;panelId?:string}){
+  const panelOpen=useDetailsPanelOpen(panelId)
+  const {data:loadedDetails,loading,error}=useExplorerTaxonDetails(species.id,providedDetails===undefined&&panelOpen)
+  const details=providedDetails??loadedDetails
   const [filter,setFilter]=useState<'all'|SourceType>('all')
   const [showAllClaims,setShowAllClaims]=useState(false)
   const [showAllSources,setShowAllSources]=useState(false)
   const claims=getExplorerClaimsForTaxon(bootstrap,species.id)
   const records=useMemo(()=>{
-    const fromClaims=claims.flatMap(claim=>claim.sourceIds).map(id=>getExplorerSourceById(bootstrap,String(id))).filter((source):source is SourceRecord=>Boolean(source))
-    const fromSpecies=getExplorerSourcesForTaxon(bootstrap,species.id)
-    const specimenSources=getExplorerSpecimensForTaxon(bootstrap,species.id).flatMap(record=>record.sourceIds).map(id=>getExplorerSourceById(bootstrap,String(id))).filter((source):source is SourceRecord=>Boolean(source))
-    const merged=[...fromClaims,...fromSpecies,...specimenSources]
-    const byId=new Map<string,SourceRecord>()
-    merged.forEach(record=>byId.set(record.id,record))
+    if(!details) return []
+    const fromClaims=claims.flatMap(claim=>claim.sourceIds).map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is ClientSourceRecord=>Boolean(source))
+    const specimenSources=details.specimens.flatMap(record=>record.sourceIds).map(id=>getExplorerDetailSourceById(details,String(id))).filter((source):source is ClientSourceRecord=>Boolean(source))
+    const merged=[...fromClaims,...details.sources,...specimenSources]
+    const byId=new Map<string,ClientSourceRecord>()
+    merged.forEach(record=>byId.set(String(record.id),record))
     return Array.from(byId.values())
-  },[claims,species.id,bootstrap])
+  },[claims,details])
   const filtered=filter==='all'?records:records.filter(r=>r.type===filter)
   const peer=records.filter(r=>r.type==='primary-study'||r.type==='peer-reviewed-paper').length
   const institutional=records.filter(r=>r.type!=='primary-study'&&r.type!=='peer-reviewed-paper').length
   const visibleClaims=showAllClaims?claims:claims.slice(0,3)
   const visibleSources=showAllSources?filtered:filtered.slice(0,SOURCE_PREVIEW)
   const evidenceCount=new Set(claims.flatMap(c=>c.evidenceIds)).size
+  if(!details) return <section className="source-intelligence" aria-label={`Sources for ${species.name}`}><p className="empty-state" role={error?'alert':'status'}>{error??(loading?'Loading source and specimen records…':'Open this section to load the linked research details.')}</p></section>
 
   return <section className="source-intelligence" aria-label={`Sources for ${species.name}`}>
     <div className="source-intel-head"><div><span>SOURCES</span><h3>Trace the claim.</h3></div><b>{claims.length} claims · {records.length} linked sources</b></div>
@@ -84,14 +91,14 @@ export default function SourceIntelligence({bootstrap,species}:{bootstrap:Explor
 
     {claims.length>0&&<div className="claim-ledger">
       <div className="claim-ledger-head"><div><span>CLAIMS AND EVIDENCE</span><h4>Why this statement?</h4></div><span className="claim-ledger-count"><ShieldCheck size={12}/> {evidenceCount} linked evidence records</span></div>
-      <div className="claim-list">{visibleClaims.map((claim,index)=><ClaimChain key={claim.id} bootstrap={bootstrap} claim={claim} open={index===0}/>)}</div>
+      <div className="claim-list">{visibleClaims.map((claim,index)=><ClaimChain key={claim.id} bootstrap={bootstrap} details={details} claim={claim} open={index===0}/>)}</div>
       {claims.length>3&&<button type="button" className="claims-toggle" onClick={()=>setShowAllClaims(v=>!v)}>{showAllClaims?'Show fewer claims':`Show all ${claims.length} claims`}</button>}
     </div>}
 
     <div className="source-intel-head source-registry-head"><div><span>SOURCE REGISTRY</span><h4>Publication & institution trail</h4></div><b>{records.length} records</b></div>
     <div className="source-filter-row"><button type="button" aria-pressed={filter==='all'} className={filter==='all'?'on':''} onClick={()=>setFilter('all')}>All</button>{(['primary-study','peer-reviewed-paper','institutional-record','institutional-synthesis','museum-3d','educational-synthesis'] as SourceType[]).map(type=><button type="button" key={type} aria-pressed={filter===type} className={filter===type?'on':''} onClick={()=>setFilter(type)}>{sourceTypeLabel[type]}</button>)}</div>
     <div className="source-stats"><span><strong>{peer}</strong> primary / peer-reviewed</span><span><strong>{institutional}</strong> institutional / synthesis</span><span><ShieldCheck size={12}/> registered provenance</span></div>
-    <div className="source-intel-list">{visibleSources.map(source=><SourceCard key={source.id} source={source} bootstrap={bootstrap}/>)}</div>
+    <div className="source-intel-list">{visibleSources.map(source=><SourceCard key={source.id} source={source} details={details}/>)}</div>
     {filtered.length>SOURCE_PREVIEW&&<button type="button" className="claims-toggle" aria-expanded={showAllSources} onClick={()=>setShowAllSources(v=>!v)}>{showAllSources?'Show fewer sources':`Show all ${filtered.length} sources`}</button>}
     <div className="citation-note"><Link2 size={13}/><span><b>How to read this:</b> a source record documents or contextualizes a claim; it does not automatically make every interpretation on the page a settled fact. Dating values retain uncertainty, and relationship models can remain debated.</span></div>
   </section>

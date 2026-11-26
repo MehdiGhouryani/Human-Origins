@@ -1,24 +1,51 @@
+'use client'
+
+import {useEffect,useState} from 'react'
 import {ExternalLink} from 'lucide-react'
-import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
-import {searchExplorerCatalog} from '../features/explorer/selectors'
-import {groupSearchResults,normalizeQuery} from '../features/search/targets'
+import {normalizeQuery} from '../features/search/targets'
+import type {SearchResponse} from '../features/search/response'
+
+type ResultState={query:string;data?:SearchResponse;error?:string;loading:boolean}
 
 /**
- * In-flow search results for `/?q=…`. Rendered in normal document flow (never fixed or offset against the viewport), so it
- * works without JavaScript, is shareable as a URL, and cannot collide with the header at any width.
+ * In-flow search results for the explorer URL. The server resolves matches and destinations, so the full catalogue
+ * never needs to be serialized to the browser for search.
  */
-export default function SearchResultsPanel({bootstrap,query,onClear,onSelectTaxon}:{bootstrap:ExplorerBootstrap;query:string;onClear:()=>void;onSelectTaxon:(id:string)=>void}){
+export default function SearchResultsPanel({query,initialResults,onClear,onSelectTaxon}:{query:string;initialResults?:SearchResponse;onClear:()=>void;onSelectTaxon:(id:string)=>void}){
   const q=normalizeQuery(query)
+  const [state,setState]=useState<ResultState>(()=>({query:initialResults?.query??'',data:initialResults,loading:false}))
+
+  useEffect(()=>{
+    if(initialResults?.query===q||q.length<2) return
+    const controller=new AbortController()
+    fetch('/api/search?q='+encodeURIComponent(q),{signal:controller.signal,cache:'no-store',headers:{Accept:'application/json'}})
+      .then(async response=>{
+        if(!response.ok) throw new Error('Search is temporarily unavailable.')
+        return await response.json() as SearchResponse
+      })
+      .then(data=>setState({query:q,data,loading:false}))
+      .catch(error=>{
+        if(controller.signal.aborted) return
+        setState({query:q,error:error instanceof Error?error.message:'Search is temporarily unavailable.',loading:false})
+      })
+    return()=>controller.abort()
+  },[q,initialResults])
+
   if(q.length<2) return null
-  const groups=groupSearchResults(bootstrap,searchExplorerCatalog(bootstrap,q,80))
-  const total=groups.reduce((sum,g)=>sum+g.items.length,0)
-  return <section className="search-page" aria-labelledby="search-page-title">
-    <h2 id="search-page-title">{total?`${total} ${total===1?'result':'results'} for “${q}”`:`No results for “${q}”`}</h2>
-    {total===0&&<p className="empty-state">Nothing in the atlas matches that. Try a taxon name (for example “erectus”), a site, or a source title. Searching covers taxa, specimens, sites, evidence, claims, sources, publications and institutions.</p>}
-    {groups.map(group=><div key={group.kind} className="search-page-group"><h3>{group.label}</h3><ul>{group.items.map(item=><li key={`${item.kind}:${item.id}`}>
-      {item.kind==='taxon'?<button type="button" className="search-taxon" onClick={()=>onSelectTaxon(String(item.id))}><strong>{item.title}</strong>{item.subtitle&&<small>{item.subtitle}</small>}</button>:<a href={item.target.href} {...(item.target.external?{target:'_blank',rel:'noopener noreferrer'}:{})}>
+  const current=state.query===q?state:undefined
+  const data=current?.data??(initialResults?.query===q?initialResults:undefined)
+  const loading=q.length>=2&&!data&&!current?.error
+  const error=current?.error
+  const total=data?.total??0
+  return <section className="search-page" aria-labelledby="search-page-title" aria-busy={loading}>
+    <h2 id="search-page-title">{data?total?total+' '+(total===1?'result':'results')+' for “'+q+'”':'No results for “'+q+'”':'Search results for “'+q+'”'}</h2>
+    {loading&&!data&&<p className="empty-state" role="status">Searching the research catalogue…</p>}
+    {error&&<p className="empty-state" role="alert">{error}</p>}
+    {data&&total===0&&<p className="empty-state">Nothing in the atlas matches that. Try a taxon name (for example “erectus”), a site, or a source title. Searching covers taxa, specimens, sites, evidence, claims, sources, publications and institutions.</p>}
+    {data?.groups.map(group=><div key={group.kind} className="search-page-group"><h3>{group.label}</h3><ul>{group.items.map(item=><li key={group.kind+':'+item.id}>
+      {group.kind==='taxon'?<button type="button" className="search-taxon" onClick={()=>onSelectTaxon(String(item.id))}><strong>{item.title}</strong>{item.subtitle&&<small>{item.subtitle}</small>}</button>:<a href={item.href} {...(item.external?{target:'_blank',rel:'noopener noreferrer'}:{})}>
         <strong>{item.title}</strong>{item.subtitle&&<small>{item.subtitle}</small>}
-        {item.target.external&&<><ExternalLink size={12} aria-hidden="true"/><span className="sr-only"> (opens in a new tab)</span></>}
+        {item.external&&<><ExternalLink size={12} aria-hidden="true"/><span className="sr-only"> (opens in a new tab)</span></>}
       </a>}</li>)}</ul></div>)}
     <p><button type="button" className="search-clear" onClick={onClear}>Clear search</button></p>
   </section>

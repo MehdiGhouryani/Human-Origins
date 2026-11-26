@@ -10,7 +10,7 @@ import EvidenceGraph from '../../../components/EvidenceGraph'
 import SpecimenGallery from '../../../components/SpecimenGallery'
 import SourceIntelligence from '../../../components/SourceIntelligence'
 import RelationshipHypotheses from '../../../components/RelationshipHypotheses'
-import {buildExplorerBootstrap} from '../../../features/explorer/bootstrap'
+import {buildExplorerBootstrap,projectExplorerBootstrapForClient} from '../../../features/explorer/bootstrap'
 import {buildSpeciesDossier,completenessTierLabel,speciesJsonLd} from '../../../features/explorer/dossier'
 import type {DossierLink} from '../../../features/explorer/dossier'
 import {getLiveContent} from '../../../infrastructure/cms/live'
@@ -98,6 +98,7 @@ export default async function SpeciesPage({params}:Params){
   const {id}=await params
   const {bootstrap,dossier}=loadDossier(id)
   if(!dossier) notFound()
+  const clientBootstrap=projectExplorerBootstrapForClient(bootstrap)
   const {species,portrait,gallery,ancestors,descendants,geneFlow,coexisting,sites,specimens,claims,evidence,sources,previous,next,completeness}=dossier
   const color=groupColors[species.group as keyof typeof groupColors]??'#e8bd70'
   const left=ageMaToFraction(species.start)*100
@@ -202,20 +203,20 @@ export default async function SpeciesPage({params}:Params){
 
     <section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-evidence-h">
       <ResponsiveDetails id="panel-evidence" summary={<h2 id="panel-evidence-h">Evidence and relationships</h2>}>
-        <EvidenceGraph bootstrap={bootstrap} species={species}/>
-        <RelationshipHypotheses bootstrap={bootstrap} species={species}/>
+        <EvidenceGraph bootstrap={clientBootstrap} species={species}/>
+        <RelationshipHypotheses bootstrap={clientBootstrap} species={species}/>
       </ResponsiveDetails>
     </section>
 
     <section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-specimens-h">
       <ResponsiveDetails id="panel-specimens" summary={<h2 id="panel-specimens-h">Specimens and records</h2>}>
-        <SpecimenGallery bootstrap={bootstrap} species={species}/>
+        <SpecimenGallery species={species}/>
       </ResponsiveDetails>
     </section>
 
     {content&&numbering?<ReferenceList numbering={numbering} publications={publicationsById}/>:<section className="dossier-section dossier-panel dossier-fold" aria-labelledby="panel-sources-h">
       <ResponsiveDetails id="panel-sources" summary={<h2 id="panel-sources-h">Sources and claims</h2>}>
-        <SourceIntelligence bootstrap={bootstrap} species={species}/>
+        <SourceIntelligence bootstrap={clientBootstrap} species={species} panelId="panel-sources"/>
       </ResponsiveDetails>
     </section>}
 

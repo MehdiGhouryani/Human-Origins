@@ -1,5 +1,5 @@
 import type {ExplorerBootstrap} from '../features/explorer/bootstrap'
-import {getExplorerSourceById,getExplorerSpeciesById} from '../features/explorer/selectors'
+import {getExplorerGraphSourceById,getExplorerSpeciesById} from '../features/explorer/selectors'
 import {RELATION_SEMANTICS} from '../domain/relationship-semantics'
 import {certaintyLabel} from '../domain/labels'
 import {relationsOf} from '../presentation/treeSelectors'
@@ -11,7 +11,7 @@ const nameOf=(bootstrap:ExplorerBootstrap,id:string)=>{try{return getExplorerSpe
 function RelationRow({bootstrap,link,perspective,onShow}:{bootstrap:ExplorerBootstrap;link:RelationshipRecord;perspective?:string;onShow?:(id:string)=>void}){
   const s=RELATION_SEMANTICS[link.relation]
   const from=nameOf(bootstrap,String(link.from)),to=nameOf(bootstrap,String(link.to))
-  const sources=link.sourceIds.map(id=>getExplorerSourceById(bootstrap,String(id))).filter(Boolean)
+  const sources=link.sourceIds.map(id=>getExplorerGraphSourceById(bootstrap,String(id))).filter(Boolean)
   const age=link.eventAgeMa!==undefined?` · dated signal ≈ ${link.eventAgeMa>=1?`${link.eventAgeMa} Ma`:`${Math.round(link.eventAgeMa*1000)} ka`}`:''
   return <tr>
     <th scope="row">{perspective&&String(link.from)===perspective?<>{from} <span aria-hidden="true">→</span><span className="sr-only">leads to</span> <b>{to}</b></>:perspective?<><b>{from}</b> <span aria-hidden="true">→</span><span className="sr-only">leads to</span> {to}</>:<>{from} <span aria-hidden="true">→</span><span className="sr-only">to</span> {to}</>}</th>
