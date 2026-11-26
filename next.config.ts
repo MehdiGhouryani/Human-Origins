@@ -15,7 +15,6 @@ const securityHeaders=[
 const devOrigins=(process.env.ALLOWED_DEV_ORIGINS??'').split(',').map(origin=>origin.trim()).filter(Boolean)
 
 const nextConfig:NextConfig={
-  experimental:{cssChunking:'graph'},
   ...(process.env.NEXT_OUTPUT==='standalone'?{output:'standalone' as const}:{}),
   poweredByHeader:false,
   reactStrictMode:true,
