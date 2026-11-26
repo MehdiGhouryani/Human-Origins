@@ -90,9 +90,36 @@ describe('phase 7.3 on-demand explorer data',()=>{
     for(const site of details.sites){
       for(const sourceId of site.sourceIds) expect(sourceIds.has(String(sourceId))).toBe(true)
     }
+    for(const context of details.siteContexts){
+      for(const sourceId of context.sourceIds) expect(sourceIds.has(String(sourceId))).toBe(true)
+      for(const link of context.sourceLinks) expect(sourceIds.has(String(link.sourceId))).toBe(true)
+    }
     for(const corridor of full.migrationCorridors){
       for(const sourceId of corridor.sourceIds) expect(sourceIds.has(String(sourceId))).toBe(true)
+      for(const link of corridor.sourceLinks) expect(sourceIds.has(String(link.sourceId))).toBe(true)
     }
+  })
+
+  it('retains site-context-only provenance links in both taxon and migration detail bundles',()=>{
+    const context=full.siteContexts.find(item=>item.relatedTaxonIds.length>0)
+    expect(context).toBeDefined()
+    const extraSource=full.sources.find(source=>!context!.sourceIds.some(id=>String(id)===String(source.id)))
+    expect(extraSource).toBeDefined()
+
+    const augmentedContext={
+      ...context!,
+      sourceLinks:[...context!.sourceLinks,{sourceId:extraSource!.id,role:'contextualizes' as const}],
+    }
+    const augmented={
+      ...full,
+      siteContexts:full.siteContexts.map(item=>String(item.id)===String(context!.id)?augmentedContext:item),
+    }
+    const taxonId=String(context!.relatedTaxonIds[0])
+    const taxonDetails=buildExplorerTaxonDetails(augmented,taxonId)
+    const migrationDetails=buildExplorerMigrationDetails(augmented)
+
+    expect(taxonDetails?.sources.some(source=>String(source.id)===String(extraSource!.id))).toBe(true)
+    expect(migrationDetails.sources.some(source=>String(source.id)===String(extraSource!.id))).toBe(true)
   })
 
   it('returns a compact server-renderable search result without exposing the full catalogue',()=>{
