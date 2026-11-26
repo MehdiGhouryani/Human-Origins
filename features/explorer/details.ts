@@ -28,6 +28,14 @@ export type ExplorerMigrationDetails={
   siteContexts:readonly CanonicalSiteContextRecord[]
 }
 
+/** Minimal source links needed by the Evidence overview; full dossier records are intentionally excluded. */
+export type ExplorerEvidenceSource=Pick<ClientSourceRecord,'id'|'title'|'url'>
+export type ExplorerEvidenceSources={
+  kind:'evidence-sources'
+  taxonId:string
+  sources:readonly ExplorerEvidenceSource[]
+}
+
 export type ExplorerDetailBundle=ExplorerTaxonDetails|ExplorerMigrationDetails
 
 const idOf=(value:unknown)=>String(value)
@@ -100,6 +108,27 @@ export function buildExplorerTaxonDetails(bootstrap:ExplorerBootstrap,taxonId:st
   }
 }
 
+/**
+ * Builds the narrow Evidence overview response. Its cards need only each claim's linked source label and URL;
+ * specimen, occurrence, site, publication and institution records stay in the taxon detail endpoint.
+ */
+export function buildExplorerEvidenceSources(bootstrap:ExplorerBootstrap,taxonId:string):ExplorerEvidenceSources|undefined{
+  const species=bootstrap.species[bootstrap.indexes.speciesById[taxonId]]
+  if(!species) return undefined
+  const sourceIds=new Set<string>()
+  for(const claim of bootstrap.claims.filter(record=>idOf(record.taxonId)===taxonId)){
+    addIds(sourceIds,claim.sourceIds)
+    addLinks(sourceIds,claim.sourceLinks)
+  }
+  return {
+    kind:'evidence-sources',
+    taxonId,
+    sources:bootstrap.sources
+      .filter(source=>sourceIds.has(idOf(source.id)))
+      .map(({id,title,url})=>({id,title,url})),
+  }
+}
+
 /** Builds the complete site/source context needed by Migration, without serializing it in the default explorer view. */
 export function buildExplorerMigrationDetails(bootstrap:ExplorerBootstrap):ExplorerMigrationDetails{
   const sourceIds=new Set<string>()
@@ -121,6 +150,9 @@ export function buildExplorerMigrationDetails(bootstrap:ExplorerBootstrap):Explo
     siteContexts:bootstrap.siteContexts,
   }
 }
+
+export const getExplorerEvidenceSourceById=(details:ExplorerEvidenceSources,id:string)=>
+  details.sources.find(source=>idOf(source.id)===id)
 
 export const getExplorerDetailSourceById=(details:ExplorerDetailBundle,id:string)=>
   details.sources.find(source=>idOf(source.id)===id)
