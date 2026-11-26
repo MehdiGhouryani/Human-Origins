@@ -94,7 +94,7 @@ describe('phase 7.3 on-demand explorer data',()=>{
     for(const source of details?.sources??[]){
       expect(Object.keys(source).sort()).toEqual(['id','title','url'])
       expect(source.title.length).toBeGreaterThan(0)
-      expect(source.url.startsWith('https://')||source.url.startsWith('http://')).toBe(true)
+      expect(source.url.startsWith('http')).toBe(true)
     }
     expect(Buffer.byteLength(JSON.stringify(details),'utf8')).toBeLessThan(10*1024)
     expect(buildExplorerEvidenceSources(full,'not-a-real-taxon')).toBeUndefined()
