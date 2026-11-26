@@ -16,6 +16,10 @@
 ### Release gate portability
 - The data audits (`validate:data`, `audit:media`, `audit:research-model`, `audit:*`, `images:build`, `check:references`) invoked `tsc` through a bare `execFileSync`, which cannot exec the `.cmd` shim on Windows (`spawnSync tsc ENOENT`). They now resolve TypeScript's own `bin/tsc` and run it with the current Node binary (`scripts/lib/tsc-bin.mjs`), identical behaviour on Linux/macOS. CI on ubuntu is unaffected.
 
+### CSS chunking experiment (phase 7.4)
+- Compared the default Turbopack CSS chunking with Next.js 16.4.3 `experimental.cssChunking: 'graph'` in isolated CI runs (#165 and #166). The graph option passed `qa:release` and Playwright E2E, but it did not reduce stylesheet transfer: CSS bytes were identical in all eight performance scenarios (23,951 bytes on the general pages and 30,132 bytes on the species page). Request counts shifted by only -2 to +1 depending on the route, with no repeatable overall performance gain; mobile TBT medians were 4–42 ms higher in the graph run, so the setting was reverted.
+- A read-only Playwright fingerprint now records computed styles for non-graph elements on seven routes at four viewport widths. The two chunking runs matched exactly across 28 scenarios and 7,192 DOM nodes: zero node identity, computed-style or pseudo-element style differences. The lineage/evidence graph is excluded by the frozen-graph decision. Keep this fingerprint as the before/after guard for future CSS module extraction and dead-selector review.
+
 ### CSS audit (phase 7.4 counting tool)
 - `npm run audit:css` (read-only): reproducible counts for the plan's CSS debt — lines per stylesheet (globals 5306 + atlas 454 = 5760 against the deferred < 2500 target), 19 `!important`, 49 media queries, 126 selector definitions repeated across rules (top: `.tree-shell` 10×, `.topbar` 9×), and 39 class names no source or test file references (deletion is an owner decision; the 2026-10-12 purge protocol — computed-style fingerprint over page×width combinations — must be repeated first). The graph-lineage list is empty: no frozen class is unreferenced.
 
