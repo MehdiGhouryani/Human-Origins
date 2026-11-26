@@ -59,6 +59,7 @@ try{
       await page.evaluate(async()=>{if(document.fonts?.ready) await document.fonts.ready})
       await page.waitForTimeout(150)
       const result=await page.evaluate(({excluded,properties,pseudoProperties})=>{
+        const compactStyle=(style,keys)=>Object.fromEntries(keys.map(property=>[property,style.getPropertyValue(property)]))
         const isExcluded=(element)=>excluded.some(selector=>Boolean(element.closest(selector)))
         const pathOf=(element)=>{
           const parts=[]
