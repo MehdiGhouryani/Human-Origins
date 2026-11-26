@@ -42,12 +42,6 @@ const PROPERTIES=[
 ]
 const PSEUDO_PROPERTIES=['content','display','position','color','background-color','width','height','border-color','border-width']
 
-function compactStyle(style,properties){
-  const out={}
-  for(const property of properties) out[property]=style.getPropertyValue(property)
-  return out
-}
-
 const browser=await chromium.launch({executablePath:process.env.PW_CHROMIUM_PATH||undefined,headless:true})
 const scenarios={}
 try{
