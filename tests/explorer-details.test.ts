@@ -92,7 +92,7 @@ describe('phase 7.3 on-demand explorer data',()=>{
     }
     for(const context of details.siteContexts){
       for(const sourceId of context.sourceIds) expect(sourceIds.has(String(sourceId))).toBe(true)
-      for(const link of context.sourceLinks) expect(sourceIds.has(String(link.sourceId))).toBe(true)
+      for(const link of context.sourceLinks??[]) expect(sourceIds.has(String(link.sourceId))).toBe(true)
     }
     for(const corridor of full.migrationCorridors){
       for(const sourceId of corridor.sourceIds) expect(sourceIds.has(String(sourceId))).toBe(true)
@@ -108,7 +108,7 @@ describe('phase 7.3 on-demand explorer data',()=>{
 
     const augmentedContext={
       ...context!,
-      sourceLinks:[...context!.sourceLinks,{sourceId:extraSource!.id,role:'contextualizes' as const}],
+      sourceLinks:[...(context!.sourceLinks??[]),{sourceId:extraSource!.id,role:'contextualizes' as const}],
     }
     const augmented={
       ...full,
