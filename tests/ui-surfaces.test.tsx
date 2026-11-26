@@ -89,7 +89,12 @@ describe('inspector',()=>{
   it('uses "not represented in the atlas" wording, not "no evidence exists", for empty genetic evidence and Lifestyle',()=>{
     for(const tab of ['Evidence','Lifestyle'] as const){const html=inspector('common',tab);expect(html).toMatch(/is represented for/);expect(html).toMatch(/not a finding that none exists/);expect(html).not.toMatch(/no (archaeological|genetic) (record|evidence) (is|exists)/i)}
   })
-  it('lists genetic evidence records and gene flow for Neanderthals',()=>{const html=inspector('neanderthal','Evidence');expect(html).toContain('Genetic evidence records');expect(html).toContain('Documented gene flow')})
+  it('defers genetic evidence and gene flow until the taxon detail bundle is loaded',()=>{
+    const html=inspector('neanderthal','Evidence')
+    expect(html).toContain('Loading sources and dating context…')
+    expect(html).not.toContain('Genetic evidence records')
+    expect(html).not.toContain('Documented gene flow')
+  })
   it('has three views: Overview, Evidence and Lifestyle',()=>{const html=inspector('heidelbergensis');expect(count(html,/role="tab"/g)).toBe(3);expect(html).not.toContain('>Specimens<');expect(html).not.toContain('>Relationships<')})
   it('exposes tablist semantics with roving tabindex',()=>{const html=inspector('erectus');expect(html).toContain('role="tablist"');expect(count(html,/role="tab"/g)).toBe(3);expect(count(html,/role="tab"[^>]*tabindex="0"/g)).toBe(1)})
   it('renders every catalogue taxon without throwing (missing optional fields tolerated)',()=>{for(const t of bootstrap.species) for(const tab of ['Overview','Evidence','Lifestyle'] as const) expect(()=>inspector(t.id,tab),`${t.id}/${tab}`).not.toThrow()})
