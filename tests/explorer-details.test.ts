@@ -1,6 +1,6 @@
 import {describe,expect,it} from 'vitest'
 import {buildExplorerBootstrap,projectExplorerBootstrapForClient} from '../features/explorer/bootstrap'
-import {buildExplorerMigrationDetails,buildExplorerTaxonDetails} from '../features/explorer/details'
+import {buildExplorerEvidenceSources,buildExplorerMigrationDetails,buildExplorerTaxonDetails} from '../features/explorer/details'
 import {buildSearchResponse} from '../features/search/response'
 
 describe('phase 7.3 on-demand explorer data',()=>{
@@ -77,6 +77,27 @@ describe('phase 7.3 on-demand explorer data',()=>{
     }
 
     expect(buildExplorerTaxonDetails(full,'not-a-real-taxon')).toBeUndefined()
+  })
+
+  it('keeps Evidence overview source links minimal and below the 10 KB follow-up threshold',()=>{
+    const details=buildExplorerEvidenceSources(full,'neanderthal')
+    expect(details).toBeDefined()
+    expect(details?.kind).toBe('evidence-sources')
+    expect(details?.taxonId).toBe('neanderthal')
+
+    const claims=full.claims.filter(record=>String(record.taxonId)==='neanderthal')
+    const expectedIds=new Set(claims.flatMap(claim=>[
+      ...claim.sourceIds.map(String),
+      ...(claim.sourceLinks??[]).map(link=>String(link.sourceId)),
+    ]))
+    expect(new Set(details?.sources.map(source=>String(source.id)))).toEqual(expectedIds)
+    for(const source of details?.sources??[]){
+      expect(Object.keys(source).sort()).toEqual(['id','title','url'])
+      expect(source.title.length).toBeGreaterThan(0)
+      expect(source.url).toMatch(/^https?:\\/\\//)
+    }
+    expect(Buffer.byteLength(JSON.stringify(details),'utf8')).toBeLessThan(10*1024)
+    expect(buildExplorerEvidenceSources(full,'not-a-real-taxon')).toBeUndefined()
   })
 
   it('returns complete map evidence and source context only for the migration view',()=>{
