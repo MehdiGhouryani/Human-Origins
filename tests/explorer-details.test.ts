@@ -62,6 +62,20 @@ describe('phase 7.3 on-demand explorer data',()=>{
         expect(details?.publications.some(publication=>String(publication.id)===String(source.publicationId))).toBe(true)
       }
     }
+
+    const geneticEvidence=full.evidence.filter(record=>String(record.taxonId)==='neanderthal'&&record.kind==='genetics')
+    expect(geneticEvidence.length).toBeGreaterThan(0)
+    for(const record of geneticEvidence){
+      for(const sourceId of record.sourceIds) expect(sourceIds.has(String(sourceId))).toBe(true)
+    }
+    const geneFlow=full.relationships.filter(record=>
+      record.type==='gene-flow'&&(String(record.from)==='neanderthal'||String(record.to)==='neanderthal'),
+    )
+    expect(geneFlow.length).toBeGreaterThan(0)
+    for(const relation of geneFlow){
+      for(const sourceId of relation.sourceIds) expect(sourceIds.has(String(sourceId))).toBe(true)
+    }
+
     expect(buildExplorerTaxonDetails(full,'not-a-real-taxon')).toBeUndefined()
   })
 
